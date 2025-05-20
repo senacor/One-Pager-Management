@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-validate-bicep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Azure CLI
+        uses: azure/cli@v2
+      - name: Lint Bicep
+        run: az bicep build --file infra/main.bicep
+      - name: Validate Bicep
+        run: az deployment group validate --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --template-file infra/main.bicep --parameters functionAppName=dummy
+
+  typescript-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install dependencies
+        run: npm install
+      - name: TypeScript compile
+        run: npx tsc --noEmit
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npx jest
