@@ -5,75 +5,47 @@ on:
   pull_request:
 
 env:
-  AZURE_SUBSCRIPTION_ID: "d79a8503-567c-4e5c-8832-787745b17da3"
-  AZURE_CLIENT_ID: "10ce4690-06c8-4193-8265-7353d694009e"
-  AZURE_TENANT_ID: "52497ec2-0945-4f55-8021-79766363dd96"
+  NODE_VERSION: '20.x'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure-functions'
 
 jobs:
-  build:
+  check-functions:
     runs-on: ubuntu-latest
-    permissions:
-        id-token: write # Required for OIDC
-        contents: read # Required for actions/checkout
+    defaults:
+      run:
+        working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm install
-      - name: TypeScript compile
-        run: npm run build
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm run test --if-present
 
-  deploy:
+  check-infra:
     runs-on: ubuntu-latest
-    #needs: build
-    permissions:
-        id-token: write # Required for OIDC
     steps:
-      # ...download your build artifact
-      - name: 'Log in to Azure with AZ CLI'
-        uses: azure/login@v2
+      - uses: actions/checkout@v4
+      - name: Test with Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
         with:
-          client-id: ${{ env.AZURE_CLIENT_ID }} # Required to log in with OIDC
-          tenant-id: ${{ env.AZURE_TENANT_ID }} # Required to log in with OIDC
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }} # Required to log in with OIDC
+          # This will add both a CLI output to the console and create a results.sarif file
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
+          directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/infra'
+          framework: bicep
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
 
-      - name: apply infrastructure
-        uses: azure/cli@v2
+        # Results are generated only on a success or failure
+        # this is required since GitHub by default won't run the next step
+        # when the previous one has failed. Security checks that do not pass will 'fail'.
+        # An alternative is to add `continue-on-error: true` to the previous step
+        # Or 'soft_fail: true' to checkov.
+        if: success() || failure()
         with:
-          azcliversion: latest
-          inlineScript: |
-            az functionapp function list --name poc-one-pager --resource-group one-pager
-
-  # lint-validate-bicep:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Lint Bicep
-  #       run: az bicep build --file infra/main.bicep
-  #     - name: Validate Bicep
-  #       run: az deployment group validate --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --template-file infra/main.bicep --parameters functionAppName=dummy
-
-  # typescript-compile:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20.x'
-  #     - name: Install dependencies
-  #       run: npm install
-  #     - name: TypeScript compile
-  #       run: npm run build
-
-  # test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20.x'
-  #     - name: Install dependencies
-  #       run: npm install
-  #     - name: Run tests
-  #       run: npx jest
+          sarif_file: results.sarif
