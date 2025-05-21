@@ -9,7 +9,7 @@ env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure-functions'
 
 jobs:
-  build:
+  check-functions:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,9 +21,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: npm install
+      - run: npm ci
       - run: npm run build --if-present
       - run: npm run test --if-present
+
+  check-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test with Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          # This will add both a CLI output to the console and create a results.sarif file
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
+          directory: azure-functions/infra
+          framework: bicep
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+
+        # Results are generated only on a success or failure
+        # this is required since GitHub by default won't run the next step
+        # when the previous one has failed. Security checks that do not pass will 'fail'.
+        # An alternative is to add `continue-on-error: true` to the previous step
+        # Or 'soft_fail: true' to checkov.
+        if: success() || failure()
+        with:
+          sarif_file: results.sarif
+
 
   # lint-validate-bicep:
   #   runs-on: ubuntu-latest
