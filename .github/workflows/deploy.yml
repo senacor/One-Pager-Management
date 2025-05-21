@@ -30,7 +30,7 @@ jobs:
           inlineScript: |
             az deployment group create --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --template-file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/infra/main.bicep \
-              --parameters functionAppName=${{ vars.FUNCTION_APP_NAME }} --mode complete --verbose
+              --parameters functionAppName=${{ vars.FUNCTION_APP_NAME }} --mode complete --debug
 
   deploy-functions:
     runs-on: ubuntu-latest

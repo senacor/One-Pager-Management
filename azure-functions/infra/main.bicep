@@ -34,6 +34,7 @@ resource githubDeploymentIdentity 'Microsoft.ManagedIdentity/userAssignedIdentit
   location: location
 }
 
+// Assign Website Contributor role to githubDeploymentIdentity at function app scope to allow GitHub Actions to deploy functions
 resource githubDeploymentRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(functionApp.id, githubDeploymentIdentity.id, 'website-contributor-role')
   scope: functionApp
@@ -43,6 +44,18 @@ resource githubDeploymentRoleAssignment 'Microsoft.Authorization/roleAssignments
     principalType: 'ServicePrincipal'
   }
 }
+
+// Assign Owner role to githubDeploymentIdentity at the resource group scope for Bicep deployments
+resource githubDeploymentOwnerRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'owner-role')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635') // Owner
+    principalId: githubDeploymentIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Zum Deployen von Funktionen
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: functionAppName
