@@ -28,6 +28,21 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   kind: 'functionapp'
 }
 
+
+resource githubDeploymentIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${functionAppName}-github-deploy-mi'
+  location: location
+}
+
+resource githubDeploymentRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(functionApp.id, githubDeploymentIdentity.id, 'website-contributor-role')
+  scope: functionApp
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772') // Website Contributor
+    principalId: githubDeploymentIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
 // Zum Deployen von Funktionen
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: functionAppName
