@@ -11,7 +11,6 @@ jobs:
     env:
       AZURE_FUNCTIONAPP_NAME: ${{ secrets.AZURE_FUNCTIONAPP_NAME }}
       AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
-      AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
     steps:
       - uses: actions/checkout@v4
@@ -19,20 +18,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-      - name: Set up Azure CLI
-        uses: azure/cli@v2
+      - name: build function app
+        run: |
+          npm install
+          npm run build
+          npm prune --production    
       - name: Azure Login
         uses: azure/login@v2
         with:
-          creds: ${{ env.AZURE_CREDENTIALS }}
-      - name: Deploy Bicep
-        run: |
-          az deployment group create \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --template-file infra/main.bicep \
-            --parameters functionAppName=$AZURE_FUNCTIONAPP_NAME storageAccountName=$AZURE_STORAGE_ACCOUNT
-      - name: Deploy Function App
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: apply infrastructure
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az deployment group create \
+              --resource-group $AZURE_RESOURCE_GROUP \
+              --template-file infra/main.bicep \
+              --parameters functionAppName=$AZURE_FUNCTIONAPP_NAME
+      - name: deploy function app
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: ./HttpExample
+          respect-funcignore: true

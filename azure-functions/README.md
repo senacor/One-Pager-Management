@@ -1,4 +1,55 @@
-# Azure Function App (JavaScript) - Local Development
+# Azure Functions for OnePager automations
+
+We plan to use Azure Functions to offload complex business logic for e.g. validation 
+from Power Automation flows.
+
+## Tools
+
+We recommand you install the following tools to be able to work properly with this
+project:
+
+- [Azure CLI][azure-tools-install]
+- [Azure Functions Core Tools][core-tools-install]
+- Node v20
+
+## Deployment to Azure
+
+### Setup subscription
+
+Create resource group
+```bash
+az group create --name one-pager --location germanywestcentral
+```
+
+enable app insights (e.g. logging)
+```bash
+az provider register --namespace  Microsoft.OperationalInsights --verbose --wait
+```
+
+assign `Storage Queue Data Contributor` role to contributors for queue to be able to see data.
+
+### Configure GitHub OICD access
+
+### Deployment commands
+
+deploy infrastructur
+```bash
+az deployment group create --resource-group one-pager --template-file infra/main.bicep --parameters functionAppName=poc-one-pager --mode complete
+```
+
+make it small 
+```bash
+npm prune --production
+```
+
+deploy functions
+```bash
+func azure functionapp publish poc-one-pager
+```
+
+## Development
+
+### Run locally
 
 ## Running Functions Locally with Azurite
 
@@ -22,8 +73,7 @@ To run your Azure Functions locally and use Azurite for local Azure Storage emul
 
 Your functions will now run locally and use the Azurite storage emulator.
 
----
 
-## Additional Tips
-- You can add Azurite as a dev dependency and use npm scripts for convenience.
-- For more info, see the [Azurite documentation](https://github.com/Azure/Azurite) and [Azure Functions local development docs](https://learn.microsoft.com/azure/azure-functions/functions-develop-local).
+
+[azure-tools-install]: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+[core-tools-install]: https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?pivots=programming-language-typescript&tabs=macos%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps#install-the-azure-functions-core-tools
