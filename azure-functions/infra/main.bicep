@@ -3,6 +3,7 @@ param location string = resourceGroup().location
 
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 
+// Speicher -> Queues, TAbles etc. können angelegt werden
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: storageAccountName
   location: location
@@ -16,6 +17,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
 }
 
+// Auf welche Art von Hardware wollen wir laufen? + Kostenberechnungen
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: '${functionAppName}-plan'
   location: location
@@ -25,6 +27,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   }
   kind: 'functionapp'
 }
+
 
 resource githubDeploymentIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: '${functionAppName}-github-deploy-mi'
@@ -40,7 +43,7 @@ resource githubDeploymentRoleAssignment 'Microsoft.Authorization/roleAssignments
     principalType: 'ServicePrincipal'
   }
 }
-
+// Zum Deployen von Funktionen
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: functionAppName
   location: location
@@ -87,6 +90,8 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   }
 }
 
+
+// Analytics tools
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: functionAppName
   location: location
@@ -97,6 +102,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+// Rechte/Zugriffe (Rollendefinitionen)
 resource customQueueRWRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' = {
   name: guid(storageAccount.id, 'custom-queue-rw-role')
   properties: {
@@ -123,7 +129,7 @@ resource customQueueRWRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' 
     ]
   }
 }
-
+// Zugriffe: Rollenverteilungen
 resource customQueueRWRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('custom-queue-rw-role-assignment', storageAccount.id, functionApp.id)
   scope: storageAccount
@@ -134,5 +140,6 @@ resource customQueueRWRoleAssignment 'Microsoft.Authorization/roleAssignments@20
   }
 }
 
+// Ausgaben des Commands
 output functionAppName string = functionApp.name
 output functionAppUrl string = 'https://${functionApp.properties.defaultHostName}'

@@ -5,6 +5,12 @@ const queueOutput = output.storageQueue({
     connection: '',
 });
 
+/**
+ * Füge Aufgabe zur Queue hinzu
+ * @param request 
+ * @param context 
+ * @returns 
+ */
 export async function MyHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
 
@@ -16,9 +22,17 @@ export async function MyHttpTrigger(request: HttpRequest, context: InvocationCon
     return { body: `Hello, ${name}!` };
 };
 
+/**
+ * HTTP-Trigger
+ */
 app.http('MyHttpTrigger', {
     methods: ['GET', 'POST'],
     authLevel: 'function',
     handler: MyHttpTrigger,
     extraOutputs: [queueOutput]
 });
+
+// In Azure:
+// Trigger, der Code aufruft (+evtl. Inputs)
+// Funktionen
+// 
