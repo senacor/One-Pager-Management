@@ -28,34 +28,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   kind: 'functionapp'
 }
 
-
-resource githubDeploymentIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${functionAppName}-github-deploy-mi'
-  location: location
-}
-
-// Assign Contributor role to githubDeploymentIdentity at the resource group scope for Bicep deployments
-resource githubDeploymentContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'contributor-role')
-  scope: resourceGroup()
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c') // Contributor
-    principalId: githubDeploymentIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Assign User Access Administrator role to githubDeploymentIdentity at the resource group scope for RBAC changes
-resource githubDeploymentAccessAdminRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'access-admin-role')
-  scope: resourceGroup()
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f1a07417-d97a-45cb-824c-7a7467783830') // User Access Administrator
-    principalId: githubDeploymentIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 // Zum Deployen von Funktionen
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: functionAppName
