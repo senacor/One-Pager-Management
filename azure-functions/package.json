@@ -1,8 +1,8 @@
 {
-  "name": "",
+  "name": "one_pager_project",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/functions/*.js",
+  "main": "dist/src/functions/*.*js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
@@ -11,7 +11,13 @@
     "start": "func start"
   },
   "dependencies": {
-    "@azure/functions": "^4.0.0"
+    "@azure/functions": "^4.0.0",
+    "@azure/identity": "^4.10.0",
+    "@microsoft/kiota-authentication-azure": "^1.0.0-preview.93",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@microsoft/msgraph-sdk": "^1.0.0-preview.57",
+    "@microsoft/msgraph-sdk-sites": "^1.0.0-preview.57",
+    "@microsoft/msgraph-sdk-users": "^1.0.0-preview.57"
   },
   "devDependencies": {
     "@types/node": "18.x",
