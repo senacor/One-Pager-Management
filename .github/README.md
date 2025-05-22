@@ -6,8 +6,7 @@
 RESOURCE_GROUP=one-pager
 FUNCTION_APP=poc-one-pager
 
-az deployment group create --resource-group $RESOURCE_GROUP \
-  --template-file infra/github-identity.bicep --mode complete
+az deployment group create --resource-group $RESOURCE_GROUP --template-file infra/github-identity.bicep
 
 az identity federated-credential create \
   --name $FUNCTION_APP-github-deploy-fc \
