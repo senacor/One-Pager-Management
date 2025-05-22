@@ -30,6 +30,7 @@ resource customUserAccessAdminRole 'Microsoft.Authorization/roleDefinitions@2022
           'Microsoft.Authorization/roleAssignments/read'
           'Microsoft.Authorization/roleAssignments/write'
           'Microsoft.Authorization/roleAssignments/delete'
+          'Microsoft.Authorization/roleDefinitions/write'
         ]
         notActions: []
         dataActions: []
