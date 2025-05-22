@@ -34,23 +34,23 @@ resource githubDeploymentIdentity 'Microsoft.ManagedIdentity/userAssignedIdentit
   location: location
 }
 
-// Assign Website Contributor role to githubDeploymentIdentity at function app scope to allow GitHub Actions to deploy functions
-resource githubDeploymentRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(functionApp.id, githubDeploymentIdentity.id, 'website-contributor-role')
-  scope: functionApp
+// Assign Contributor role to githubDeploymentIdentity at the resource group scope for Bicep deployments
+resource githubDeploymentContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'contributor-role')
+  scope: resourceGroup()
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'de139f84-1756-47ae-9be6-808fbbe84772') // Website Contributor
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c') // Contributor
     principalId: githubDeploymentIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-// Assign Owner role to githubDeploymentIdentity at the resource group scope for Bicep deployments
-resource githubDeploymentOwnerRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'owner-role')
+// Assign User Access Administrator role to githubDeploymentIdentity at the resource group scope for RBAC changes
+resource githubDeploymentAccessAdminRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'access-admin-role')
   scope: resourceGroup()
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635') // Owner
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f1a07417-d97a-45cb-824c-7a7467783830') // User Access Administrator
     principalId: githubDeploymentIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
