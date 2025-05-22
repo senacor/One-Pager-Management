@@ -4,6 +4,8 @@ import { AzureIdentityAuthenticationProvider } from "@microsoft/kiota-authentica
 import { createGraphServiceClient, GraphRequestAdapter } from "@microsoft/msgraph-sdk";
 // import "@microsoft/msgraph-sdk-users";
 import "@microsoft/msgraph-sdk-sites";
+// es gibt viele msgraph-sdk-* Packete als Unterpackete, welche die Funktionen der Elemente aus @microsoft/msgraph-sdk erweitern - abhängig davon, was man braucht.
+// see https://github.com/microsoftgraph/msgraph-sdk-typescript/tree/main/packages
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider.js";
 import { Client } from "@microsoft/microsoft-graph-client";
 
