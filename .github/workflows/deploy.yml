@@ -38,25 +38,26 @@ jobs:
       contents: read
       id-token: write
     needs: apply-infra-definitions
-    defaults:
-      run:
-        working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node ${{ env.NODE_VERSION }} Environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm prune --production
       - name: 'Log in to Azure with AZ CLI'
         uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: |
+          pushd "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          npm ci
+          npm run build --if-present
+          npm prune --production
+          popd
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ vars.FUNCTION_APP_NAME }}
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
