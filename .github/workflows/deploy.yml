@@ -28,9 +28,10 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az deployment group create --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+            az deployment group create --debug --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --template-file ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/infra/main.bicep \
-              --parameters functionAppName=${{ vars.FUNCTION_APP_NAME }} --debug
+              --parameters functionAppName=${{ vars.FUNCTION_APP_NAME }} \
+              --parameters sharepointClientSecret=${{ secrets.SHAREPOINT_CLIENT_SECRET }} \
 
   deploy-functions:
     runs-on: ubuntu-latest

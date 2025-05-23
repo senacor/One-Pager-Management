@@ -1,5 +1,9 @@
 param functionAppName string
 param location string = resourceGroup().location
+param sharepointClientId string = '1621d264-a7bb-40b6-bfef-9b2839cb7eec'
+param sharepointTenantId string = '52497ec2-0945-4f55-8021-79766363dd96'
+@secure()
+param sharepointClientSecret string
 
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 
@@ -65,6 +69,18 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: applicationInsights.properties.InstrumentationKey
         }
+        {
+          name: 'SHAREPOINT_CLIENT_ID'
+          value: sharepointClientId
+        }
+        {
+          name: 'SHAREPOINT_TENANT_ID'
+          value: sharepointTenantId
+        }
+        {
+          name: 'SHAREPOINT_CLIENT_SECRET'
+          value: '@Microsoft.KeyVault(SecretUri=${sharepointClientSecretSecret.properties.secretUriWithVersion})'
+        }
       ]
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
@@ -120,6 +136,41 @@ resource customQueueRWRoleAssignment 'Microsoft.Authorization/roleAssignments@20
   scope: storageAccount
   properties: {
     roleDefinitionId: customQueueRWRole.id
+    principalId: functionApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
+  name: '${functionAppName}-kv'
+  location: location
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: [] // We'll use RBAC
+    enableRbacAuthorization: true
+    enablePurgeProtection: true
+    enableSoftDelete: true
+  }
+}
+
+resource sharepointClientSecretSecret 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
+  name: 'sharepoint-client-secret'
+  parent: keyVault
+  properties: {
+    value: sharepointClientSecret
+  }
+}
+
+// Grant Function App access to Key Vault secrets
+resource keyVaultAccessPolicy 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, functionApp.name, 'KeyVaultSecretsUser')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6') // Key Vault Secrets User
     principalId: functionApp.identity.principalId
     principalType: 'ServicePrincipal'
   }

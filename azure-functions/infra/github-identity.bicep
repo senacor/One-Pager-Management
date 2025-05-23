@@ -7,7 +7,7 @@ resource githubDeploymentIdentity 'Microsoft.ManagedIdentity/userAssignedIdentit
 
 // Assign Contributor role to githubDeploymentIdentity at the resource group scope for Bicep deployments
 resource githubDeploymentContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'contributor-role')
+  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'contributor-role2')
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c') // Contributor
@@ -45,7 +45,7 @@ resource customUserAccessAdminRole 'Microsoft.Authorization/roleDefinitions@2022
 
 // Assign custom User Access Admin role to githubDeploymentIdentity
 resource githubDeploymentCustomAccessAdminRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, githubDeploymentIdentity.id, 'custom-access-admin-role')
+  name: guid(resourceGroup().id, githubDeploymentIdentity.id, customUserAccessAdminRole.id)
   scope: resourceGroup()
   properties: {
     roleDefinitionId: customUserAccessAdminRole.id
