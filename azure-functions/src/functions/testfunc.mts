@@ -1,20 +1,6 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@azure/functions";
 
 import { ClientSecretCredential } from "@azure/identity";
-// import { AzureIdentityAuthenticationProvider } from "@microsoft/kiota-authentication-azure";
-// import { createGraphServiceClient, GraphRequestAdapter, GraphServiceClient } from "@microsoft/msgraph-sdk";
-// import "@microsoft/msgraph-sdk-users";
-// import "@microsoft/msgraph-sdk-sites";
-// import "@microsoft/msgraph-sdk-teams";
-// import "@microsoft/msgraph-sdk-filteroperators";
-// es gibt viele msgraph-sdk-* Packete als Unterpackete, welche die Funktionen der Elemente aus @microsoft/msgraph-sdk erweitern - abhängig davon, was man braucht.
-// see https://github.com/microsoftgraph/msgraph-sdk-typescript/tree/main/packages
-
-
-
-// andere Möglichkeit für die Verwendung von Graph-API: Packet @microsoft/microsoft-graph-client muss neu installiert werden.
-// dieses ist die Legancy-Bibliothek, die zum Großteil deprecated ist und vom obigen Weg abgelöst wird.
-// andererseits gibt es kaum Doku zur aktuellen Methode.
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider.js";
 import { Client } from "@microsoft/microsoft-graph-client";
 
@@ -71,67 +57,42 @@ async function run() {
     const authProvider = new TokenCredentialAuthenticationProvider(credential, {
         scopes: ['https://graph.microsoft.com/.default']
     });
+    log('Auth Provider initialized!');
+
     const client = Client.initWithMiddleware({
         debugLogging: true,
         authProvider,
     });
+    log('Client initialized!');
 
-    // console.log(await client.api("/sites/senacor.sharepoint.com,72337cf1-cf56-4998-aa64-52a47efdbf6e,f247cc86-41ce-4e54-895f-61d07d03751e/lists/c70c37c3-6fe6-4316-bb79-6c535e774478/items").get())
-    // log(
-    //     await client.api("/sites/senacor.sharepoint.com,4f5cf9d4-b4c2-42ef-a638-07c26c927afb,abd184d4-60cb-4448-9e08-a21ed4c873ac/lists/91b65748-3d1e-4a36-9652-06e2816d8b35/items").get());
-
-    // const authProvider: AzureIdentityAuthenticationProvider = new AzureIdentityAuthenticationProvider(credential, ["https://graph.microsoft.com/.default"]);
-
-    
-
-    // log('Auth Provider initialized!');
 
     // log("Token:", await credential.getToken(['https://graph.microsoft.com/.default']));
 
-    // const requestAdapter: GraphRequestAdapter = new GraphRequestAdapter(authProvider); // this creates an output
-    // log('requestAdapter initliazed!');
-    // const graphServiceClient: GraphServiceClient = createGraphServiceClient(requestAdapter);
-    // log("graphServiceClient initialitzed!");
 
     try {
-        
-        // let MaInfoID = (await graphServiceClient.withUrl("https://graph.microsoft.com/v1.0/sites/senacor.sharepoint.com:/sites/MaInfo/"));
-        
-        const URL_Prefix = "https://graph.microsoft.com/v1.0/sites/";
-
         // -- One-Pager-Test-Folder (MaInfoTest): --
         // https://graph.microsoft.com/v1.0/sites/senacor.sharepoint.com,4f5cf9d4-b4c2-42ef-a638-07c26c927afb,abd184d4-60cb-4448-9e08-a21ed4c873ac/lists/91b65748-3d1e-4a36-9652-06e2816d8b35/items
         // siteURL yields siteID: "senacor.sharepoint.com,4f5cf9d4-b4c2-42ef-a638-07c26c927afb,abd184d4-60cb-4448-9e08-a21ed4c873ac";
 
-        // let siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
-        // let listID: string = "91b65748-3d1e-4a36-9652-06e2816d8b35";
-        // let parentFolderReference: Array<string> = [
-        //     "88295fd0-63b5-45c7-bac0-600799919914"
-        // ]; // TODO: herausfinden, wie man diese automatisch bekommt
+        // const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
+        // const listID: string = "91b65748-3d1e-4a36-9652-06e2816d8b35";
+        // const parentFolderReference: string = "88295fd0-63b5-45c7-bac0-600799919914"; // TODO: herausfinden, wie man diese automatisch bekommt
         
 
         // -- real One-Pager-Folder (MaInfo): --
         // real MAInfo: https://graph.microsoft.com/v1.0/sites/senacor.sharepoint.com,72337cf1-cf56-4998-aa64-52a47efdbf6e,f247cc86-41ce-4e54-895f-61d07d03751e/lists/c70c37c3-6fe6-4316-bb79-6c535e774478/items
         // siteURL yields siteID: "senacor.sharepoint.com,72337cf1-cf56-4998-aa64-52a47efdbf6e,f247cc86-41ce-4e54-895f-61d07d03751e"
         
-        let siteIDAlias: string = "senacor.sharepoint.com:/sites/MaInfo/";
-        let listID = "c70c37c3-6fe6-4316-bb79-6c535e774478";
-        let parentFolderReferences: Array<string> = [
-            "d496d5a9-1ef4-4388-afbe-b54f8fdba5a5",
-
-        ];
+        const siteIDAlias: string = "senacor.sharepoint.com:/sites/MaInfo/";
+        const listID = "c70c37c3-6fe6-4316-bb79-6c535e774478";
+        const parentFolderReferences: string = "d496d5a9-1ef4-4388-afbe-b54f8fdba5a5";
 
 
-        // let siteID: string = (await graphServiceClient.sites.bySiteId(siteIDAlias).get()).id;
-
-        // let siteID: string = (await graphServiceClient.withUrl(URL_Prefix + siteIDAlias).sites.get()).additionalData.id as string;
-        let siteID: string = (await client.api("/sites/" + siteIDAlias).get()).id as string;
+        let siteID: string = (await client.api(`/sites/${siteIDAlias}`).get()).id as string;
         log("siteID", siteID);
 
         // Get all items.
         let onePagerFoldersQuery = client.api(`/sites/${siteID}/lists/${listID}/items`).top(100000); // top 100000 means that we take a maximum of 100000 entries
-        // let onePagerFoldersQuery = graphServiceClient.sites.bySiteId(siteID)
-        //     .lists.byListId(listID).items;
 
 
         // In this variable, there are all folders, documents and subfolders (all elements that can be found recoursively)
@@ -179,12 +140,10 @@ async function run() {
             if (numOfUpToDateFiles < 2) {
                 listOfPeopleWithoutUpToDateOnePagers.push(onePagerFolders[i].webUrl.split("/").pop());
             }
-            // log(onePagerFolders[i]);
         }
         
         log(`${listOfPeopleWithoutUpToDateOnePagers.join("\n")}\nThis are ${listOfPeopleWithoutUpToDateOnePagers.length} People!`);
         // log(`This are ${listOfPeopleWithoutUpToDateOnePagers.length} People!`);
-        // log(onePagerItems);
 
     } catch (e) {
         log(e);
@@ -193,7 +152,9 @@ async function run() {
     console.timeEnd('ProgramRunTime');
 }
 
-// https://graph.microsoft.com/v1.0/sites/senacor.sharepoint.com,4f5cf9d4-b4c2-42ef-a638-07c26c927afb,abd184d4-60cb-4448-9e08-a21ed4c873ac/drives/b!1PlcT8K070KmOAfCbJJ6-9SE0avLYEhEngiiHtTIc6xIV7aRHj02SpZSBuKBbYs1/root:/Aaron_Sirup_1338:/children
 
 // comment out when deployed
 run();
+
+// get elements via drives:
+// https://graph.microsoft.com/v1.0/sites/senacor.sharepoint.com,4f5cf9d4-b4c2-42ef-a638-07c26c927afb,abd184d4-60cb-4448-9e08-a21ed4c873ac/drives/b!1PlcT8K070KmOAfCbJJ6-9SE0avLYEhEngiiHtTIc6xIV7aRHj02SpZSBuKBbYs1/root:/Aaron_Sirup_1338:/children
