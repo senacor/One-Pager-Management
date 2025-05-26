@@ -1,6 +1,6 @@
 import { app, InvocationContext } from "@azure/functions";
 import { isDeviceItemPath } from "./DeviceItemPath";
-import { OnePagerValidation } from "./OnePagerValidation";
+import { OnePagerValidation } from "./validator/OnePagerValidation";
 
 /**
  * Arbeitet die Queue ab.
@@ -8,12 +8,12 @@ import { OnePagerValidation } from "./OnePagerValidation";
  * @param context
  */
 export async function FileChangeQueueTrigger(queueItem: string, context: InvocationContext): Promise<void> {
-    if(isDeviceItemPath(queueItem)) {
+    if(isEmployeeId(queueItem)) {
       context.log(`Processing valid queue item ${queueItem}`);
       const validator = new OnePagerValidation();
-      await validator.validateChangedOnePager(queueItem);
+      await validator.validateOnePagersOfEmployee(queueItem);
     } else {
-      context.error(`Invalid queue item ${queueItem}, not a device item path`);
+      context.error(`Invalid queue item ${queueItem}, not a employee id`);
     }
 }
 
