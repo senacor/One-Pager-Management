@@ -29,7 +29,7 @@ jobs:
         if: ${{ !cancelled() }}       # run this step even if previous step failed
         with:
           name: JEST Tests
-          path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}reports/jest-*.xml'
+          path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/reports/jest-*.xml'
           reporter: jest-junit
 
   check-infra:
