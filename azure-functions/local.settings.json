@@ -6,6 +6,6 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "SHAREPOINT_CLIENT_ID": "1621d264-a7bb-40b6-bfef-9b2839cb7eec",
     "SHAREPOINT_TENANT_ID": "52497ec2-0945-4f55-8021-79766363dd96",
-    "SHAREPOINT_CLIENT_SECRET": "<provide-your-client-secret>"
+    "SHAREPOINT_CLIENT_SECRET": "<add your client secret here>"
   }
 }
