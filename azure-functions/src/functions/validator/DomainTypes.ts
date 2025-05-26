@@ -2,8 +2,8 @@ import { Url } from "url";
 
 export type EmployeeID = string;
 
-export function isEmployeeId(txt: string): txt is EmployeeID {
-  return true;
+export function isEmployeeId(txt: unknown): txt is EmployeeID {
+  return typeof txt === "string";
 }
 
 export type OnePager = {
