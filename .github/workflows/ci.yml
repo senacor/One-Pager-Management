@@ -39,6 +39,34 @@ jobs:
           path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/reports/jest-*.xml'
           reporter: jest-junit
 
+  check-integration:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm ci
+      - run: npm run build
+      - uses: JarvusInnovations/background-action@v1
+        name: Bootstrap System Under Test (SUT)
+        with:
+          working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          run: |
+            echo "Starting Azurite..."
+            npx azurite &
+
+            echo "Starting local Azure Functions..."
+            npx azure-functions-core-tools start &
+          wait-for: 5m
+          wait-on: |
+            http://localhost:7071
+      - run: curl -XPOST --fail-with-body http://localhost:7071/api/validate/1338
+
   check-infra:
     runs-on: ubuntu-latest
     steps:
