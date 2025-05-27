@@ -7,7 +7,6 @@ type OnePagerMap = { [employeeId: EmployeeID]:  OnePager[] | SharePointFolder };
 
 export class SharepointDriveOnePagerRepository implements OnePagerRepository {
     readonly onePagers: OnePagerMap;
-    private loadedOnePagers: boolean = false;
     private client: Client;
 
     private constructor(client: Client,  folders: DriveItem[], onePagerDriveId: string) {
