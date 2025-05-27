@@ -3,7 +3,7 @@ import { Url } from "url";
 export type EmployeeID = string;
 
 export function isEmployeeId(txt: unknown): txt is EmployeeID {
-    return typeof txt === "string";
+    return typeof txt === "string" && /\d+/.test(txt);
 }
 
 export type OnePager = {

@@ -8,6 +8,7 @@ import { SharepointDriveOnePagerRepository } from "./validator/adapter/Sharepoin
 import { ClientSecretCredential } from "@azure/identity";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider.js";
 import { Client } from "@microsoft/microsoft-graph-client";
+import { SharepointListValidationReporter } from "./validator/adapter/SharepointListValidationReporter";
 
 export type QueueItem = { employeeId: string };
 
@@ -50,7 +51,7 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
         context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
         const validator = new OnePagerValidation(
                 await SharepointDriveOnePagerRepository.getInstance(client, siteIDAlias, listName),
-                new InMemoryValidationReporter(),
+                await SharepointListValidationReporter.getInstance(client, siteIDAlias, "onepager-status"),
                 validationRules.lastModifiedRule
             );
         await validator.validateOnePagersOfEmployee(item.employeeId);

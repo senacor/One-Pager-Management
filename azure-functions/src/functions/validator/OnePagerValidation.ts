@@ -22,11 +22,15 @@ export class OnePagerValidation {
         }
 
         const newest = this.selectNewestOnePager(onePagers);
+        console.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
+            console.log(`Employee ${id} has valid OnePagers!`);
             await this.reporter.reportValid(id);
         } else {
+            console.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
             await this.reporter.reportErrors(id, "<not yet implemented>", errors);
         }
     }
