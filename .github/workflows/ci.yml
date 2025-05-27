@@ -24,6 +24,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
+        env:
+            SHAREPOINT_CLIENT_ID: "1621d264-a7bb-40b6-bfef-9b2839cb7eec"
+            SHAREPOINT_TENANT_ID: "52497ec2-0945-4f55-8021-79766363dd96"
+            SHAREPOINT_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}       # run this step even if previous step failed
