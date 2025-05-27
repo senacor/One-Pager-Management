@@ -86,12 +86,12 @@ testFactory(async (data) => {
     for (let employeeId in data) {
         // Ordner anlegen
         let requests = await client.api(`/drives/${onePagerDriveId}/items/root/children`).post({
-            "name": `Name_Vorname_${employeeId}.pptx`,
+            "name": `Name_Vorname_${employeeId}`,
             "folder": { },
             "@microsoft.graph.conflictBehavior": "rename"
         });
         for (let i = 0; i < data[employeeId].length; ++i) {
-            await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i}:/content`).put("iwas");
+            await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i}.pptx:/content`).put("iwas");
         }
     }
 
