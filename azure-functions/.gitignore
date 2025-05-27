@@ -1,7 +1,6 @@
 dist/
 node_modules/
 .tool-versions
-__*
 .vscode/
 reports/
-.azurite
+.azurite/

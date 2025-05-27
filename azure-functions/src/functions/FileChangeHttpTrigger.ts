@@ -1,30 +1,29 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@azure/functions";
-import { EmployeeID } from "./validator/DomainTypes";
+import { EmployeeID, isEmployeeId } from "./validator/DomainTypes";
+import { QueueItem } from "./FileChangeQueueTrigger";
 
 const queueOutput = output.storageQueue({
     queueName: 'onepager-validation-requests',
     connection: '',
 });
 
-interface Body {
-    employee: EmployeeID;
-}
-
 export async function FileChangeHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
 
-    const body = await request.json() as Body;
-    if (!body.employee) {
-        return { status: 400, body: 'Invalid request! Missing "employee" property.' };
+    const id = request.params.employeeid;
+    if (!isEmployeeId(id)) {
+        return { status: 400, body: `Invalid request! ${id} is no valid employee id.` };
     }
 
-    context.extraOutputs.set(queueOutput, body.employee);
-    
-    return { body: `Recieved change notification for: ${body.employee}` };
+    const item: QueueItem = { employeeId: id };
+    context.extraOutputs.set(queueOutput, item);
+
+    return { body: `Received change notification for: ${id}` };
 };
 
 app.http('FileChangeHttpTrigger', {
     methods: ['POST'],
+    route: 'validate/{employeeid}',
     authLevel: 'function',
     handler: FileChangeHttpTrigger,
     extraOutputs: [queueOutput]

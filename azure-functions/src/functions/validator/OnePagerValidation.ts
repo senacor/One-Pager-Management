@@ -17,7 +17,7 @@ export class OnePagerValidation {
         const onePagers = await this.repository.getAllOnePagersOfEmployee(id);
         console.log(`Validating one-pagers for employee ${id}, found ${onePagers ? onePagers.length : 0} one-pagers.`);
         if (!onePagers) {
-            console.log("User is not known!");
+            console.log(`No one-pagers found for employee ${id}.`);
             return;
         }
 
@@ -27,7 +27,7 @@ export class OnePagerValidation {
         if (errors.length === 0) {
             await this.reporter.reportValid(id);
         } else {
-            await this.reporter.reportErrors(id, "<not yet implemented>" , errors);
+            await this.reporter.reportErrors(id, "<not yet implemented>", errors);
         }
     }
 
