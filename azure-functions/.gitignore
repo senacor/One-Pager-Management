@@ -4,4 +4,4 @@ node_modules/
 __*
 .vscode/
 reports/
-AzuriteConfig
+.azurite

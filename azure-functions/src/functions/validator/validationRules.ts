@@ -1,9 +1,10 @@
 import { OnePager, ValidationRule } from "./DomainTypes";
 
 export const lastModifiedRule: ValidationRule = async (onePager: OnePager | undefined) => {
-    // one day are 864 000 000 milliseconds;
-    if (onePager === undefined || Math.floor((Date.now() - onePager?.lastUpdateByEmployee.getTime())/864000000) < 183) {
-        return [];
-    }
-    return ["OLDER_THAN_SIX_MONTHS"];
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    return onePager !== undefined
+        && onePager.hasOwnProperty("lastUpdateByEmployee")
+        && onePager?.lastUpdateByEmployee.getTime() < sixMonthsAgo.getTime() ? ["OLDER_THAN_SIX_MONTHS"] : [];
 };
