@@ -17,17 +17,21 @@ export class OnePagerValidation {
         const onePagers = await this.repository.getAllOnePagersOfEmployee(id);
         console.log(`Validating one-pagers for employee ${id}, found ${onePagers ? onePagers.length : 0} one-pagers.`);
         if (!onePagers) {
-            console.log("User is not known!");
+            console.log(`No one-pagers found for employee ${id}.`);
             return;
         }
 
         const newest = this.selectNewestOnePager(onePagers);
+        console.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
+            console.log(`Employee ${id} has valid OnePagers!`);
             await this.reporter.reportValid(id);
         } else {
-            await this.reporter.reportErrors(id, "<not yet implemented>" , errors);
+            console.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
+            await this.reporter.reportErrors(id, "<not yet implemented>", errors);
         }
     }
 

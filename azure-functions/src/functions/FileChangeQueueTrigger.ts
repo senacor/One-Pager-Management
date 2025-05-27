@@ -8,6 +8,9 @@ import { SharepointDriveOnePagerRepository } from "./validator/adapter/Sharepoin
 import { ClientSecretCredential } from "@azure/identity";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider.js";
 import { Client } from "@microsoft/microsoft-graph-client";
+import { SharepointListValidationReporter } from "./validator/adapter/SharepointListValidationReporter";
+
+export type QueueItem = { employeeId: string };
 
 /**
  * Arbeitet die Queue ab.
@@ -42,17 +45,18 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
         authProvider,
     });
 
+    const item = queueItem as QueueItem;
 
-    if (isEmployeeId(queueItem)) {
-        context.log(`Processing valid queue item ${queueItem}`);
+    if (isEmployeeId(item.employeeId)) {
+        context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
         const validator = new OnePagerValidation(
                 await SharepointDriveOnePagerRepository.getInstance(client, siteIDAlias, listName),
-                new InMemoryValidationReporter(),
+                await SharepointListValidationReporter.getInstance(client, siteIDAlias, "onepager-status"),
                 validationRules.lastModifiedRule
             );
-        await validator.validateOnePagersOfEmployee(queueItem);
+        await validator.validateOnePagersOfEmployee(item.employeeId);
     } else {
-        context.error(`Invalid queue item ${queueItem}, not a employee id`);
+        context.error(`Invalid queue item ${JSON.stringify(queueItem)}, not a employee id`);
     }
 }
 

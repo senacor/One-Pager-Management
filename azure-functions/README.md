@@ -55,18 +55,14 @@ func azure functionapp publish poc-one-pager
 
 To run your Azure Functions locally and use Azurite for local Azure Storage emulation, follow these steps:
 
-1. **Install Azurite (if not already installed):**
-   ```sh
-   npm install -g azurite
-   ```
 
-2. **Start Azurite in a subfolder (recommended):**
+1. **Start Azurite in a subfolder (recommended):**
    ```sh
-   azurite --location ./.azurite
+   npx azurite --location ./.azurite
    ```
    This will store Azurite's data files in the `.azurite` folder in your project root.
 
-3. **Start the Azure Functions host:**
+2. **Start the Azure Functions host:**
    ```sh
    func start
    ```
