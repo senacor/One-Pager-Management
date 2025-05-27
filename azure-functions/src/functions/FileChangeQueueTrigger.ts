@@ -3,6 +3,9 @@ import { isEmployeeId } from "./validator/DomainTypes";
 import { OnePagerValidation } from "./validator/OnePagerValidation";
 import { InMemoryOnePagerRepository } from "./validator/adapter/InMemoryOnePagerRepository";
 import { InMemoryValidationReporter } from "./validator/adapter/InMemoryValidationReporter";
+import * as validationRules from "./validator/validationRules";
+import { GraphAPIRepository } from "./validator/adapter/GraphAPIRepository";
+
 
 /**
  * Arbeitet die Queue ab.
@@ -10,21 +13,25 @@ import { InMemoryValidationReporter } from "./validator/adapter/InMemoryValidati
  * @param context
  */
 export async function FileChangeQueueTrigger(queueItem: unknown, context: InvocationContext): Promise<void> {
-  if (isEmployeeId(queueItem)) {
-    context.log(`Processing valid queue item ${queueItem}`);
-    const validator = new OnePagerValidation(
-      new InMemoryOnePagerRepository({}),
-      new InMemoryValidationReporter(),
-      async (onePager) => []
-    );
-    await validator.validateOnePagersOfEmployee(queueItem);
-  } else {
-    context.error(`Invalid queue item ${queueItem}, not a employee id`);
-  }
+    // console.log = context.log;
+    // console.error = context.error;
+    // console.warn = context.warn;
+
+    if (isEmployeeId(queueItem)) {
+        context.log(`Processing valid queue item ${queueItem}`);
+        const validator = new OnePagerValidation(
+                new GraphAPIRepository(),
+                new InMemoryValidationReporter(),
+                validationRules.lastModifiedRule
+            );
+        await validator.validateOnePagersOfEmployee(queueItem);
+    } else {
+        context.error(`Invalid queue item ${queueItem}, not a employee id`);
+    }
 }
 
 app.storageQueue('FileChangeQueueTrigger', {
-  queueName: 'onepager-validation-requests',
-  connection: '',
-  handler: FileChangeQueueTrigger
+    queueName: 'onepager-validation-requests',
+    connection: '',
+    handler: FileChangeQueueTrigger
 });
