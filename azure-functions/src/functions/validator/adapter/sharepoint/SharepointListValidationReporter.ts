@@ -1,5 +1,5 @@
 import { Client } from "@microsoft/microsoft-graph-client";
-import { List, ListItem } from "@microsoft/microsoft-graph-types";
+import { List, ListItem, Site } from "@microsoft/microsoft-graph-types";
 import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class SharepointListValidationReporter implements ValidationReporter {
@@ -14,13 +14,21 @@ export class SharepointListValidationReporter implements ValidationReporter {
     }
 
     public static async getInstance(client: Client, siteAlias: string, listDisplayName: string) {
-        const maInfoSiteId = (await client.api(`/sites/${siteAlias}`).get()).id;
-        const listId = ((await client.api(`/sites/${maInfoSiteId}/lists`).get()) as { value: List[] }).value
-                .filter(list => list.displayName === listDisplayName)[0].id;
+        const maInfoSite = await client.api(`/sites/${siteAlias}`).get() as Site | undefined;
+        if (!maInfoSite || !maInfoSite.id) {
+            throw new Error(`Cannot find site with alias ${siteAlias}!`);
+        }
+
+        const { value: lists } = await client.api(`/sites/${maInfoSite.id}/lists`).get() as { value?: List[] }
+        if (!lists) {
+            throw new Error(`Cannot fetch lists for site with alias ${siteAlias}!`);
+        }
+
+        const [{ id: listId }] = lists.filter(list => list.displayName === listDisplayName);
         if (!listId) {
             throw new Error(`Cannot find list with name ${listDisplayName} on site ${siteAlias}!`);
         }
-        return new SharepointListValidationReporter(client, listId, maInfoSiteId);
+        return new SharepointListValidationReporter(client, listId, maInfoSite.id);
     }
 
     async reportValid(id: EmployeeID): Promise<void> {
@@ -55,36 +63,29 @@ export class SharepointListValidationReporter implements ValidationReporter {
             return [];
         }
 
-        let item: ListItem = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).select("fields").get() as ListItem;
+        let item = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).select("fields").get() as ListItem;
         if (!item.fields) {
             return [];
         } else {
             //TODO: runtime type check
-            return (item.fields as {[key: string]: string})["Festgestellte_Fehler"].split("\n") as ValidationError[];
+            return (item.fields as { [key: string]: string })["Festgestellte_Fehler"].split("\n") as ValidationError[];
         }
     }
 
     private async getItemIdOfEmployee(id: EmployeeID): Promise<string | undefined> {
-
-        const entries = ((await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).filter("fields/MitarbeiterID eq '" + id + "'").get()) as { value: ListItem[] }).value;
-
-
-        if (entries.length === 1) {
-            return entries[0].id;
-        }
-
-        return undefined;
+        const { value: entries } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).filter("fields/MitarbeiterID eq '" + id + "'").get() as { value?: ListItem[] };
+        const [entry] = entries || [];
+        return entry?.id;
 
     }
 
     async clearList(): Promise<void> {
-        let items = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).get() as {value: ListItem[]};
+        let { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).get() as { value?: ListItem[] };
 
-        let promiseList = [];
-        for (let item of items.value) {
-            promiseList.push(this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`).delete());
+        if (items) {
+            await Promise.all(items.map(item =>
+                this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`).delete()
+            ));
         }
-
-        await Promise.all(promiseList);
     }
 }

@@ -1,6 +1,7 @@
 param functionAppName string
 param location string = resourceGroup().location
 param sharepointOnePagerSiteName string = 'senacor.sharepoint.com:/sites/MaInfo'
+param sharepointResultSiteName string = 'senacor.sharepoint.com:/teams/MaInfoTest'
 param sharepointClientId string = '1621d264-a7bb-40b6-bfef-9b2839cb7eec'
 param sharepointTenantId string = '52497ec2-0945-4f55-8021-79766363dd96'
 @secure()
@@ -49,8 +50,10 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: '~22' }
         { name: 'STORAGE_SOURCE', value: 'sharepoint' }
         { name: 'SHAREPOINT_ONE_PAGER_SITE_NAME', value: sharepointOnePagerSiteName }
+        { name: 'SHAREPOINT_VALIDATION_SITE_NAME', value: sharepointResultSiteName }
         { name: 'SHAREPOINT_CLIENT_ID', value: sharepointClientId }
         { name: 'SHAREPOINT_TENANT_ID', value: sharepointTenantId }
+        { name: 'SHAREPOINT_API_LOGGING', value: 'true' }
         {
           name: 'SHAREPOINT_CLIENT_SECRET'
           value: '@Microsoft.KeyVault(SecretUri=${sharepointClientSecretSecret.properties.secretUriWithVersion})'
