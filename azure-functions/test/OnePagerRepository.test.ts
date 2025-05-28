@@ -1,6 +1,6 @@
 import { ClientSecretCredential } from "@azure/identity";
-import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/InMemoryOnePagerRepository";
-import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/SharepointDriveOnePagerRepository";
+import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
+import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { EmployeeID, OnePager, OnePagerRepository } from "../src/functions/validator/DomainTypes";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
 import { Client } from "@microsoft/microsoft-graph-client";
@@ -8,7 +8,7 @@ import { DriveItem } from "@microsoft/microsoft-graph-types";
 import { promises as fs } from "fs";
 import path from "path";
 import { tmpdir } from 'node:os';
-import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/LocalFileOnePagerRepository";
+import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository";
 import { createSharepointClient, hasSharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
 
 type RepoFactory = (onePagers: { [employeeId: EmployeeID]: OnePager[] }) => Promise<OnePagerRepository>;
@@ -16,11 +16,11 @@ type RepoFactory = (onePagers: { [employeeId: EmployeeID]: OnePager[] }) => Prom
 const testFactory = (name: string, factory: RepoFactory) => {
     describe(name, () => {
 
-        it("should return nothing for an unknown employee", async () => {
+        it("should return empty array for an unknown employee", async () => {
             const rep: OnePagerRepository = await factory({});
             const unknownEmployeeId: EmployeeID = "unknown-employee-id";
 
-            await expect(rep.getAllOnePagersOfEmployee(unknownEmployeeId)).resolves.toEqual(undefined);
+            await expect(rep.getAllOnePagersOfEmployee(unknownEmployeeId)).resolves.toEqual([]);
         });
 
         it("should return an empty array for an existing employee without any one-pager", async () => {
@@ -45,12 +45,13 @@ const testFactory = (name: string, factory: RepoFactory) => {
         it("should not return one-pager of a different employee", async () => {
             const id: EmployeeID = "existing-employee-id";
             const rep: OnePagerRepository = await factory({
+                [id]: [],
                 other: [
                     { lastUpdateByEmployee: new Date(), downloadURL: "" }
                 ]
             });
 
-            await expect(rep.getAllOnePagersOfEmployee(id)).resolves.toEqual(undefined);
+            await expect(rep.getAllOnePagersOfEmployee(id)).resolves.toEqual([]);
         });
 
         it("should return one-pagers with  URLs as downloadURLs", async () => {

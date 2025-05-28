@@ -12,7 +12,7 @@ export type OnePager = {
 };
 
 export interface OnePagerRepository {
-    getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[] | undefined>;
+    getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]>;
 }
 
 export interface EmployeeRepository {

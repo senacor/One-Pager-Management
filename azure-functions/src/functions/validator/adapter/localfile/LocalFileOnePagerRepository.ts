@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { EmployeeID, OnePager, OnePagerRepository } from "../DomainTypes";
+import { EmployeeID, OnePager, OnePagerRepository } from "../../DomainTypes";
 
 export class LocalFileOnePagerRepository implements OnePagerRepository {
     private readonly dataDir: string;
@@ -17,13 +17,13 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         await fs.mkdir(this.dataDir, { recursive: true });
     }
 
-    async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[] | undefined> {
+    async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         await this.ensureDataDir();
         try {
             const file = await fs.readFile(this.onePagerFile(employeeId), "utf-8");
             return JSON.parse(file) as OnePager[];
         } catch (e) {
-            return undefined;
+            return [];
         }
     }
 

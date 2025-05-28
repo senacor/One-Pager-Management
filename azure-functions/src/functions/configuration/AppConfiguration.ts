@@ -1,21 +1,24 @@
-import { InMemoryOnePagerRepository } from "../validator/adapter/InMemoryOnePagerRepository";
-import { InMemoryValidationReporter } from "../validator/adapter/InMemoryValidationReporter";
-import { LocalFileOnePagerRepository } from "../validator/adapter/LocalFileOnePagerRepository";
-import { LocalFileValidationReporter } from "../validator/adapter/LocalFileValidationReporter";
-import { OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
-import { SharepointDriveOnePagerRepository } from "../validator/adapter/SharepointDriveOnePagerRepository";
-import { SharepointListValidationReporter } from "../validator/adapter/SharepointListValidationReporter";
+import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemoryOnePagerRepository";
+import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
+import { LocalFileOnePagerRepository } from "../validator/adapter/localfile/LocalFileOnePagerRepository";
+import { LocalFileValidationReporter } from "../validator/adapter/localfile/LocalFileValidationReporter";
+import { EmployeeRepository, isEmployeeId, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
+import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
+import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
 import { ClientSecretCredential } from "@azure/identity";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
 import { Client } from "@microsoft/microsoft-graph-client";
+import { LocalFileEmployeeRepository } from "../validator/adapter/localfile/LocalFileEmployeeRepository";
 
 export type AppConfiguration = {
-    repository: OnePagerRepository;
-    reporter: ValidationReporter;
+    onePagers: () => Promise<OnePagerRepository>;
+    employees: () => Promise<EmployeeRepository>;
+    reporter: () => Promise<ValidationReporter>;
 }
 
 type MemoryStorageOptions = {
     STORAGE_SOURCE: "memory";
+    EMPLOYEES?: string; // Comma-separated list of employee IDs to pre-populate the in-memory repository
 }
 
 type LocalStorageOptions = {
@@ -51,24 +54,28 @@ export async function loadConfigFromEnv(overrides?: Options): Promise<AppConfigu
     switch (opts.STORAGE_SOURCE) {
         case "memory":
             console.log("Using in-memory storage");
+            const ids = opts.EMPLOYEES ? opts.EMPLOYEES.split(",").map(id => id.trim()).filter(id => isEmployeeId(id)) : [];
+            const repo = new InMemoryOnePagerRepository({});
             return {
-                repository: new InMemoryOnePagerRepository({}),
-                reporter: new InMemoryValidationReporter()
+                onePagers: async () => repo,
+                employees: async () => repo,
+                reporter: async () => new InMemoryValidationReporter()
             };
         case "localfile":
             const dataDir = opts.DATA_DIR || process.cwd();
             console.log(`Using local file storage at ${dataDir}`);
             return {
-                repository: new LocalFileOnePagerRepository(dataDir),
-                reporter: new LocalFileValidationReporter(dataDir)
+                onePagers: async () => new LocalFileOnePagerRepository(dataDir),
+                employees: async () => new LocalFileEmployeeRepository(dataDir),
+                reporter: async () => new LocalFileValidationReporter(dataDir)
             };
         case "sharepoint":
             console.log("Using SharePoint storage");
-            return await getSharepointConfig(opts);
+            return getSharepointConfig(opts);
     }
 }
 
-async function getSharepointConfig(opts: SharepointStorageOptions) {
+function getSharepointConfig(opts: SharepointStorageOptions) {
     const client = createSharepointClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
@@ -83,9 +90,17 @@ async function getSharepointConfig(opts: SharepointStorageOptions) {
     console.log(`Fetching OnePagers from SharePoint storage with site: ${onePagerSiteName}, drive: ${onePagerDriveName}`);
     console.log(`Storing validation results on SharePoint list with site: ${validationSiteName}, name: ${validationResultListName}`);
 
+    var promise: Promise<SharepointDriveOnePagerRepository>;
+    var repo = () => {
+        if(!promise) {
+            promise = SharepointDriveOnePagerRepository.getInstance(client, onePagerSiteName, onePagerDriveName);
+        }
+        return promise;
+    }
     return {
-        repository: await SharepointDriveOnePagerRepository.getInstance(client, onePagerSiteName, onePagerDriveName),
-        reporter: await SharepointListValidationReporter.getInstance(client, validationSiteName, validationResultListName)
+        employees: repo,
+        onePagers: repo,
+        reporter: () => SharepointListValidationReporter.getInstance(client, validationSiteName, validationResultListName)
     };
 }
 

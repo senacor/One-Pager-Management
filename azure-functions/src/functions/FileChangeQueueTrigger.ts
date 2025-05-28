@@ -1,14 +1,14 @@
 import { app, InvocationContext } from "@azure/functions";
 import { isEmployeeId } from "./validator/DomainTypes";
 import { OnePagerValidation } from "./validator/OnePagerValidation";
-import { InMemoryOnePagerRepository } from "./validator/adapter/InMemoryOnePagerRepository";
+import { InMemoryOnePagerRepository } from "./validator/adapter/memory/InMemoryOnePagerRepository";
 import { InMemoryValidationReporter } from "./validator/adapter/InMemoryValidationReporter";
 import * as validationRules from "./validator/validationRules";
-import { SharepointDriveOnePagerRepository } from "./validator/adapter/SharepointDriveOnePagerRepository";
+import { SharepointDriveOnePagerRepository } from "./validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { ClientSecretCredential } from "@azure/identity";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider.js";
 import { Client } from "@microsoft/microsoft-graph-client";
-import { SharepointListValidationReporter } from "./validator/adapter/SharepointListValidationReporter";
+import { SharepointListValidationReporter } from "./validator/adapter/sharepoint/SharepointListValidationReporter";
 import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 
 export type QueueItem = { employeeId: string };
@@ -26,7 +26,7 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
 
         const config = await loadConfigFromEnv();
         const validator = new OnePagerValidation(
-            config.repository,
+            config.onePagers,
             config.reporter,
             validationRules.lastModifiedRule
         );

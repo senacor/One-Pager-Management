@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { EmployeeID, ValidationError, ValidationReporter } from "../DomainTypes";
+import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class LocalFileValidationReporter implements ValidationReporter {
     private readonly dataDir: string;
@@ -26,7 +26,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
         await this.ensureDataDir();
         await fs.writeFile(this.validationFile(id), JSON.stringify(errors));
     }
-    
+
     async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
         await this.ensureDataDir();
         try {
