@@ -2,6 +2,8 @@ import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository, V
 import fs from "node:fs";
 import path from "path";
 import PPTX from "nodejs-pptx";
+import { PowerPointFactory } from "nodejs-pptx/lib/factories/index.js";
+import { Presentation } from "nodejs-pptx/lib/presentation.js";
 
 export class OnePagerValidation {
     private readonly logger: Logger;
@@ -62,37 +64,44 @@ export class OnePagerValidation {
         if (onePager.downloadURL == "") {
             return; // needed for testing since we do not use real URLs in some tests
         }
-        let logger = this.logger;
+        // let logger = this.logger;
+
+
 
         const file = await fetch(onePager.downloadURL);
         const fileInBytes = await file.bytes();
 
-        const filepath = "PPTX";
-        const filename = "myPPT.pptx";
+        let presentation = new Presentation();
+        let pptxFactory = new PowerPointFactory(presentation, undefined);
+        await pptxFactory.loadFromRawFileData(fileInBytes);
 
-        if (!fs.existsSync(filepath)){
-            fs.mkdirSync(filepath);
-        }
+        this.logger.log(pptxFactory.content);
+        // const filepath = "PPTX";
+        // const filename = "myPPT.pptx";
 
-        //write file; import fs has to be included
-        try {
-            fs.writeFileSync(path.join(filepath, filename), fileInBytes);
-            logger.log("Written file to disk!");
-        } catch (e) {
-            logger.log(e);
-        }
+        // if (!fs.existsSync(filepath)){
+        //     fs.mkdirSync(filepath);
+        // }
 
-        const pptx = new PPTX.Composer();
-        // await pptx.load();
-        await pptx.load(path.join(filepath, filename));
-        await pptx.compose(async (pres: any) =>  {
-            pres.getSlide(1).content["p:sld"]["p:cSld"][0]["p:spTree"][0]["p:sp"][1]["p:txBody"][0]["a:p"][0]["a:r"][0]["a:t"][0] = "Irgendein Name";
-            logger.log("PPT:", JSON.stringify(pres.getSlide(1).content));
-            // let slide = pres.getSlide(1);
-            //slide.moveTo(2);
-        });
-        await pptx.save(path.join(filepath, filename));
+        // //write file; import fs has to be included
+        // try {
+        //     fs.writeFileSync(path.join(filepath, filename), fileInBytes);
+        //     logger.log("Written file to disk!");
+        // } catch (e) {
+        //     logger.log(e);
+        // }
 
-        logger.log("Downloaded OnePager!");
+        // const pptx = new PPTX.Composer();
+        // // await pptx.load();
+        // await pptx.load(path.join(filepath, filename));
+        // await pptx.compose(async (pres: any) =>  {
+        //     pres.getSlide(1).content["p:sld"]["p:cSld"][0]["p:spTree"][0]["p:sp"][1]["p:txBody"][0]["a:p"][0]["a:r"][0]["a:t"][0] = "Irgendein Name";
+        //     logger.log("PPT:", JSON.stringify(pres.getSlide(1).content));
+        //     // let slide = pres.getSlide(1);
+        //     //slide.moveTo(2);
+        // });
+        // await pptx.save(path.join(filepath, filename));
+
+        // logger.log("Downloaded OnePager!");
     }
 }
