@@ -1,15 +1,20 @@
 import { ClientSecretCredential } from "@azure/identity";
-import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/InMemoryOnePagerRepository";
-import { InMemoryValidationReporter } from "../src/functions/validator/adapter/InMemoryValidationReporter";
-import { SharepointListValidationReporter } from "../src/functions/validator/adapter/SharepointListValidationReporter";
+import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
+import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
+import { SharepointListValidationReporter } from "../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter";
 import { EmployeeID, OnePagerRepository, ValidationReporter } from "../src/functions/validator/DomainTypes";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
 import { Client } from "@microsoft/microsoft-graph-client";
+import { LocalFileValidationReporter } from "../src/functions/validator/adapter/localfile/LocalFileValidationReporter";
+import { promises as fs } from "fs";
+import path from "path";
+import { tmpdir } from 'node:os';
+import { createSharepointClient, hasSharepointClientOptions, SharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
 
 type ReporterFactory = () => Promise<ValidationReporter>;
 
-const testFactory = (reporterFactory: ReporterFactory) => {
-    describe("ValidationReporter", () => {
+const testFactory = (name: string, reporterFactory: ReporterFactory) => {
+    describe(name, () => {
 
         it("should return no errors without any report", async () => {
             const reporter = await reporterFactory();
@@ -20,9 +25,9 @@ const testFactory = (reporterFactory: ReporterFactory) => {
         it("should return errors when reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_GERMAN_VERSION"]);
+            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_GERMAN_VERSION"]);
+            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
         });
 
         it("should clean up errors when valid is reported", async () => {
@@ -37,7 +42,7 @@ const testFactory = (reporterFactory: ReporterFactory) => {
         it("should not return errors of other employee", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("other-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_GERMAN_VERSION"]);
+            await reporter.reportErrors("other-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
             await expect(reporter.getResultFor("employee-id")).resolves.toEqual([]);
         });
@@ -55,36 +60,33 @@ const testFactory = (reporterFactory: ReporterFactory) => {
             const reporter = await reporterFactory();
 
             await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
-            await reporter.reportErrors("employee-id", "Employee Name", ["MISSING_ENGLISH_VERSION"]);
+            await reporter.reportErrors("employee-id", "Employee Name", ["MISSING_ONE_PAGER"]);
 
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["MISSING_ENGLISH_VERSION"]);
+            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["MISSING_ONE_PAGER"]);
         });
 
     });
 }
 
-testFactory(async () => new InMemoryValidationReporter());
-testFactory(async () => {
-    const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
+testFactory("InMemoryValidationReporter", async () => new InMemoryValidationReporter());
 
-    const credential: ClientSecretCredential = new ClientSecretCredential(
-        process.env.SHAREPOINT_TENANT_ID as string,
-        process.env.SHAREPOINT_CLIENT_ID as string,
-        process.env.SHAREPOINT_CLIENT_SECRET as string,
-    );
+const opts = process.env
+if (hasSharepointClientOptions(opts)) {
+    testFactory("SharepointListValidationReporter", async () => {
+        const client = createSharepointClient(opts)
 
-    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-        scopes: ['https://graph.microsoft.com/.default']
+        let reporter = await SharepointListValidationReporter.getInstance(
+            client, "senacor.sharepoint.com:/teams/MaInfoTest", "one-pager-status-automated-test-env"
+        );
+
+        await reporter.clearList();
+
+        return reporter;
     });
+}
 
-    const client = Client.initWithMiddleware({
-        debugLogging: true,
-        authProvider,
-    });
-    let reporter = await SharepointListValidationReporter.getInstance(client, siteIDAlias, "one-pager-status-automated-test-env");
-
-    await reporter.clearList();
-
-    return reporter;
+testFactory("LocalFileValidationReporter", async () => {
+    const tmp = await fs.mkdtemp(path.join(tmpdir(), "validation-reports-"))
+    return new LocalFileValidationReporter(tmp);
 });

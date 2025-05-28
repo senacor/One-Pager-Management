@@ -1,10 +1,27 @@
-import { OnePager, ValidationRule } from "./DomainTypes";
+import { ValidationRule } from "./DomainTypes";
 
-export const lastModifiedRule: ValidationRule = async (onePager: OnePager | undefined) => {
+export const hasOnePager: ValidationRule = async onePager => onePager ? [] : ["MISSING_ONE_PAGER"];
+
+export const lastModifiedRule: ValidationRule = async onePager => {
+    if(!onePager) {
+        return [];
+    }
+
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    // return ["OLDER_THAN_SIX_MONTHS"];
-    return onePager !== undefined
-        && onePager.hasOwnProperty("lastUpdateByEmployee")
-        && onePager?.lastUpdateByEmployee.getTime() < sixMonthsAgo.getTime() ? ["OLDER_THAN_SIX_MONTHS"] : [];
+    return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
 };
+
+export const validationRules = {
+    hasOnePager,
+    lastModifiedRule
+}
+
+export const allRules = combineRules(...Object.values(validationRules));
+
+export function combineRules(...rules: ValidationRule[]): ValidationRule {
+    return async onePager => {
+        const errors = await Promise.all(rules.map(rule => rule(onePager)));
+        return errors.flat();
+    };
+}

@@ -1,4 +1,4 @@
-import { EmployeeID, ValidationError, ValidationReporter } from "../DomainTypes";
+import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class InMemoryValidationReporter implements ValidationReporter {
 

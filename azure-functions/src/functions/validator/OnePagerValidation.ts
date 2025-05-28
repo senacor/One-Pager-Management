@@ -1,25 +1,26 @@
-import { EmployeeID, OnePager, OnePagerRepository, ValidationError, ValidationReporter, ValidationRule } from "./DomainTypes";
-
-
+import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
 
 export class OnePagerValidation {
-    readonly repository: OnePagerRepository;
-    readonly reporter: ValidationReporter;
-    readonly validationRule: ValidationRule;
+    private readonly onePagers: OnePagerRepository;
+    private readonly employees: EmployeeRepository;
+    private readonly reporter: ValidationReporter;
+    private readonly validationRule: ValidationRule;
 
-    constructor(repository: OnePagerRepository, reporter: ValidationReporter, validationRule: ValidationRule) {
-        this.repository = repository;
+    constructor(onePagers: OnePagerRepository, employees: EmployeeRepository, reporter: ValidationReporter, validationRule: ValidationRule) {
+        this.onePagers = onePagers;
+        this.employees = employees;
         this.reporter = reporter;
         this.validationRule = validationRule;
     }
 
     async validateOnePagersOfEmployee(id: EmployeeID) {
-        const onePagers = await this.repository.getAllOnePagersOfEmployee(id);
-        console.log(`Validating one-pagers for employee ${id}, found ${onePagers ? onePagers.length : 0} one-pagers.`);
-        if (!onePagers) {
-            console.log(`No one-pagers found for employee ${id}.`);
+        if (!(await this.employees.getAllEmployees()).includes(id)) {
+            console.log(`Employee ${id} does not exist.`);
             return;
         }
+
+        const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
+        console.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
 
         const newest = this.selectNewestOnePager(onePagers);
         console.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
