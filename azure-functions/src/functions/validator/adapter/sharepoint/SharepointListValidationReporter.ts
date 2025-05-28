@@ -1,6 +1,6 @@
 import { Client } from "@microsoft/microsoft-graph-client";
-import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 import { List, ListItem } from "@microsoft/microsoft-graph-types";
+import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class SharepointListValidationReporter implements ValidationReporter {
     private readonly listId: string;

@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
+import { EmployeeID, EmployeeRepository } from "../../DomainTypes";
 
 export class LocalFileEmployeeRepository implements EmployeeRepository {
     private readonly dataDir: string;

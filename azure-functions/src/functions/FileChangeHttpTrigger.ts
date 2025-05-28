@@ -1,9 +1,10 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@azure/functions";
-import { EmployeeID, isEmployeeId } from "./validator/DomainTypes";
-import { QueueItem } from "./FileChangeQueueTrigger";
+import { onepagerValidationRequests, QueueItem } from "./FileChangeQueueTrigger";
+import { loadConfigFromEnv } from "./configuration/AppConfiguration";
+import { isEmployeeId } from "./validator/DomainTypes";
 
 const queueOutput = output.storageQueue({
-    queueName: 'onepager-validation-requests',
+    queueName: onepagerValidationRequests,
     connection: '',
 });
 
@@ -13,6 +14,11 @@ export async function FileChangeHttpTrigger(request: HttpRequest, context: Invoc
     const id = request.params.employeeid;
     if (!isEmployeeId(id)) {
         return { status: 400, body: `Invalid request! ${id} is no valid employee id.` };
+    }
+
+    const employees = await loadConfigFromEnv().employees();
+    if( !(await employees.getAllEmployees()).includes(id)) {
+        return { status: 404, body: `Employee not found: ${id}` };
     }
 
     const item: QueueItem = { employeeId: id };

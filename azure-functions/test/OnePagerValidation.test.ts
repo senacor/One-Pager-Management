@@ -1,8 +1,7 @@
-import { OnePagerValidation } from "../src/functions/validator/OnePagerValidation";
-import { DeviceItemPath } from "../src/functions/DeviceItemPath";
-import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
 import { OnePager, ValidationError, ValidationReporter } from "../src/functions/validator/DomainTypes";
+import { OnePagerValidation } from "../src/functions/validator/OnePagerValidation";
 import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
+import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
 
 describe("OnePagerValidation", () => {
 
@@ -14,7 +13,7 @@ describe("OnePagerValidation", () => {
 
     it("should not report errors for unknown employee", async () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, async op => ["MISSING_GERMAN_VERSION"]);
+        const validation = new OnePagerValidation(repo, repo, reporter, async op => ["MISSING_ONE_PAGER"]);
 
         await validation.validateOnePagersOfEmployee("unknown-employee-id");
 
@@ -24,11 +23,11 @@ describe("OnePagerValidation", () => {
     it("should report errors for employee without one-pager", async () => {
         const id = "employee-id";
         const repo = new InMemoryOnePagerRepository({ [id]: [] });
-        const validation = new OnePagerValidation(repo, repo, reporter, async op => op === undefined ? ["MISSING_GERMAN_VERSION"] : []);
+        const validation = new OnePagerValidation(repo, repo, reporter, async op => op === undefined ? ["MISSING_ONE_PAGER"] : []);
 
         await validation.validateOnePagersOfEmployee(id);
 
-        await expect(await reporter.getResultFor(id)).toEqual(["MISSING_GERMAN_VERSION"]);
+        await expect(await reporter.getResultFor(id)).toEqual(["MISSING_ONE_PAGER"]);
     });
 
     it("should report errors for employee with invalid one-pager", async () => {

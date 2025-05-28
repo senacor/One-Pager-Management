@@ -1,5 +1,3 @@
-import { Url } from "url";
-
 export type EmployeeID = string;
 
 export function isEmployeeId(txt: unknown): txt is EmployeeID {
@@ -19,7 +17,7 @@ export interface EmployeeRepository {
     getAllEmployees(): Promise<EmployeeID[]>;
 }
 
-export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ENGLISH_VERSION" | "MISSING_GERMAN_VERSION";
+export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER";
 
 export interface ValidationReporter {
     reportValid(id: EmployeeID): Promise<void>;

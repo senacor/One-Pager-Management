@@ -1,6 +1,6 @@
-import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
 import { Client } from "@microsoft/microsoft-graph-client";
 import { DriveItem } from "@microsoft/microsoft-graph-types";
+import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
 
 type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };

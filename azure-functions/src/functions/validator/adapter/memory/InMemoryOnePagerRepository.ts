@@ -1,6 +1,5 @@
 import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
 
-
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] };
 
 export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeRepository {

@@ -25,9 +25,9 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should return errors when reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_GERMAN_VERSION"]);
+            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_GERMAN_VERSION"]);
+            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
         });
 
         it("should clean up errors when valid is reported", async () => {
@@ -42,7 +42,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should not return errors of other employee", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("other-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_GERMAN_VERSION"]);
+            await reporter.reportErrors("other-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
             await expect(reporter.getResultFor("employee-id")).resolves.toEqual([]);
         });
@@ -60,10 +60,10 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const reporter = await reporterFactory();
 
             await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
-            await reporter.reportErrors("employee-id", "Employee Name", ["MISSING_ENGLISH_VERSION"]);
+            await reporter.reportErrors("employee-id", "Employee Name", ["MISSING_ONE_PAGER"]);
 
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["MISSING_ENGLISH_VERSION"]);
+            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["MISSING_ONE_PAGER"]);
         });
 
     });

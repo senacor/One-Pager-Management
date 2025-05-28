@@ -1,6 +1,4 @@
-import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository, ValidationError, ValidationReporter, ValidationRule } from "./DomainTypes";
-
-
+import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
 
 export class OnePagerValidation {
     private readonly onePagers: OnePagerRepository;

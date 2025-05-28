@@ -1,14 +1,14 @@
-import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemoryOnePagerRepository";
-import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
+import { ClientSecretCredential } from "@azure/identity";
+import { Client } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
+import { LocalFileEmployeeRepository } from "../validator/adapter/localfile/LocalFileEmployeeRepository";
 import { LocalFileOnePagerRepository } from "../validator/adapter/localfile/LocalFileOnePagerRepository";
 import { LocalFileValidationReporter } from "../validator/adapter/localfile/LocalFileValidationReporter";
-import { EmployeeRepository, isEmployeeId, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
+import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemoryOnePagerRepository";
+import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
 import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
-import { ClientSecretCredential } from "@azure/identity";
-import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
-import { Client } from "@microsoft/microsoft-graph-client";
-import { LocalFileEmployeeRepository } from "../validator/adapter/localfile/LocalFileEmployeeRepository";
+import { EmployeeRepository, isEmployeeId, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
 
 export type AppConfiguration = {
     onePagers: () => Promise<OnePagerRepository>;
@@ -38,7 +38,7 @@ export type SharepointClientOptions = {
     SHAREPOINT_TENANT_ID?: string;
     SHAREPOINT_CLIENT_ID?: string;
     SHAREPOINT_CLIENT_SECRET?: string;
-    DEBUG_LOGGING?: string;
+    SHAREPOINT_API_LOGGING?: string;
 }
 
 export function hasSharepointClientOptions(opts: any): opts is SharepointClientOptions {
@@ -47,7 +47,7 @@ export function hasSharepointClientOptions(opts: any): opts is SharepointClientO
 
 type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOptions
 
-export async function loadConfigFromEnv(overrides?: Options): Promise<AppConfiguration> {
+export function loadConfigFromEnv(overrides?: Options): AppConfiguration {
     // defaults to memory
     const opts: Options = { ...{ STORAGE_SOURCE: "memory" }, ...(overrides ? { ...process.env, ...overrides } : { ...process.env }) };
 
@@ -82,7 +82,7 @@ function getSharepointConfig(opts: SharepointStorageOptions) {
         throw new Error("Missing SharePoint One Pager site name in environment variables");
     }
 
-    const onePagerSiteName = opts.SHAREPOINT_ONE_PAGER_SITE_NAME //"senacor.sharepoint.com:/teams/MaInfoTest";
+    const onePagerSiteName = opts.SHAREPOINT_ONE_PAGER_SITE_NAME;
     const onePagerDriveName = opts.SHAREPOINT_ONE_PAGER_DRIVE_NAME || "01_OnePager";
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
     const validationResultListName = opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || "onepager-status";
@@ -116,7 +116,7 @@ export function createSharepointClient(opts: SharepointClientOptions) {
     );
 
     return Client.initWithMiddleware({
-        debugLogging: opts.DEBUG_LOGGING === "true",
+        debugLogging: opts.SHAREPOINT_API_LOGGING === "true",
         authProvider: new TokenCredentialAuthenticationProvider(credential, {
             scopes: ['https://graph.microsoft.com/.default']
         }),

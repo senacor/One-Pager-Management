@@ -1,18 +1,17 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@azure/functions";
-import { EmployeeID, EmployeeRepository, isEmployeeId, OnePagerRepository } from "./validator/DomainTypes";
-import { QueueItem } from "./FileChangeQueueTrigger";
+import { onepagerValidationRequests, QueueItem } from "./FileChangeQueueTrigger";
+import { loadConfigFromEnv } from "./configuration/AppConfiguration";
+import { EmployeeRepository } from "./validator/DomainTypes";
 
 const queueOutput = output.storageQueue({
-    queueName: 'onepager-validation-requests',
+    queueName: onepagerValidationRequests,
     connection: '',
 });
 
-
-
-export async function FileChangeHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function ValidateAllHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}"`);
 
-    const repo: EmployeeRepository = null
+    const repo: EmployeeRepository = await loadConfigFromEnv().employees();
 
     const ids = await repo.getAllEmployees();
 
@@ -24,10 +23,10 @@ export async function FileChangeHttpTrigger(request: HttpRequest, context: Invoc
     return { body: `Triggered validation for ${ids.length} employees.` };
 };
 
-app.http('FileChangeHttpTrigger', {
+app.http('ValidateAllHttpTrigger', {
     methods: ['POST'],
     route: 'validateAll',
     authLevel: 'function',
-    handler: FileChangeHttpTrigger,
+    handler: ValidateAllHttpTrigger,
     extraOutputs: [queueOutput]
 });
