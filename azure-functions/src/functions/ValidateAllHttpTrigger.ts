@@ -14,13 +14,9 @@ export async function ValidateAllHttpTrigger(request: HttpRequest, context: Invo
         context.log(`Http function processed request for url "${request.url}"`);
 
         const repo: EmployeeRepository = await loadConfigFromEnv(context).employees();
-
         const ids = await repo.getAllEmployees();
 
-        for (let id of ids) {
-            const item: QueueItem = { employeeId: id };
-            context.extraOutputs.set(queueOutput, item);
-        }
+        context.extraOutputs.set(queueOutput, ids.map(id => ({ employeeId: id })));
 
         return { body: `Triggered validation for ${ids.length} employees.` };
     } catch (error) {
