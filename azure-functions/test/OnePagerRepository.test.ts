@@ -9,6 +9,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { tmpdir } from 'node:os';
 import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/LocalFileOnePagerRepository";
+import { createSharepointClient, hasSharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
 
 type RepoFactory = (onePagers: { [employeeId: EmployeeID]: OnePager[] }) => Promise<OnePagerRepository>;
 
@@ -68,26 +69,13 @@ const testFactory = (name: string, factory: RepoFactory) => {
 
 testFactory("InMemoryOnePagerRepository", async (data) => new InMemoryOnePagerRepository(data));
 
-if (process.env.SHAREPOINT_CLIENT_SECRET) {
+const opts = process.env
+if (hasSharepointClientOptions(opts)) {
     testFactory("SharepointDriveOnePagerRepository", async (data) => {
         const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
-
         const listName: string = "OnePagerAutomatedTestEnv";
 
-        const credential: ClientSecretCredential = new ClientSecretCredential(
-            process.env.SHAREPOINT_TENANT_ID as string,
-            process.env.SHAREPOINT_CLIENT_ID as string,
-            process.env.SHAREPOINT_CLIENT_SECRET as string,
-        );
-
-        const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-            scopes: ['https://graph.microsoft.com/.default']
-        });
-
-        const client = Client.initWithMiddleware({
-            debugLogging: true,
-            authProvider,
-        });
+        const client = createSharepointClient(opts)
 
         const siteID: string = (await client.api(`/sites/${siteIDAlias}`).get()).id as string;
         const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;

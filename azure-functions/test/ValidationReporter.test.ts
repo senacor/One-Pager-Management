@@ -9,6 +9,7 @@ import { LocalFileValidationReporter } from "../src/functions/validator/adapter/
 import { promises as fs } from "fs";
 import path from "path";
 import { tmpdir } from 'node:os';
+import { createSharepointClient, hasSharepointClientOptions, SharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
 
 type ReporterFactory = () => Promise<ValidationReporter>;
 
@@ -70,25 +71,14 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
 testFactory("InMemoryValidationReporter", async () => new InMemoryValidationReporter());
 
-if (process.env.SHAREPOINT_CLIENT_SECRET) {
+const opts = process.env
+if (hasSharepointClientOptions(opts)) {
     testFactory("SharepointListValidationReporter", async () => {
-        const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
+        const client = createSharepointClient(opts)
 
-        const credential: ClientSecretCredential = new ClientSecretCredential(
-            process.env.SHAREPOINT_TENANT_ID as string,
-            process.env.SHAREPOINT_CLIENT_ID as string,
-            process.env.SHAREPOINT_CLIENT_SECRET as string,
+        let reporter = await SharepointListValidationReporter.getInstance(
+            client, "senacor.sharepoint.com:/teams/MaInfoTest", "one-pager-status-automated-test-env"
         );
-
-        const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-            scopes: ['https://graph.microsoft.com/.default']
-        });
-
-        const client = Client.initWithMiddleware({
-            debugLogging: true,
-            authProvider,
-        });
-        let reporter = await SharepointListValidationReporter.getInstance(client, siteIDAlias, "one-pager-status-automated-test-env");
 
         await reporter.clearList();
 

@@ -1,11 +1,11 @@
-import { EmployeeID, OnePager, OnePagerRepository } from "../DomainTypes";
+import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../DomainTypes";
 import { Client } from "@microsoft/microsoft-graph-client";
 import { DriveItem } from "@microsoft/microsoft-graph-types";
 
 type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]:  OnePager[] | SharePointFolder };
 
-export class SharepointDriveOnePagerRepository implements OnePagerRepository {
+export class SharepointDriveOnePagerRepository implements OnePagerRepository, EmployeeRepository {
     private readonly onePagers: OnePagerMap;
     private readonly client: Client;
 
@@ -61,5 +61,9 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository {
         }
 
         return undefined;
+    }
+
+    async getAllEmployees(): Promise<EmployeeID[]> {
+        return Object.keys(this.onePagers);
     }
 }

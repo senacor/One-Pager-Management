@@ -15,6 +15,10 @@ export interface OnePagerRepository {
     getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[] | undefined>;
 }
 
+export interface EmployeeRepository {
+    getAllEmployees(): Promise<EmployeeID[]>;
+}
+
 export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ENGLISH_VERSION" | "MISSING_GERMAN_VERSION";
 
 export interface ValidationReporter {
