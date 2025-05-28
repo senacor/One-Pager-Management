@@ -98,7 +98,5 @@ if (process.env.SHAREPOINT_CLIENT_SECRET) {
 
 testFactory("LocalFileValidationReporter", async () => {
     const tmp = await fs.mkdtemp(path.join(tmpdir(), "validation-reports-"))
-    const reporter = new LocalFileValidationReporter(tmp);
-
-    return reporter;
+    return new LocalFileValidationReporter(tmp);
 });
