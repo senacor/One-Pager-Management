@@ -14,22 +14,27 @@ export const onepagerValidationRequests = 'onepager-validation-requests';
  * @param context
  */
 export async function FileChangeQueueTrigger(queueItem: unknown, context: InvocationContext): Promise<void> {
-    const item = queueItem as QueueItem;
+    try {
+        const item = queueItem as QueueItem;
 
-    if (isEmployeeId(item.employeeId)) {
-        context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
+        if (isEmployeeId(item.employeeId)) {
+            context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
 
-        const config = loadConfigFromEnv();
-        const validator = new OnePagerValidation(
-            await config.onePagers(),
-            await config.employees(),
-            await config.reporter(),
-            validationRules.allRules
-        );
+            const config = loadConfigFromEnv(context);
+            const validator = new OnePagerValidation(
+                await config.onePagers(),
+                await config.employees(),
+                await config.reporter(),
+                validationRules.allRules,
+                context
+            );
 
-        await validator.validateOnePagersOfEmployee(item.employeeId);
-    } else {
-        context.error(`Invalid queue item ${JSON.stringify(queueItem)}, not a employee id`);
+            await validator.validateOnePagersOfEmployee(item.employeeId);
+        } else {
+            context.error(`Invalid queue item ${JSON.stringify(queueItem)}, not a employee id`);
+        }
+    } catch (error) {
+        context.error(`Error processing queue item ${JSON.stringify(queueItem)}: ${JSON.stringify(error)}`);
     }
 }
 
