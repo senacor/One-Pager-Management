@@ -1,2 +1,7 @@
-POST {{host}}/api/validate/1483
+# MaInfoTest
+POST {{host}}/api/validate/1338
+x-functions-key: {{functions_key}}
+
+# real MaInfo
+POST {{host}}/api/validate/9560
 x-functions-key: {{functions_key}}

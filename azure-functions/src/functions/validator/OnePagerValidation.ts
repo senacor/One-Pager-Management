@@ -34,7 +34,7 @@ export class OnePagerValidation {
         this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
         if (newest) {
-            this.downloadOnePager(newest);
+            await this.downloadOnePager(newest);
         }
 
         const errors = await this.validationRule(newest);
@@ -62,6 +62,7 @@ export class OnePagerValidation {
         if (onePager.downloadURL == "") {
             return; // needed for testing since we do not use real URLs in some tests
         }
+        let logger = this.logger;
 
         const file = await fetch(onePager.downloadURL);
         const fileInBytes = await file.bytes();
@@ -76,9 +77,9 @@ export class OnePagerValidation {
         //write file; import fs has to be included
         try {
             fs.writeFileSync(path.join(filepath, filename), fileInBytes);
-            console.log("Written file to disk!");
+            logger.log("Written file to disk!");
         } catch (e) {
-            console.log(e);
+            logger.log(e);
         }
 
         const pptx = new PPTX.Composer();
@@ -86,12 +87,12 @@ export class OnePagerValidation {
         await pptx.load(path.join(filepath, filename));
         await pptx.compose(async (pres: any) =>  {
             pres.getSlide(1).content["p:sld"]["p:cSld"][0]["p:spTree"][0]["p:sp"][1]["p:txBody"][0]["a:p"][0]["a:r"][0]["a:t"][0] = "Irgendein Name";
-            console.log("PPT:", JSON.stringify(pres.getSlide(1).content));
+            logger.log("PPT:", JSON.stringify(pres.getSlide(1).content));
             // let slide = pres.getSlide(1);
             //slide.moveTo(2);
         });
         await pptx.save(path.join(filepath, filename));
 
-        console.log("Downloaded OnePager!");
+        logger.log("Downloaded OnePager!");
     }
 }
