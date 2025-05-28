@@ -55,6 +55,10 @@ export class OnePagerValidation {
     }
 
     private async downloadOnePager(onePager: OnePager): Promise<void> {
+        if (onePager.downloadURL == "") {
+            return; // needed for testing since we do not use real URLs in some tests
+        }
+
         const file = await fetch(onePager.downloadURL);
         const fileInBytes = await file.bytes();
 

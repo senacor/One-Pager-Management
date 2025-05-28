@@ -54,7 +54,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
             await expect(rep.getAllOnePagersOfEmployee(id)).resolves.toEqual([]);
         });
 
-        it("should return one-pagers with  URLs as downloadURLs", async () => {
+        it("should return one-pagers with URLs as downloadURLs", async () => {
             const id: EmployeeID = "existing-employee-id";
             const rep: OnePagerRepository = await factory({
                 [id]: [
