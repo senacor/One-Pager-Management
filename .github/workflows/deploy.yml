@@ -12,18 +12,28 @@ env:
 jobs:
   apply-infra-definitions:
     runs-on: ubuntu-latest
+    concurrency:
+        group: 'AzureInfra'
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - name: 'Log in to Azure with AZ CLI'
+      - id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            infra:
+              - 'azure-functions/infra/**'
+      - if: steps.changes.outputs.infra == 'true'
+        name: 'Log in to Azure with AZ CLI'
         uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - name: apply infrastructure
+      - if: steps.changes.outputs.infra == 'true'
+        name: apply infrastructure
         uses: azure/cli@v2
         with:
           azcliversion: latest
@@ -35,10 +45,12 @@ jobs:
 
   deploy-functions:
     runs-on: ubuntu-latest
+    concurrency:
+        group: 'AzureInfra'
     permissions:
       contents: read
       id-token: write
-    #needs: apply-infra-definitions
+    needs: apply-infra-definitions
     steps:
       - uses: actions/checkout@v4
       - name: 'Log in to Azure with AZ CLI'
