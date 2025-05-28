@@ -5,3 +5,6 @@ x-functions-key: {{functions_key}}
 # real MaInfo
 POST {{host}}/api/validate/9560
 x-functions-key: {{functions_key}}
+
+POST {{host}}/api/validate/1572
+x-functions-key: {{functions_key}}
