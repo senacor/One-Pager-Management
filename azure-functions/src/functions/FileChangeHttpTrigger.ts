@@ -9,22 +9,27 @@ const queueOutput = output.storageQueue({
 });
 
 export async function FileChangeHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-    context.log(`Http function processed request for url "${request.url}"`);
+    try {
+        context.log(`Http function processed request for url "${request.url}"`);
 
-    const id = request.params.employeeid;
-    if (!isEmployeeId(id)) {
-        return { status: 400, body: `Invalid request! ${id} is no valid employee id.` };
+        const id = request.params.employeeid;
+        if (!isEmployeeId(id)) {
+            return { status: 400, body: `Invalid request! ${id} is no valid employee id.` };
+        }
+
+        const employees = await loadConfigFromEnv(context).employees();
+        if (!(await employees.getAllEmployees()).includes(id)) {
+            return { status: 404, body: `Employee not found: ${id}` };
+        }
+
+        const item: QueueItem = { employeeId: id };
+        context.extraOutputs.set(queueOutput, item);
+
+        return { body: `Received change notification for: ${id}` };
+    } catch (error) {
+        context.error(`Error processing request: ${JSON.stringify(error)}`);
+        return { status: 500, body: `Internal server error` };
     }
-
-    const employees = await loadConfigFromEnv().employees();
-    if( !(await employees.getAllEmployees()).includes(id)) {
-        return { status: 404, body: `Employee not found: ${id}` };
-    }
-
-    const item: QueueItem = { employeeId: id };
-    context.extraOutputs.set(queueOutput, item);
-
-    return { body: `Received change notification for: ${id}` };
 };
 
 app.http('FileChangeHttpTrigger', {

@@ -8,7 +8,7 @@ import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemory
 import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
 import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
-import { EmployeeRepository, isEmployeeId, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
+import { EmployeeRepository, isEmployeeId, Logger, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
 
 export type AppConfiguration = {
     onePagers: () => Promise<OnePagerRepository>;
@@ -47,30 +47,30 @@ export function hasSharepointClientOptions(opts: any): opts is SharepointClientO
 
 type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOptions
 
-export function loadConfigFromEnv(overrides?: Options): AppConfiguration {
+export function loadConfigFromEnv(logger: Logger = console, overrides?: Options): AppConfiguration {
     // defaults to memory
-    const opts: Options = { ...{ STORAGE_SOURCE: "memory" }, ...(overrides ? { ...process.env, ...overrides } : { ...process.env }) };
+    const opts: Options = { ...(overrides ? { ...process.env, ...overrides } : { STORAGE_SOURCE: "memory", ...process.env }) };
 
     switch (opts.STORAGE_SOURCE) {
         case "memory":
-            console.log("Using in-memory storage");
+            logger.log("Using in-memory storage");
             const ids = opts.EMPLOYEES ? opts.EMPLOYEES.split(",").map(id => id.trim()).filter(id => isEmployeeId(id)) : [];
             const repo = new InMemoryOnePagerRepository({});
             return {
                 onePagers: async () => repo,
                 employees: async () => repo,
-                reporter: async () => new InMemoryValidationReporter()
+                reporter: async () => new InMemoryValidationReporter(logger)
             };
         case "localfile":
             const dataDir = opts.DATA_DIR || process.cwd();
-            console.log(`Using local file storage at ${dataDir}`);
+            logger.log(`Using local file storage at ${dataDir}`);
             return {
                 onePagers: async () => new LocalFileOnePagerRepository(dataDir),
                 employees: async () => new LocalFileEmployeeRepository(dataDir),
                 reporter: async () => new LocalFileValidationReporter(dataDir)
             };
         case "sharepoint":
-            console.log("Using SharePoint storage");
+            logger.log("Using SharePoint storage");
             return getSharepointConfig(opts);
     }
 }
@@ -92,7 +92,7 @@ function getSharepointConfig(opts: SharepointStorageOptions) {
 
     var promise: Promise<SharepointDriveOnePagerRepository>;
     var repo = () => {
-        if(!promise) {
+        if (!promise) {
             promise = SharepointDriveOnePagerRepository.getInstance(client, onePagerSiteName, onePagerDriveName);
         }
         return promise;
