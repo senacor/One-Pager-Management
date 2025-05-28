@@ -6,21 +6,12 @@ type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]:  OnePager[] | SharePointFolder };
 
 export class SharepointDriveOnePagerRepository implements OnePagerRepository {
-    readonly onePagers: OnePagerMap;
-    private client: Client;
+    private readonly onePagers: OnePagerMap;
+    private readonly client: Client;
 
-    private constructor(client: Client,  folders: DriveItem[], onePagerDriveId: string) {
-        this.onePagers = {};
+    private constructor(client: Client,  onePagers: OnePagerMap) {
         this.client = client;
-
-        for (const folder of folders) {
-            if (!folder.name) {
-                continue;
-            }
-
-            const employeeId: EmployeeID = folder.name.split("_").pop() as string;
-            this.onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folder.name}:/children` as SharePointFolder;
-        }
+        this.onePagers = onePagers;
     }
 
     public static async getInstance(client: Client, siteIDAlias: string, listName: string): Promise<SharepointDriveOnePagerRepository> {
@@ -29,7 +20,17 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository {
         const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).get()).value.filter((drive: {"name": string}) => drive.name === listName)[0].id as string;
         const folders = (await client.api(`/drives/${onePagerDriveId}/root/children`).top(100000).get()).value as DriveItem[];
 
-        return new SharepointDriveOnePagerRepository(client, folders, onePagerDriveId);
+        const onePagers: OnePagerMap = {};
+        for (const folder of folders) {
+            if (!folder.name) {
+                continue;
+            }
+
+            const employeeId: EmployeeID = folder.name.split("_").pop() as string;
+            onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folder.name}:/children` as SharePointFolder;
+        }
+
+        return new SharepointDriveOnePagerRepository(client, onePagers);
     }
 
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[] | undefined> {

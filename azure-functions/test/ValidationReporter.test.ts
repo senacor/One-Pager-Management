@@ -5,11 +5,15 @@ import { SharepointListValidationReporter } from "../src/functions/validator/ada
 import { EmployeeID, OnePagerRepository, ValidationReporter } from "../src/functions/validator/DomainTypes";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
 import { Client } from "@microsoft/microsoft-graph-client";
+import { LocalFileValidationReporter } from "../src/functions/validator/adapter/LocalFileValidationReporter";
+import { promises as fs } from "fs";
+import path from "path";
+import { tmpdir } from 'node:os';
 
 type ReporterFactory = () => Promise<ValidationReporter>;
 
-const testFactory = (reporterFactory: ReporterFactory) => {
-    describe("ValidationReporter", () => {
+const testFactory = (name: string, reporterFactory: ReporterFactory) => {
+    describe(name, () => {
 
         it("should return no errors without any report", async () => {
             const reporter = await reporterFactory();
@@ -64,27 +68,37 @@ const testFactory = (reporterFactory: ReporterFactory) => {
     });
 }
 
-testFactory(async () => new InMemoryValidationReporter());
-testFactory(async () => {
-    const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
+testFactory("InMemoryValidationReporter", async () => new InMemoryValidationReporter());
 
-    const credential: ClientSecretCredential = new ClientSecretCredential(
-        process.env.SHAREPOINT_TENANT_ID as string,
-        process.env.SHAREPOINT_CLIENT_ID as string,
-        process.env.SHAREPOINT_CLIENT_SECRET as string,
-    );
+if (process.env.SHAREPOINT_CLIENT_SECRET) {
+    testFactory("SharepointListValidationReporter", async () => {
+        const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
 
-    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-        scopes: ['https://graph.microsoft.com/.default']
+        const credential: ClientSecretCredential = new ClientSecretCredential(
+            process.env.SHAREPOINT_TENANT_ID as string,
+            process.env.SHAREPOINT_CLIENT_ID as string,
+            process.env.SHAREPOINT_CLIENT_SECRET as string,
+        );
+
+        const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+            scopes: ['https://graph.microsoft.com/.default']
+        });
+
+        const client = Client.initWithMiddleware({
+            debugLogging: true,
+            authProvider,
+        });
+        let reporter = await SharepointListValidationReporter.getInstance(client, siteIDAlias, "one-pager-status-automated-test-env");
+
+        await reporter.clearList();
+
+        return reporter;
     });
+}
 
-    const client = Client.initWithMiddleware({
-        debugLogging: true,
-        authProvider,
-    });
-    let reporter = await SharepointListValidationReporter.getInstance(client, siteIDAlias, "one-pager-status-automated-test-env");
-
-    await reporter.clearList();
+testFactory("LocalFileValidationReporter", async () => {
+    const tmp = await fs.mkdtemp(path.join(tmpdir(), "validation-reports-"))
+    const reporter = new LocalFileValidationReporter(tmp);
 
     return reporter;
 });

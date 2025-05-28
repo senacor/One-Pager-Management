@@ -3,9 +3,9 @@ import { EmployeeID, OnePager, OnePagerRepository, ValidationError, ValidationRe
 
 
 export class OnePagerValidation {
-    readonly repository: OnePagerRepository;
-    readonly reporter: ValidationReporter;
-    readonly validationRule: ValidationRule;
+    private readonly repository: OnePagerRepository;
+    private readonly reporter: ValidationReporter;
+    private readonly validationRule: ValidationRule;
 
     constructor(repository: OnePagerRepository, reporter: ValidationReporter, validationRule: ValidationRule) {
         this.repository = repository;

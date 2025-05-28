@@ -3,9 +3,9 @@ import { EmployeeID, ValidationError, ValidationReporter } from "../DomainTypes"
 import { List, ListItem } from "@microsoft/microsoft-graph-types";
 
 export class SharepointListValidationReporter implements ValidationReporter {
-    readonly listId: string;
-    readonly client: Client;
-    private siteId: string;
+    private readonly listId: string;
+    private readonly client: Client;
+    private readonly siteId: string;
 
     constructor(client: Client, listId: string, siteId: string) {
         this.client = client;
@@ -77,7 +77,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
     }
 
-    public async clearList(): Promise<void> {
+    async clearList(): Promise<void> {
         let items = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).get() as {value: ListItem[]};
 
         let promiseList = [];
