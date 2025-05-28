@@ -12,10 +12,15 @@ export const lastModifiedRule: ValidationRule = async onePager => {
     return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
 };
 
+export const alwaysFail = async (onePager) => {
+    return ["ALWAYS_FAIL"];
+};
+
 export const validationRules = {
     hasOnePager,
-    lastModifiedRule
-}
+    lastModifiedRule,
+    alwaysFail
+};
 
 export const allRules = combineRules(...Object.values(validationRules));
 
