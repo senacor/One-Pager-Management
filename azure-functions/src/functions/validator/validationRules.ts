@@ -12,7 +12,7 @@ export const lastModifiedRule: ValidationRule = async onePager => {
     return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
 };
 
-export const alwaysFail = async (onePager) => {
+export const alwaysFail: ValidationRule = async (onePager) => {
     return ["ALWAYS_FAIL"];
 };
 
