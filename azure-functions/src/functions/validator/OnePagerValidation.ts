@@ -1,4 +1,8 @@
-import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
+import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository, ValidationError, ValidationReporter, ValidationRule } from "./DomainTypes";
+import fs from "node:fs";
+import path from "path";
+import PPTX from "nodejs-pptx";
+
 
 export class OnePagerValidation {
     private readonly onePagers: OnePagerRepository;
@@ -25,6 +29,10 @@ export class OnePagerValidation {
         const newest = this.selectNewestOnePager(onePagers);
         console.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
+        if (newest) {
+            this.downloadOnePager(newest);
+        }
+
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
@@ -46,4 +54,36 @@ export class OnePagerValidation {
         });
     }
 
+    private async downloadOnePager(onePager: OnePager): Promise<void> {
+        const file = await fetch(onePager.downloadURL);
+        const fileInBytes = await file.bytes();
+
+        const filepath = "PPTX";
+        const filename = "myPPT.pptx";
+
+        if (!fs.existsSync(filepath)){
+            fs.mkdirSync(filepath);
+        }
+
+        //write file; import fs has to be included
+        try {
+            fs.writeFileSync(path.join(filepath, filename), fileInBytes);
+            console.log("Written file to disk!");
+        } catch (e) {
+            console.log(e);
+        }
+
+        const pptx = new PPTX.Composer();
+        // await pptx.load();
+        await pptx.load(path.join(filepath, filename));
+        await pptx.compose(async (pres: any) =>  {
+            pres.getSlide(1).content["p:sld"]["p:cSld"][0]["p:spTree"][0]["p:sp"][1]["p:txBody"][0]["a:p"][0]["a:r"][0]["a:t"][0] = "Irgendein Name";
+            console.log("PPT:", JSON.stringify(pres.getSlide(1).content));
+            // let slide = pres.getSlide(1);
+            //slide.moveTo(2);
+        });
+        await pptx.save(path.join(filepath, filename));
+
+        console.log("Downloaded OnePager!");
+    }
 }
