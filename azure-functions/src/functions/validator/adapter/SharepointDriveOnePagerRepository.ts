@@ -41,10 +41,15 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository {
                 let folderContents = (await this.client.api(folder).get()).value as DriveItem[];
                 this.onePagers[employeeId] = [];
                 for (const driveItem of folderContents) {
-                    if (!driveItem.lastModifiedDateTime) {
+                    // if the output does not have a date of last chage or is not a file, continue
+                    if (!driveItem.lastModifiedDateTime || !driveItem.file || !(driveItem as any)["@microsoft.graph.downloadUrl"]) {
                         continue;
                     } else {
-                        this.onePagers[employeeId].push({ lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime) } as OnePager);
+                        let onePager: OnePager = {
+                            lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
+                            downloadURL: (driveItem as any)["@microsoft.graph.downloadUrl"] // this cannot be undefined since we checked via if-case
+                        };
+                        this.onePagers[employeeId].push(onePager);
                     }
                 }
                 return this.onePagers[employeeId];

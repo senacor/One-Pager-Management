@@ -30,8 +30,8 @@ const testFactory = (factory: RepoFactory) => {
             const id: EmployeeID = "existing-employee-id";
             const rep: OnePagerRepository = await factory({
                 [id]: [
-                    { lastUpdateByEmployee: new Date() },
-                    { lastUpdateByEmployee: new Date() }
+                    { lastUpdateByEmployee: new Date(), downloadURL: "" },
+                    { lastUpdateByEmployee: new Date(), downloadURL: "" }
                 ]
             });
 
@@ -42,13 +42,24 @@ const testFactory = (factory: RepoFactory) => {
             const id: EmployeeID = "existing-employee-id";
             const rep: OnePagerRepository = await factory({
                 other: [
-                    { lastUpdateByEmployee: new Date() }
+                    { lastUpdateByEmployee: new Date(), downloadURL: "" }
                 ]
             });
 
             await expect(rep.getAllOnePagersOfEmployee(id)).resolves.toEqual(undefined);
         });
 
+        it("should return one-pagers with  URLs as downloadURLs", async () => {
+            const id: EmployeeID = "existing-employee-id";
+            const rep: OnePagerRepository = await factory({
+                [id]: [
+                    { lastUpdateByEmployee: new Date(), downloadURL: "https://" }
+                ]
+            });
+            let onePagers = await rep.getAllOnePagersOfEmployee(id);
+            expect(onePagers).toHaveLength(1);
+            expect((onePagers as OnePager[])[0].downloadURL.indexOf("https://")).toEqual(0);
+        });
     });
 }
 

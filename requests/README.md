@@ -27,3 +27,5 @@ You can find the Azure function-key in our 1Password vault.
     }
 }
 ```
+
+Before execcuting the Request, you have to choose the environment in the bottom bar of VS Code. Based on the above settings, there are 3 options: "No Environment", "local" and "production".

@@ -8,6 +8,7 @@ export function isEmployeeId(txt: unknown): txt is EmployeeID {
 
 export type OnePager = {
     lastUpdateByEmployee: Date;
+    downloadURL: string;
 };
 
 export interface OnePagerRepository {
