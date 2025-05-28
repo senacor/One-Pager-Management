@@ -2,6 +2,7 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@
 import { onepagerValidationRequests, QueueItem } from "./FileChangeQueueTrigger";
 import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { EmployeeRepository } from "./validator/DomainTypes";
+import { printError } from "./ErrorHandling";
 
 const queueOutput = output.storageQueue({
     queueName: onepagerValidationRequests,
@@ -23,7 +24,7 @@ export async function ValidateAllHttpTrigger(request: HttpRequest, context: Invo
 
         return { body: `Triggered validation for ${ids.length} employees.` };
     } catch (error) {
-        context.error(`Error processing request: ${JSON.stringify(error)}`);
+        context.error(`Error processing request: ${printError(error)}`);
         return { status: 500, body: `Internal server error` };
     }
 };

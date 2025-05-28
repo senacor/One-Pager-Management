@@ -2,6 +2,7 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@
 import { onepagerValidationRequests, QueueItem } from "./FileChangeQueueTrigger";
 import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { isEmployeeId } from "./validator/DomainTypes";
+import { printError } from "./ErrorHandling";
 
 const queueOutput = output.storageQueue({
     queueName: onepagerValidationRequests,
@@ -27,7 +28,7 @@ export async function FileChangeHttpTrigger(request: HttpRequest, context: Invoc
 
         return { body: `Received change notification for: ${id}` };
     } catch (error) {
-        context.error(`Error processing request: ${JSON.stringify(error)}`);
+        context.error(`Error processing request: ${printError(error)}`);
         return { status: 500, body: `Internal server error` };
     }
 };

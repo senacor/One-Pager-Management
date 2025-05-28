@@ -3,6 +3,7 @@ import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { isEmployeeId } from "./validator/DomainTypes";
 import { OnePagerValidation } from "./validator/OnePagerValidation";
 import * as validationRules from "./validator/validationRules";
+import { printError } from "./ErrorHandling";
 
 export type QueueItem = { employeeId: string };
 
@@ -34,7 +35,8 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
             context.error(`Invalid queue item ${JSON.stringify(queueItem)}, not a employee id`);
         }
     } catch (error) {
-        context.error(`Error processing queue item ${JSON.stringify(queueItem)}: ${JSON.stringify(error)}`);
+        context.error(`Error processing queue item ${JSON.stringify(queueItem)}: ${printError(error)}`);
+        throw error;
     }
 }
 
