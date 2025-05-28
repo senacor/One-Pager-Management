@@ -1,3 +1,5 @@
+import { InvocationContext } from "@azure/functions";
+
 export type EmployeeID = string;
 
 export function isEmployeeId(txt: unknown): txt is EmployeeID {
@@ -26,3 +28,13 @@ export interface ValidationReporter {
 }
 
 export type ValidationRule = (onePager: OnePager | undefined) => Promise<ValidationError[]>;
+
+export interface Logger {
+    debug(...args: any[]): void;
+
+    log(...args: any[]): void;
+
+    warn(...args: any[]): void;
+
+    error(...args: any[]): void;
+}

@@ -1,12 +1,17 @@
-import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
+import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
 
 export class OnePagerValidation {
+    private readonly logger: Logger;
     private readonly onePagers: OnePagerRepository;
     private readonly employees: EmployeeRepository;
     private readonly reporter: ValidationReporter;
     private readonly validationRule: ValidationRule;
 
-    constructor(onePagers: OnePagerRepository, employees: EmployeeRepository, reporter: ValidationReporter, validationRule: ValidationRule) {
+    constructor(
+        onePagers: OnePagerRepository, employees: EmployeeRepository,
+        reporter: ValidationReporter, validationRule: ValidationRule, logger: Logger = console
+    ) {
+        this.logger = logger;
         this.onePagers = onePagers;
         this.employees = employees;
         this.reporter = reporter;
@@ -15,23 +20,23 @@ export class OnePagerValidation {
 
     async validateOnePagersOfEmployee(id: EmployeeID) {
         if (!(await this.employees.getAllEmployees()).includes(id)) {
-            console.log(`Employee ${id} does not exist.`);
+            this.logger.error(`Employee ${id} does not exist.`);
             return;
         }
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
-        console.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
+        this.logger.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
 
         const newest = this.selectNewestOnePager(onePagers);
-        console.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+        this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
-            console.log(`Employee ${id} has valid OnePagers!`);
+            this.logger.log(`Employee ${id} has valid OnePagers!`);
             await this.reporter.reportValid(id);
         } else {
-            console.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
+            this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
             await this.reporter.reportErrors(id, "<not yet implemented>", errors);
         }
     }
