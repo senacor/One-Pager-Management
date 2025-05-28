@@ -31,6 +31,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
     name: 'Y1'
     tier: 'Dynamic'
   }
+  properties: {
+    reserved: true
+  }
   kind: 'functionapp'
 }
 
@@ -38,16 +41,16 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: functionAppName
   location: location
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   properties: {
     serverFarmId: appServicePlan.id
     siteConfig: {
+      linuxFxVersion: 'Node|22'
       appSettings: [
         { name: 'APPINSIGHTS_INSTRUMENTATIONKEY', value: applicationInsights.properties.InstrumentationKey }
         { name: 'WEBSITE_CONTENTSHARE', value: toLower(functionAppName) }
         { name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
         { name: 'FUNCTIONS_WORKER_RUNTIME', value: 'node' }
-        { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: '~22' }
         { name: 'STORAGE_SOURCE', value: 'sharepoint' }
         { name: 'SHAREPOINT_ONE_PAGER_SITE_NAME', value: sharepointOnePagerSiteName }
         { name: 'SHAREPOINT_VALIDATION_SITE_NAME', value: sharepointResultSiteName }
