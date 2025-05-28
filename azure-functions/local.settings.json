@@ -5,6 +5,7 @@
     "FUNCTIONS_EXTENSION_VERSION": "~4",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "STORAGE_SOURCE": "sharepoint",
+    "FEATURE_DOWNLOAD_ONEPAGER": "true",
     "SHAREPOINT_API_LOGGING": "true",
     "SHAREPOINT_ONE_PAGER_SITE_NAME": "senacor.sharepoint.com:/teams/MaInfoTest",
     "SHAREPOINT_CLIENT_ID": "1621d264-a7bb-40b6-bfef-9b2839cb7eec",

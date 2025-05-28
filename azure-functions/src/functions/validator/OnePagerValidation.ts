@@ -33,7 +33,7 @@ export class OnePagerValidation {
         const newest = this.selectNewestOnePager(onePagers);
         this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
-        if (newest) {
+        if (newest && process.env.FEATURE_DOWNLOAD_ONEPAGER === "true") {
             await this.downloadOnePager(newest);
         }
 
