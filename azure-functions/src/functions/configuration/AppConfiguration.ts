@@ -1,15 +1,15 @@
 import { ClientSecretCredential } from "@azure/identity";
-import { Client } from "@microsoft/microsoft-graph-client";
+import { AuthenticationHandler, ChaosHandler, Client, HTTPMessageHandler, Middleware, RetryHandler } from "@microsoft/microsoft-graph-client";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
 import { LocalFileEmployeeRepository } from "../validator/adapter/localfile/LocalFileEmployeeRepository";
 import { LocalFileOnePagerRepository } from "../validator/adapter/localfile/LocalFileOnePagerRepository";
 import { LocalFileValidationReporter } from "../validator/adapter/localfile/LocalFileValidationReporter";
 import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemoryOnePagerRepository";
 import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
-import { CachingClient, SharepointClient } from "../validator/adapter/sharepoint/CachingClient";
 import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
 import { EmployeeRepository, isEmployeeId, Logger, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
+import { CachingHandler } from "./CachingHandler";
 
 export type AppConfiguration = {
     onePagers: () => Promise<OnePagerRepository>;
@@ -40,6 +40,7 @@ export type SharepointClientOptions = {
     SHAREPOINT_CLIENT_ID?: string;
     SHAREPOINT_CLIENT_SECRET?: string;
     SHAREPOINT_API_LOGGING?: string;
+    SHAREPOINT_API_CACHING?: string;
 }
 
 export function hasSharepointClientOptions(opts: any): opts is SharepointClientOptions {
@@ -77,7 +78,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
 }
 
 function getSharepointConfig(opts: SharepointStorageOptions) {
-    const client = new CachingClient(createSharepointClient(opts));
+    const client = createSharepointClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error("Missing SharePoint One Pager site name in environment variables");
@@ -105,7 +106,13 @@ function getSharepointConfig(opts: SharepointStorageOptions) {
     };
 }
 
-export function createSharepointClient(opts: SharepointClientOptions): SharepointClient {
+const CachingMiddleware: Middleware = {
+    execute: async context => {
+
+    }
+}
+
+export function createSharepointClient(opts: SharepointClientOptions): Client {
     if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
         throw new Error("Missing SharePoint authentication configuration in environment variables");
     }
@@ -116,10 +123,27 @@ export function createSharepointClient(opts: SharepointClientOptions): Sharepoin
         opts.SHAREPOINT_CLIENT_SECRET,
     );
 
+    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+        scopes: ['https://graph.microsoft.com/.default']
+    })
+
+    const handlers: Middleware[] = [
+        new AuthenticationHandler(authProvider),
+        opts.SHAREPOINT_API_CACHING === "false" ? [] : [new CachingHandler()], // we default to having caching enabled
+        new RetryHandler(),
+        new HTTPMessageHandler()
+    ].flat();
+
+    handlers.reduce((prev, next, index) => {
+        if(!prev.setNext) {
+            throw new Error(`Handler ${index} must support setting next middleware!`);
+        }
+        prev.setNext(next);
+        return next;
+    })
+
     return Client.initWithMiddleware({
         debugLogging: opts.SHAREPOINT_API_LOGGING === "true",
-        authProvider: new TokenCredentialAuthenticationProvider(credential, {
-            scopes: ['https://graph.microsoft.com/.default']
-        }),
+        middleware: handlers[0]
     });
 }

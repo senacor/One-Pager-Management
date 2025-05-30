@@ -2,7 +2,7 @@ import { DriveItem, Site } from "@microsoft/microsoft-graph-types";
 import { URL } from "node:url";
 import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
 import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
-import { SharepointClient } from "./CachingClient";
+import { Client } from "@microsoft/microsoft-graph-client";
 
 type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };
@@ -10,14 +10,14 @@ type DriveItemWithDownloadUrl = DriveItem & { "@microsoft.graph.downloadUrl"?: s
 
 export class SharepointDriveOnePagerRepository implements OnePagerRepository, EmployeeRepository {
     private readonly onePagers: OnePagerMap;
-    private readonly client: SharepointClient;
+    private readonly client: Client;
 
-    private constructor(client: SharepointClient, onePagers: OnePagerMap) {
+    private constructor(client: Client, onePagers: OnePagerMap) {
         this.client = client;
         this.onePagers = onePagers;
     }
 
-    public static async getInstance(client: SharepointClient, siteIDAlias: string, listName: string): Promise<SharepointDriveOnePagerRepository> {
+    public static async getInstance(client: Client, siteIDAlias: string, listName: string): Promise<SharepointDriveOnePagerRepository> {
         const site = await client.api(`/sites/${siteIDAlias}`).get() as Site | undefined;
         if (!site || !site.id) {
             throw new Error(`Cannot find site with alias ${siteIDAlias}!`);
