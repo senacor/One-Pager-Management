@@ -19,51 +19,51 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should return no errors without any report", async () => {
             const reporter = await reporterFactory();
 
-            await expect(reporter.getResultFor("unknown-employee-id")).resolves.toEqual([]);
+            await expect(reporter.getResultFor("000")).resolves.toEqual([]);
         });
 
         it("should return errors when reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
+            await expect(reporter.getResultFor("111")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
         });
 
         it("should clean up errors when valid is reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
-            await reporter.reportValid("employee-id");
+            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
+            await reporter.reportValid("111");
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual([]);
+            await expect(reporter.getResultFor("111")).resolves.toEqual([]);
         });
 
         it("should not return errors of other employee", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("other-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("000", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual([]);
+            await expect(reporter.getResultFor("111")).resolves.toEqual([]);
         });
 
         it("should not clean up errors when valid is reported for other employee", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
-            await reporter.reportValid("other-id");
+            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
+            await reporter.reportValid("000");
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS"]);
+            await expect(reporter.getResultFor("111")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS"]);
         });
 
         it("should replace previous error with new ones", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("employee-id", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
-            await reporter.reportErrors("employee-id", "Employee Name", ["MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
+            await reporter.reportErrors("111", "Employee Name", ["MISSING_ONE_PAGER"]);
 
 
-            await expect(reporter.getResultFor("employee-id")).resolves.toEqual(["MISSING_ONE_PAGER"]);
+            await expect(reporter.getResultFor("111")).resolves.toEqual(["MISSING_ONE_PAGER"]);
         });
 
     });

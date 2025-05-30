@@ -15,13 +15,13 @@ describe("OnePagerValidation", () => {
         const repo = new InMemoryOnePagerRepository({});
         const validation = new OnePagerValidation(repo, repo, reporter, async op => ["MISSING_ONE_PAGER"]);
 
-        await validation.validateOnePagersOfEmployee("unknown-employee-id");
+        await validation.validateOnePagersOfEmployee("000");
 
-        await expect(await reporter.getResultFor("unknown-employee-id")).toEqual([]);
+        await expect(await reporter.getResultFor("000")).toEqual([]);
     });
 
     it("should report errors for employee without one-pager", async () => {
-        const id = "employee-id";
+        const id = "111";
         const repo = new InMemoryOnePagerRepository({ [id]: [] });
         const validation = new OnePagerValidation(repo, repo, reporter, async op => op === undefined ? ["MISSING_ONE_PAGER"] : []);
 
@@ -31,8 +31,8 @@ describe("OnePagerValidation", () => {
     });
 
     it("should report errors for employee with invalid one-pager", async () => {
-        const id = "employee-id";
-        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date(), downloadURL: "" }] });
+        const id = "111";
+        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date() }] });
         const validation = new OnePagerValidation(repo, repo, reporter, async op => op !== undefined ? ["OLDER_THAN_SIX_MONTHS"] : []);
 
         await validation.validateOnePagersOfEmployee(id);
@@ -41,8 +41,8 @@ describe("OnePagerValidation", () => {
     });
 
     it("should clean errors for employee when one-pager becomes valid", async () => {
-        const id = "employee-id";
-        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date(), downloadURL: "" }] });
+        const id = "111";
+        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date() }] });
         var callCounter = 0;
         const statefulValidator = async (op: OnePager | undefined) => callCounter++ == 0 ? ["OLDER_THAN_SIX_MONTHS"] as ValidationError[] : [];
         const validation = new OnePagerValidation(repo, repo, reporter, statefulValidator);
@@ -54,12 +54,12 @@ describe("OnePagerValidation", () => {
     });
 
     it("should validate newest one-pager", async () => {
-        const id = "employee-id";
+        const id = "111";
         const repo = new InMemoryOnePagerRepository({
             [id]: [
-                { lastUpdateByEmployee: new Date("2000-01-01"), downloadURL: "" },
-                { lastUpdateByEmployee: new Date("2025-01-01"), downloadURL: "" },
-                { lastUpdateByEmployee: new Date("2005-01-01"), downloadURL: "" }
+                { lastUpdateByEmployee: new Date("2000-01-01") },
+                { lastUpdateByEmployee: new Date("2025-01-01") },
+                { lastUpdateByEmployee: new Date("2005-01-01") }
             ]
         });
         const validation = new OnePagerValidation(repo, repo, reporter, async op => !op || op.lastUpdateByEmployee < new Date("2010-01-01") ? ["OLDER_THAN_SIX_MONTHS"] : []);
