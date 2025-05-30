@@ -1,12 +1,18 @@
 import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
+import { CURRENT_TEMPLATE_PATH } from "../../validationRules";
 
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] };
 
 export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeRepository {
     private readonly onePagers: OnePagerMap;
 
-    constructor(onePagers: OnePagerMap) {
-        this.onePagers = onePagers;
+    constructor(onePagers: { [employeeId: EmployeeID]: { lastUpdateByEmployee: Date }[] }) {
+        this.onePagers = Object.fromEntries(
+            Object.entries(onePagers).map(([employeeId, onePagersArr]) => [
+                employeeId,
+                onePagersArr.map(d => ({ ...d, location: new URL(`file:///${CURRENT_TEMPLATE_PATH}`) }))
+            ])
+        );
     }
 
     async getAllOnePagersOfEmployee(employeeId: EmployeeID) {
@@ -14,6 +20,6 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
     }
 
     async getAllEmployees(): Promise<EmployeeID[]> {
-        return Object.keys(this.onePagers);
+        return Object.keys(this.onePagers) as EmployeeID[];
     }
 }

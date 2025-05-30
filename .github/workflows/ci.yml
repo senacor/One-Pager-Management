@@ -72,8 +72,8 @@ jobs:
       - name: Check local running Functions
         run: |
             echo "create employee without one-pager"
-            mkdir .storage
-            echo "[]" > .storage/1338_onepagers.json
+            EMPLOYEE_DIR=.storage/onepagers/Max_Mustermann_1338
+            mkdir -p "$EMPLOYEE_DIR"
             curl -XPOST --fail-with-body http://localhost:7071/api/validate/1338 2> /dev/null
             echo
 

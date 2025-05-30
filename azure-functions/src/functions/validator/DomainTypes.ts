@@ -1,7 +1,7 @@
 import { InvocationContext } from "@azure/functions";
 import { URL } from "node:url";
 
-export type EmployeeID = string;
+export type EmployeeID = `${number}`;
 
 export function isEmployeeId(txt: unknown): txt is EmployeeID {
     return typeof txt === "string" && /\d+/.test(txt);

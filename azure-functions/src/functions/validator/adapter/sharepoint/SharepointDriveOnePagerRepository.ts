@@ -1,7 +1,8 @@
 import { Client } from "@microsoft/microsoft-graph-client";
-import { DriveItem } from "@microsoft/microsoft-graph-types";
+import { DriveItem, Site } from "@microsoft/microsoft-graph-types";
 import { URL } from "node:url";
 import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
+import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
 
 type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };
@@ -17,9 +18,12 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
     }
 
     public static async getInstance(client: Client, siteIDAlias: string, listName: string): Promise<SharepointDriveOnePagerRepository> {
-        const siteID: string = (await client.api(`/sites/${siteIDAlias}`).get()).id as string;
+        const site = await client.api(`/sites/${siteIDAlias}`).get() as Site | undefined;
+        if (!site || !site.id) {
+            throw new Error(`Cannot find site with alias ${siteIDAlias}!`);
+        }
 
-        const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
+        const onePagerDriveId: string = (await client.api(`/sites/${site.id}/drives`).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
         const { value: folders } = await client.api(`/drives/${onePagerDriveId}/root/children`).top(100000).get() as { value?: DriveItem[] };
 
         if (folders === undefined) {
@@ -28,12 +32,13 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
 
         const onePagers: OnePagerMap = {};
         for (const folder of folders) {
-            if (!folder.name) {
+            const folderName = folder.name;
+            if (!isEmployeeFolder(folderName)) {
                 continue;
             }
 
-            const employeeId: EmployeeID = folder.name.split("_").pop() as string;
-            onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folder.name}:/children` as SharePointFolder;
+            const employeeId: EmployeeID = employeeIdFromFolder(folderName);
+            onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folderName}:/children` as SharePointFolder;
         }
 
         return new SharepointDriveOnePagerRepository(client, onePagers);
@@ -69,6 +74,6 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
     }
 
     async getAllEmployees(): Promise<EmployeeID[]> {
-        return Object.keys(this.onePagers);
+        return Object.keys(this.onePagers) as EmployeeID[];
     }
 }

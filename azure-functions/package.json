@@ -15,7 +15,6 @@
         "@azure/functions": "^4.7.2",
         "@azure/identity": "^4.10.0",
         "@microsoft/microsoft-graph-client": "^3.0.7",
-        "extract-zip": "^2.0.1",
         "isomorphic-fetch": "^3.0.0",
         "jszip": "^3.10.1"
     },

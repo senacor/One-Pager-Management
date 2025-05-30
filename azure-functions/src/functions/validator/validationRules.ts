@@ -3,6 +3,9 @@ import { readFile } from 'fs/promises';
 import fetch from 'isomorphic-fetch';
 import JSZip from 'jszip';
 import { ValidationError, ValidationRule } from "./DomainTypes";
+import { fetchOnePagerContent } from './fetcher';
+
+export const CURRENT_TEMPLATE_PATH = "src/templates/OP_Template_PPT_DE_240119.pptx"
 
 export const hasOnePager: ValidationRule = async onePager => onePager ? [] : ["MISSING_ONE_PAGER"];
 
@@ -17,7 +20,7 @@ export const alwaysFail: ValidationRule = async (onePager) => {
 };
 
 export const usesCurrentTemplate: ContentValidationRule = async content => {
-    const templateData = await readFile("src/templates/OP_Template_PPT_DE_240119.pptx");
+    const templateData = await readFile(CURRENT_TEMPLATE_PATH);
     const currentThemeHash = await calculateThemeHash(templateData);
 
     const hash = await calculateThemeHash(content);
@@ -49,17 +52,7 @@ type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationErro
 
 export function combineContentRules(...rules: ContentValidationRule[]): ValidationRule {
     return whenPresent(async onePager => {
-        let content: Buffer;
-        if (onePager.location.protocol === 'file:') {
-            let filePath = onePager.location.pathname;
-            filePath = decodeURIComponent(filePath);
-            console.log(`Reading file from path: ${filePath}`);
-            content = await readFile(process.cwd() + filePath);
-        } else {
-            // HTTP(S) fetch
-            const response = await fetch(onePager.location.toString());
-            content = Buffer.from(await response.arrayBuffer());
-        }
+        const content = await fetchOnePagerContent(onePager);
         const errors = await Promise.all(rules.map(rule => rule(content)));
         return errors.flat();
     });
