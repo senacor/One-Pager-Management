@@ -1,4 +1,5 @@
 import { InvocationContext } from "@azure/functions";
+import { URL } from "node:url";
 
 export type EmployeeID = string;
 
@@ -8,7 +9,7 @@ export function isEmployeeId(txt: unknown): txt is EmployeeID {
 
 export type OnePager = {
     lastUpdateByEmployee: Date;
-    downloadURL: string;
+    location: URL;
 };
 
 export interface OnePagerRepository {
@@ -19,7 +20,7 @@ export interface EmployeeRepository {
     getAllEmployees(): Promise<EmployeeID[]>;
 }
 
-export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "ALWAYS_FAIL";
+export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "ALWAYS_FAIL" | "USING_OLD_TEMPLATE";
 
 export interface ValidationReporter {
     reportValid(id: EmployeeID): Promise<void>;

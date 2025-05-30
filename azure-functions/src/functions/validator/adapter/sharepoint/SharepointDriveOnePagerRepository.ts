@@ -1,9 +1,11 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { DriveItem } from "@microsoft/microsoft-graph-types";
+import { URL } from "node:url";
 import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
 
 type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };
+type DriveItemWithDownloadUrl = DriveItem & { "@microsoft.graph.downloadUrl"?: string };
 
 export class SharepointDriveOnePagerRepository implements OnePagerRepository, EmployeeRepository {
     private readonly onePagers: OnePagerMap;
@@ -48,20 +50,19 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
         }
 
         // load contents of one pager folder
-        const { value: folderContents } = await this.client.api(folder).get() as { value?: DriveItem[] };
+        const { value: folderContents } = await this.client.api(folder).get() as { value?: DriveItemWithDownloadUrl[] };
         this.onePagers[employeeId] = [];
         if (folderContents) {
             for (const driveItem of folderContents) {
                 // if the output does not have a date of last chage or is not a file, continue
-                if (!driveItem.lastModifiedDateTime || !driveItem.file || !(driveItem as any)["@microsoft.graph.downloadUrl"]) {
+                if (!driveItem.lastModifiedDateTime || !driveItem.file || !driveItem["@microsoft.graph.downloadUrl"]) {
                     continue;
-                } else {
-                    let onePager: OnePager = {
-                        lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
-                        downloadURL: (driveItem as any)["@microsoft.graph.downloadUrl"] // this cannot be undefined since we checked via if-case
-                    };
-                    this.onePagers[employeeId].push(onePager);
                 }
+                let onePager: OnePager = {
+                    lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
+                    location: new URL(driveItem["@microsoft.graph.downloadUrl"])
+                };
+                this.onePagers[employeeId].push(onePager);
             }
         }
         return this.onePagers[employeeId];

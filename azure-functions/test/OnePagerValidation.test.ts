@@ -3,6 +3,8 @@ import { OnePagerValidation } from "../src/functions/validator/OnePagerValidatio
 import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
 import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
 
+const location = new URL("http://example.com/onepager.pptx")
+
 describe("OnePagerValidation", () => {
 
     var reporter: ValidationReporter;
@@ -32,7 +34,7 @@ describe("OnePagerValidation", () => {
 
     it("should report errors for employee with invalid one-pager", async () => {
         const id = "employee-id";
-        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date(), downloadURL: "" }] });
+        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date(), location }] });
         const validation = new OnePagerValidation(repo, repo, reporter, async op => op !== undefined ? ["OLDER_THAN_SIX_MONTHS"] : []);
 
         await validation.validateOnePagersOfEmployee(id);
@@ -42,7 +44,7 @@ describe("OnePagerValidation", () => {
 
     it("should clean errors for employee when one-pager becomes valid", async () => {
         const id = "employee-id";
-        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date(), downloadURL: "" }] });
+        const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date(), location }] });
         var callCounter = 0;
         const statefulValidator = async (op: OnePager | undefined) => callCounter++ == 0 ? ["OLDER_THAN_SIX_MONTHS"] as ValidationError[] : [];
         const validation = new OnePagerValidation(repo, repo, reporter, statefulValidator);
@@ -57,9 +59,9 @@ describe("OnePagerValidation", () => {
         const id = "employee-id";
         const repo = new InMemoryOnePagerRepository({
             [id]: [
-                { lastUpdateByEmployee: new Date("2000-01-01"), downloadURL: "" },
-                { lastUpdateByEmployee: new Date("2025-01-01"), downloadURL: "" },
-                { lastUpdateByEmployee: new Date("2005-01-01"), downloadURL: "" }
+                { lastUpdateByEmployee: new Date("2000-01-01"), location },
+                { lastUpdateByEmployee: new Date("2025-01-01"), location },
+                { lastUpdateByEmployee: new Date("2005-01-01"), location }
             ]
         });
         const validation = new OnePagerValidation(repo, repo, reporter, async op => !op || op.lastUpdateByEmployee < new Date("2010-01-01") ? ["OLDER_THAN_SIX_MONTHS"] : []);

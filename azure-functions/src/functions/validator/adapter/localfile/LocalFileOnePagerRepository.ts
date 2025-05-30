@@ -21,7 +21,8 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         await this.ensureDataDir();
         try {
             const file = await fs.readFile(this.onePagerFile(employeeId), "utf-8");
-            return JSON.parse(file) as OnePager[];
+            const read =  JSON.parse(file) as OnePager[];
+            return read.map(op => ({...op, location: new URL(op.location)})); // location is parsed of type string
         } catch (e) {
             return [];
         }

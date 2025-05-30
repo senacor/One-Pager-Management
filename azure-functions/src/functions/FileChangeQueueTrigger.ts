@@ -18,6 +18,8 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
     try {
         const item = queueItem as QueueItem;
 
+        context.functionName
+
         if (isEmployeeId(item.employeeId)) {
             context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
 

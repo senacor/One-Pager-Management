@@ -1,17 +1,16 @@
-import { ClientSecretCredential } from "@azure/identity";
+import { DriveItem } from "@microsoft/microsoft-graph-types";
+import { promises as fs } from "fs";
+import { tmpdir } from 'node:os';
+import path from "path";
+import { createSharepointClient, hasSharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
+import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository";
 import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
 import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { EmployeeID, OnePager, OnePagerRepository } from "../src/functions/validator/DomainTypes";
-import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
-import { Client } from "@microsoft/microsoft-graph-client";
-import { DriveItem } from "@microsoft/microsoft-graph-types";
-import { promises as fs } from "fs";
-import path from "path";
-import { tmpdir } from 'node:os';
-import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository";
-import { createSharepointClient, hasSharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
 
 type RepoFactory = (onePagers: { [employeeId: EmployeeID]: OnePager[] }) => Promise<OnePagerRepository>;
+
+const location = new URL("http://example.com/onepager.pptx")
 
 const testFactory = (name: string, factory: RepoFactory) => {
     describe(name, () => {
@@ -34,8 +33,8 @@ const testFactory = (name: string, factory: RepoFactory) => {
             const id: EmployeeID = "existing-employee-id";
             const rep: OnePagerRepository = await factory({
                 [id]: [
-                    { lastUpdateByEmployee: new Date(), downloadURL: "" },
-                    { lastUpdateByEmployee: new Date(), downloadURL: "" }
+                    { lastUpdateByEmployee: new Date(), location },
+                    { lastUpdateByEmployee: new Date(), location }
                 ]
             });
 
@@ -47,7 +46,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
             const rep: OnePagerRepository = await factory({
                 [id]: [],
                 other: [
-                    { lastUpdateByEmployee: new Date(), downloadURL: "" }
+                    { lastUpdateByEmployee: new Date(), location }
                 ]
             });
 
@@ -58,12 +57,12 @@ const testFactory = (name: string, factory: RepoFactory) => {
             const id: EmployeeID = "existing-employee-id";
             const rep: OnePagerRepository = await factory({
                 [id]: [
-                    { lastUpdateByEmployee: new Date(), downloadURL: "https://" }
+                    { lastUpdateByEmployee: new Date(), location }
                 ]
             });
             let onePagers = await rep.getAllOnePagersOfEmployee(id);
             expect(onePagers).toHaveLength(1);
-            expect((onePagers as OnePager[])[0].downloadURL.indexOf("https://")).toEqual(0);
+            expect(onePagers[0].location).toEqual(location);
         });
     });
 }
@@ -105,6 +104,7 @@ if (hasSharepointClientOptions(opts)) {
 
 testFactory("LocalFileOnePagerRepository", async (data) => {
     const tmp = await fs.mkdtemp(path.join(tmpdir(), "validation-reports-"))
+    console.log(`Using temporary directory: ${tmp}`);
     const reporter = new LocalFileOnePagerRepository(tmp);
 
     for (const employeeId in data) {
