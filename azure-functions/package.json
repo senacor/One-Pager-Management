@@ -16,7 +16,8 @@
         "@azure/identity": "^4.10.0",
         "@microsoft/microsoft-graph-client": "^3.0.7",
         "isomorphic-fetch": "^3.0.0",
-        "jszip": "^3.10.1"
+        "jszip": "^3.10.1",
+        "node-cache": "^5.1.2"
     },
     "devDependencies": {
         "@microsoft/microsoft-graph-types": "^2.40.0",

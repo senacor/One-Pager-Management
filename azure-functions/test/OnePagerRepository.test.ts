@@ -6,7 +6,7 @@ import { createSharepointClient, hasSharepointClientOptions } from "../src/funct
 import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository";
 import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
 import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
-import { EmployeeID, OnePager, OnePagerRepository } from "../src/functions/validator/DomainTypes";
+import { EmployeeID, OnePagerRepository } from "../src/functions/validator/DomainTypes";
 
 type RepoFactory = (onePagers: { [employeeId: EmployeeID]: { lastUpdateByEmployee: Date }[] }) => Promise<OnePagerRepository>;
 

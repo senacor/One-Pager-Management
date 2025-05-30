@@ -1,19 +1,19 @@
-import { Client } from "@microsoft/microsoft-graph-client";
 import { List, ListItem, Site } from "@microsoft/microsoft-graph-types";
 import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
+import { SharepointClient } from "./CachingClient";
 
 export class SharepointListValidationReporter implements ValidationReporter {
     private readonly listId: string;
-    private readonly client: Client;
+    private readonly client: SharepointClient;
     private readonly siteId: string;
 
-    constructor(client: Client, listId: string, siteId: string) {
+    constructor(client: SharepointClient, listId: string, siteId: string) {
         this.client = client;
         this.listId = listId;
         this.siteId = siteId;
     }
 
-    public static async getInstance(client: Client, siteAlias: string, listDisplayName: string) {
+    public static async getInstance(client: SharepointClient, siteAlias: string, listDisplayName: string) {
         const maInfoSite = await client.api(`/sites/${siteAlias}`).get() as Site | undefined;
         if (!maInfoSite || !maInfoSite.id) {
             throw new Error(`Cannot find site with alias ${siteAlias}!`);
