@@ -15,12 +15,12 @@ export class SharepointListValidationReporter implements ValidationReporter {
     }
 
     public static async getInstance(client: Client, siteAlias: string, listDisplayName: string) {
-        const maInfoSite = await client.api(`/sites/${siteAlias}`).select("id").get() as Site | undefined;
+        const maInfoSite = await client.api(`/sites/${siteAlias}`).get() as Site | undefined;
         if (!maInfoSite || !maInfoSite.id) {
             throw new Error(`Cannot find site with alias ${siteAlias}!`);
         }
 
-        const { value: lists } = await client.api(`/sites/${maInfoSite.id}/lists`).select(["id", "displayName"]).get() as { value?: List[] }
+        const { value: lists } = await client.api(`/sites/${maInfoSite.id}/lists`).get() as { value?: List[] }
         if (!lists) {
             throw new Error(`Cannot fetch lists for site with alias ${siteAlias}!`);
         }
@@ -74,14 +74,14 @@ export class SharepointListValidationReporter implements ValidationReporter {
     }
 
     private async getItemIdOfEmployee(id: EmployeeID): Promise<string | undefined> {
-        const { value: entries } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).select("id").filter("fields/MitarbeiterID eq '" + id + "'").get() as { value?: ListItem[] };
+        const { value: entries } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).filter("fields/MitarbeiterID eq '" + id + "'").get() as { value?: ListItem[] };
         const [entry] = entries || [];
         return entry?.id;
 
     }
 
     async clearList(): Promise<void> {
-        let { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).select("id").get() as { value?: ListItem[] };
+        let { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).get() as { value?: ListItem[] };
 
         if (items) {
             await Promise.all(items.map(item =>
