@@ -3,6 +3,11 @@ import NodeCache from "node-cache";
 
 export const FORCE_REFRESH = { "cache-control": "max-age=0" };
 
+type CacheEntry = {
+    body: ArrayBuffer,
+    headers: Headers
+}
+
 export class CachingHandler implements Middleware {
 
     private readonly cache = new NodeCache({
@@ -39,11 +44,9 @@ export class CachingHandler implements Middleware {
             if (maxAge) {
                 this.cache.ttl(url, maxAge); // a ttl of 0 has the meaning of infinity for node-cache
             }
-            const entry = this.cache.get(url);
-            if (entry instanceof ArrayBuffer) {
-                context.response = new Response(entry);
-                return;
-            }
+            const entry = this.cache.get<CacheEntry>(url);
+            context.response = new Response(entry?.body, { status: 200, headers: entry?.headers });
+            return;
         }
 
         if (!this.nextMiddleware) {
@@ -52,8 +55,8 @@ export class CachingHandler implements Middleware {
 
         await this.nextMiddleware.execute(context)
         if (canCache && context.response?.status === 200) {
-            const body = await context.response?.arrayBuffer();
-            this.cache.set(url, body)
+            const body = await context.response.arrayBuffer();
+            this.cache.set<CacheEntry>(url, { body, headers: context.response.headers })
             context.response = new Response(body, { status: context.response?.status, headers: context.response?.headers })
         }
     }
