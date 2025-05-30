@@ -76,10 +76,10 @@ if (hasSharepointClientOptions(opts)) {
 
         const client = createSharepointClient(opts)
 
-        const siteID: string = (await client.api(`/sites/${siteIDAlias}`).get()).id as string;
-        const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
+        const siteID: string = (await client.api(`/sites/${siteIDAlias}`).select("id").get()).id as string;
+        const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).select(["id", "name"]).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
 
-        const folders = (await client.api(`/drives/${onePagerDriveId}/root/children`).top(100000).get()).value as DriveItem[];
+        const folders = (await client.api(`/drives/${onePagerDriveId}/root/children`).select("id").top(100000).get()).value as DriveItem[];
 
         for (let element of folders) {
             await client.api(`/drives/${onePagerDriveId}/items/${element.id}/permanentDelete`).post(null);
