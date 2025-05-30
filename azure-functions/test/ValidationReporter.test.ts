@@ -1,15 +1,11 @@
-import { ClientSecretCredential } from "@azure/identity";
-import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
+import { promises as fs } from "fs";
+import { tmpdir } from 'node:os';
+import path from "path";
+import { createSharepointClient, hasSharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
+import { LocalFileValidationReporter } from "../src/functions/validator/adapter/localfile/LocalFileValidationReporter";
 import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
 import { SharepointListValidationReporter } from "../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter";
-import { EmployeeID, OnePagerRepository, ValidationReporter } from "../src/functions/validator/DomainTypes";
-import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
-import { Client } from "@microsoft/microsoft-graph-client";
-import { LocalFileValidationReporter } from "../src/functions/validator/adapter/localfile/LocalFileValidationReporter";
-import { promises as fs } from "fs";
-import path from "path";
-import { tmpdir } from 'node:os';
-import { createSharepointClient, hasSharepointClientOptions, SharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
+import { ValidationReporter } from "../src/functions/validator/DomainTypes";
 
 type ReporterFactory = () => Promise<ValidationReporter>;
 

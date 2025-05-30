@@ -6,6 +6,7 @@ import { LocalFileOnePagerRepository } from "../validator/adapter/localfile/Loca
 import { LocalFileValidationReporter } from "../validator/adapter/localfile/LocalFileValidationReporter";
 import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemoryOnePagerRepository";
 import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
+import { CachingClient, SharepointClient } from "../validator/adapter/sharepoint/CachingClient";
 import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
 import { EmployeeRepository, isEmployeeId, Logger, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
@@ -76,7 +77,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
 }
 
 function getSharepointConfig(opts: SharepointStorageOptions) {
-    const client = createSharepointClient(opts);
+    const client = new CachingClient(createSharepointClient(opts));
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error("Missing SharePoint One Pager site name in environment variables");
@@ -104,7 +105,7 @@ function getSharepointConfig(opts: SharepointStorageOptions) {
     };
 }
 
-export function createSharepointClient(opts: SharepointClientOptions) {
+export function createSharepointClient(opts: SharepointClientOptions): SharepointClient {
     if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
         throw new Error("Missing SharePoint authentication configuration in environment variables");
     }
