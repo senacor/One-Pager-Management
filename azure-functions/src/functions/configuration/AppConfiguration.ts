@@ -129,7 +129,7 @@ export function createSharepointClient(opts: SharepointClientOptions): Client {
 
     const handlers: Middleware[] = [
         new AuthenticationHandler(authProvider),
-        opts.SHAREPOINT_API_CACHING === "false" ? [] : [new CachingHandler()], // we default to having caching enabled
+        opts.SHAREPOINT_API_CACHING !== "true" ? [] : [new CachingHandler()], // we default to having caching disabled
         new RetryHandler(),
         new HTTPMessageHandler()
     ].flat();
