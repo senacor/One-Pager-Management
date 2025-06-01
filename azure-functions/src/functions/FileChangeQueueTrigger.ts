@@ -26,7 +26,7 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
                 await config.onePagers(),
                 await config.employees(),
                 await config.reporter(),
-                validationRules.allRules,
+                validationRules.allRules(context),
                 context
             );
 

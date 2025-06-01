@@ -44,7 +44,7 @@ describe("validationRules", () => {
                 lastUpdateByEmployee: new Date(),
                 location: new URL("file:///examples/Mustermann%2C%20Max_DE_240209.pptx")
             };
-            await expect(combineContentRules(usesCurrentTemplate)(onePager)).resolves.toEqual([]);
+            await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual([]);
         });
 
         it.each(onePagerWithOldTemplates)("should identify onepager using old template as invalid", async (url) => {
@@ -52,7 +52,7 @@ describe("validationRules", () => {
                 lastUpdateByEmployee: new Date(),
                 location: new URL(url)
             };
-            await expect(combineContentRules(usesCurrentTemplate)(onePager)).resolves.toEqual(["USING_OLD_TEMPLATE"]);
+            await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual(["USING_OLD_TEMPLATE"]);
         });
     });
 
@@ -68,13 +68,13 @@ describe("validationRules", () => {
     describe("combineContentRules", () => {
         it("does not validate undefined one-pager", async () => {
             const rule1 = async () => ["MISSING_ONE_PAGER" as ValidationError];
-            const combined = combineContentRules(rule1);
+            const combined = combineContentRules(console, rule1);
             await expect(combined(undefined)).resolves.toEqual([]);
         });
         it("combines multiple rules and flattens errors", async () => {
             const rule1 = async () => ["MISSING_ONE_PAGER" as ValidationError];
             const rule2 = async () => ["OLDER_THAN_SIX_MONTHS" as ValidationError];
-            const combined = combineContentRules(rule1, rule2);
+            const combined = combineContentRules(console, rule1, rule2);
             const onePager = { lastUpdateByEmployee: new Date(), location: new URL("file:///examples/Mustermann%2C%20Max_DE_240209.pptx") };
             await expect(combined(onePager)).resolves.toEqual(["MISSING_ONE_PAGER", "OLDER_THAN_SIX_MONTHS"]);
         });

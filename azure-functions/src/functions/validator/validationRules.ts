@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import { readFile } from 'fs/promises';
 import fetch from 'isomorphic-fetch';
 import JSZip from 'jszip';
-import { ValidationError, ValidationRule } from "./DomainTypes";
+import { Logger, ValidationError, ValidationRule } from "./DomainTypes";
 import { fetchOnePagerContent } from './fetcher';
 
 export const CURRENT_TEMPLATE_PATH = "src/templates/OP_Template_PPT_DE_240119.pptx"
@@ -28,14 +28,16 @@ export const usesCurrentTemplate: ContentValidationRule = async content => {
     return currentThemeHash === hash ? [] : ["USING_OLD_TEMPLATE"];
 };
 
-export const allRules = combineRules(
-    hasOnePager,
-    lastModifiedRule,
-    alwaysFail,
-    combineContentRules(
-        usesCurrentTemplate
-    )
-);
+export function allRules(log: Logger) {
+    return combineRules(
+        hasOnePager,
+        lastModifiedRule,
+        alwaysFail,
+        combineContentRules(log,
+            usesCurrentTemplate
+        )
+    );
+}
 
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
     return async onePager => {
@@ -50,9 +52,9 @@ function whenPresent<T>(fn: (value: T) => Promise<ValidationError[]>): (value: T
 
 type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationError[]>;
 
-export function combineContentRules(...rules: ContentValidationRule[]): ValidationRule {
+export function combineContentRules(log: Logger, ...rules: ContentValidationRule[]): ValidationRule {
     return whenPresent(async onePager => {
-        const content = await fetchOnePagerContent(onePager);
+        const content = await fetchOnePagerContent(log, onePager);
         const errors = await Promise.all(rules.map(rule => rule(content)));
         return errors.flat();
     });
