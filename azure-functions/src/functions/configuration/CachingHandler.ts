@@ -28,6 +28,7 @@ export class CachingHandler implements Middleware {
         let maxAge: number | undefined;
         if (cc) {
             if (cc === "clear-all") { // used in tests
+                console.info("clearing full http cache")
                 this.cache.flushAll();
             }
             maxAge = cc.split(',').reduce((ttl, v) => {
@@ -42,11 +43,15 @@ export class CachingHandler implements Middleware {
 
         if (canCache) {
             if (maxAge) {
+                console.info(`resetting ttls of cache entry "${url}" to ${maxAge}`)
                 this.cache.ttl(url, maxAge); // a ttl of 0 has the meaning of infinity for node-cache
             }
             const entry = this.cache.get<CacheEntry>(url);
-            context.response = new Response(entry?.body, { status: 200, headers: entry?.headers });
-            return;
+            if (entry) {
+                console.info(`using cache entry for "${url}" to ${maxAge}`)
+                context.response = new Response(entry?.body, { status: 200, headers: entry?.headers });
+                return;
+            }
         }
 
         if (!this.nextMiddleware) {

@@ -1,7 +1,7 @@
-import { List, ListItem, Site } from "@microsoft/microsoft-graph-types";
-import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 import { Client } from "@microsoft/microsoft-graph-client";
+import { List, ListItem, Site } from "@microsoft/microsoft-graph-types";
 import { FORCE_REFRESH } from "../../../configuration/CachingHandler";
+import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class SharepointListValidationReporter implements ValidationReporter {
     private readonly listId: string;
@@ -17,17 +17,17 @@ export class SharepointListValidationReporter implements ValidationReporter {
     public static async getInstance(client: Client, siteAlias: string, listDisplayName: string) {
         const maInfoSite = await client.api(`/sites/${siteAlias}`).get() as Site | undefined;
         if (!maInfoSite || !maInfoSite.id) {
-            throw new Error(`Cannot find site with alias ${siteAlias}!`);
+            throw new Error(`Cannot find site with alias "${siteAlias}" !`);
         }
 
         const { value: lists } = await client.api(`/sites/${maInfoSite.id}/lists`).get() as { value?: List[] }
         if (!lists) {
-            throw new Error(`Cannot fetch lists for site with alias ${siteAlias}!`);
+            throw new Error(`Cannot fetch lists for site with alias "${siteAlias}" !`);
         }
 
         const [{ id: listId }] = lists.filter(list => list.displayName === listDisplayName);
         if (!listId) {
-            throw new Error(`Cannot find list with name ${listDisplayName} on site ${siteAlias}!`);
+            throw new Error(`Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`);
         }
         return new SharepointListValidationReporter(client, listId, maInfoSite.id);
     }
