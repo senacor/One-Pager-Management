@@ -61,7 +61,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
             for (const driveItem of folderContents) {
                 // if the output does not have a date of last chage or is not a file, continue
                 if (!driveItem.lastModifiedDateTime ||
-                    !(driveItem.name || "").endsWith(".pptx") ||
+                    !(driveItem.name || "").match(/$.+_\d{8}(_.+)?\.pptx$/) ||
                     !driveItem.file ||
                     !driveItem["@microsoft.graph.downloadUrl"]) {
                     continue;
