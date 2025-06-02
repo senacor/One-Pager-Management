@@ -13,7 +13,7 @@ export async function fetchOnePagerContent(log: Logger, onePager: { fileLocation
         const url = onePager.fileLocation.toString();
         log.log(`Fetching file from URL: ${url}`);
         const response = await fetch(url);
-        if(!response.ok) {
+        if(response.status !== 200) {
             throw new Error(`failed to fetch ${url}, returned with status ${response.status}: ${await response.text()}`)
         }
         return Buffer.from(await response.arrayBuffer());

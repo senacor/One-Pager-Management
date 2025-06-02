@@ -49,13 +49,13 @@ export class SharepointListValidationReporter implements ValidationReporter {
                 fields: {
                     "MitarbeiterID": id,
                     "Festgestellte_Fehler": errors.join("\n"),
-                    "OnePager": onePagerUrl,
+                    "Location": onePagerUrl,
                 }
             });
         } else {
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`).patch({
                 "Festgestellte_Fehler": errors.join("\n"),
-                "OnePager": onePagerUrl,
+                "Location": onePagerUrl,
             });
         }
     }
