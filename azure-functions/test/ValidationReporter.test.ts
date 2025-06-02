@@ -27,7 +27,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should return errors when reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("111",someOnePager, ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("111", someOnePager, ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
             await expect(reporter.getResultFor("111")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
         });
@@ -76,7 +76,7 @@ testFactory("InMemoryValidationReporter", async () => new InMemoryValidationRepo
 const opts = process.env
 if (hasSharepointClientOptions(opts)) {
     testFactory("SharepointListValidationReporter", async () => {
-        const client = createSharepointClient(opts)
+        const client = createSharepointClient({...opts, SHAREPOINT_API_LOGGING: "true"});
 
         let reporter = await SharepointListValidationReporter.getInstance(
             client, "senacor.sharepoint.com:/teams/MaInfoTest", "one-pager-status-automated-test-env"
