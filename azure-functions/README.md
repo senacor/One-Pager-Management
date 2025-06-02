@@ -3,6 +3,30 @@
 We plan to use Azure Functions to offload complex business logic for e.g. validation 
 from Power Automation flows.
 
+## Architecture
+```mermaid
+graph TB
+    
+    A("Power Automate (soon)") -- HTTP-Request --> Azure 
+
+    subgraph Azure
+        azureFunctions(Azure-Functions)
+    end
+
+    subgraph SharePoint
+        opOrdner(One Pager Directory)
+        ListOutput(SharePoint List Output)
+    end
+
+    azureFunctions -- Takes One Pager-Data from --> opOrdner
+    azureFunctions -- Outputs to --> ListOutput
+    
+    style SharePoint fill: lightgreen
+    style SharePoint stroke: green
+    style Azure fill: lightblue
+    style Azure stroke: blue
+```
+
 ## Tools
 
 We recommand you install the following tools to be able to work properly with this

@@ -6,15 +6,15 @@ export async function fetchOnePagerContent(log: Logger, onePager: { fileLocation
         let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);
         const fsPath = filePath.startsWith('//') ? filePath.slice(1) : process.cwd() + filePath;
-        log.log(`Reading file from path: ${fsPath}`);
+        log.log(`(fetcher.ts: fetchOnePagerContent) Reading file from path: ${fsPath}`);
         return await readFile(fsPath);
     } else {
         // HTTP(S) fetch
         const url = onePager.fileLocation.toString();
-        log.log(`Fetching file from URL: ${url}`);
+        log.log(`(fetcher.ts: fetchOnePagerContent) Fetching file from URL: ${url}`);
         const response = await fetch(url);
         if(!response.ok) {
-            throw new Error(`failed to fetch ${url}, returned with status ${response.status}: ${await response.text()}`)
+            throw new Error(`(fetcher.ts: fetchOnePagerContent) Failed to fetch ${url}, returned with status ${response.status}: ${await response.text()}`)
         }
         return Buffer.from(await response.arrayBuffer());
     }

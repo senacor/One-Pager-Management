@@ -11,7 +11,7 @@ const queueOutput = output.storageQueue({
 
 export async function ValidateAllHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     try {
-        context.log(`Http function processed request for url "${request.url}"`);
+        context.log(`(ValidateAllHttpTrigger.ts: ValidateAllHttpTrigger) Http function processed request for url "${request.url}"!`);
 
         const repo: EmployeeRepository = await loadConfigFromEnv(context).employees();
         const ids = await repo.getAllEmployees();
@@ -20,7 +20,7 @@ export async function ValidateAllHttpTrigger(request: HttpRequest, context: Invo
 
         return { body: `Triggered validation for ${ids.length} employees.` };
     } catch (error) {
-        context.error(`Error processing request: ${printError(error)}`);
+        context.error(`(ValidateAllHttpTrigger.ts: ValidateAllHttpTrigger) Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };
     }
 };

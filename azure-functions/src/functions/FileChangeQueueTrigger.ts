@@ -19,7 +19,7 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
         const item = queueItem as QueueItem;
 
         if (isEmployeeId(item.employeeId)) {
-            context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
+            context.log(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Processing valid queue item ${JSON.stringify(queueItem)}`);
 
             const config = loadConfigFromEnv(context);
             const validator = new OnePagerValidation(
@@ -32,10 +32,10 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
 
             await validator.validateOnePagersOfEmployee(item.employeeId);
         } else {
-            context.error(`Invalid queue item ${JSON.stringify(queueItem)}, not a employee id`);
+            context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Invalid queue item "${JSON.stringify(queueItem)}"! It is not an employee id!`);
         }
     } catch (error) {
-        context.error(`Error processing queue item ${JSON.stringify(queueItem)}: ${printError(error)}`);
+        context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`);
         throw error;
     }
 }

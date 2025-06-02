@@ -11,24 +11,25 @@ const queueOutput = output.storageQueue({
 
 export async function FileChangeHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     try {
-        context.log(`Http function processed request for url "${request.url}"`);
+        context.log(`(FileChangeHttpTrigger.ts: FileChangeHttpTrigger) Http function processed request for url "${request.url}"`);
+        console.log("ok!");
 
         const id = request.params.employeeid;
         if (!isEmployeeId(id)) {
-            return { status: 400, body: `Invalid request! ${id} is no valid employee id.` };
+            return { status: 400, body: `Invalid request! "${id}" is no valid employee id.` };
         }
 
         const employees = await loadConfigFromEnv(context).employees();
         if (!(await employees.getAllEmployees()).includes(id)) {
-            return { status: 404, body: `Employee not found: ${id}` };
+            return { status: 404, body: `Employee not found: "${id}"` };
         }
 
         const item: QueueItem = { employeeId: id };
         context.extraOutputs.set(queueOutput, item);
 
-        return { body: `Received change notification for: ${id}` };
+        return { body: `Received change notification for: "${id}"` };
     } catch (error) {
-        context.error(`Error processing request: ${printError(error)}`);
+        context.error(`(FileChangeHttpTrigger.ts: FileChangeHttpTrigger) Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };
     }
 };

@@ -20,14 +20,14 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
     public static async getInstance(client: Client, siteIDAlias: string, listName: string): Promise<SharepointDriveOnePagerRepository> {
         const site = await client.api(`/sites/${siteIDAlias}`).get() as Site | undefined;
         if (!site || !site.id) {
-            throw new Error(`Cannot find site with alias ${siteIDAlias}!`);
+            throw new Error(`(SharepointDriveOnePagerRepository.ts: getInstance) Cannot find site with alias ${siteIDAlias}!`);
         }
 
         const onePagerDriveId: string = (await client.api(`/sites/${site.id}/drives`).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
         const { value: folders } = await client.api(`/drives/${onePagerDriveId}/root/children`).top(100000).get() as { value?: DriveItem[] };
 
         if (folders === undefined) {
-            throw new Error(`could not fetch folders of SharePoint drive with ID ${onePagerDriveId} for site ${siteIDAlias}`);
+            throw new Error(`(SharepointDriveOnePagerRepository.ts: getInstance) Could not fetch folders of SharePoint drive with ID "${onePagerDriveId}" for site "${siteIDAlias}"!`);
         }
 
         const onePagers: OnePagerMap = {};

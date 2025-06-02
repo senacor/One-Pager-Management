@@ -13,7 +13,7 @@ export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFol
 export function employeeIdFromFolder(folder: EmployeeFolder): EmployeeID {
     const lastPart = folder.split("_").pop(); // we are guranteed that it works because EmployeeFolder has at least 3 parts
     if (!isEmployeeId(lastPart)) {
-        throw new Error(`Invalid folder name: ${folder}`);
+        throw new Error(`(DirectoryBasedOnePager.ts: employeeIdFromFolder) Invalid folder name: ${folder}`);
     }
     return lastPart;
 }
@@ -37,7 +37,9 @@ export function onePagerFile(name: string, familyName: string, lastUpdated: Date
 
 export function dateFromOnePagerFile(file: OnePagerFile): Date {
     const match = file.match(/_(\d{6})\.pptx$/);
-    if (!match) throw new Error(`Invalid one-pager file name: ${file}`);
+    if (!match) {
+        throw new Error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
+    }
     return fromYYMMDD(match[1]);
 }
 
@@ -53,7 +55,7 @@ function toYYMMDD(date: Date): string {
  */
 function fromYYMMDD(yyMMdd: string): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
-        throw new Error(`Invalid yyMMdd date string: ${yyMMdd}`);
+        throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
     }
     const year = Number(yyMMdd.slice(0, 2));
     const month = Number(yyMMdd.slice(2, 4)) - 1; // JS months are 0-based

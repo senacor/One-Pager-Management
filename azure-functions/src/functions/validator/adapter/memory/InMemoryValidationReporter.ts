@@ -9,17 +9,17 @@ export class InMemoryValidationReporter implements ValidationReporter {
     }
 
     async reportValid(id: EmployeeID): Promise<void> {
-        this.logger.log("(InMemoryValidationReporter) reportValid:", id);
+        this.logger.log("(InMemoryValidationReporter.ts: reportValid)", id);
         this.reports.delete(id);
     }
 
     async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
-        this.logger.log("(InMemoryValidationReporter) reportErrors:", id, onePager, errors);
+        this.logger.log("((InMemoryValidationReporter.ts: reportErrors)", id, onePager, errors);
         this.reports.set(id, { onePager, errors });
     }
 
     async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
-        this.logger.log("(InMemoryValidationReporter) getResultFor:", id);
+        this.logger.log("(InMemoryValidationReporter.ts: getResultFor)", id);
         return this.reports.get(id)?.errors || [];
     }
 }

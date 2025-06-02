@@ -20,29 +20,30 @@ export class OnePagerValidation {
 
     async validateOnePagersOfEmployee(id: EmployeeID) {
         if (!(await this.employees.getAllEmployees()).includes(id)) {
-            this.logger.error(`Employee ${id} does not exist.`);
+            this.logger.error(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} does not exist.`);
             return;
         }
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
-        this.logger.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
+        this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
 
         const newest = this.selectNewestOnePager(onePagers);
-        this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+        this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
-            this.logger.log(`Employee ${id} has valid OnePagers!`);
+            this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} has valid OnePagers!`);
             await this.reporter.reportValid(id);
         } else {
-            this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
+            this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} has the following errors: ${errors.join(' ')}!`);
             await this.reporter.reportErrors(id, newest, errors);
         }
     }
 
     private selectNewestOnePager(onePagers: OnePager[]): OnePager | undefined {
         if (onePagers.length === 0) {
+            this.logger.log(`(OnePagerValidation.ts: selectNewestOnePager) No one-pagers found for current employee!`);
             return undefined;
         }
 
