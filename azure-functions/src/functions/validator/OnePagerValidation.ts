@@ -37,7 +37,7 @@ export class OnePagerValidation {
             await this.reporter.reportValid(id);
         } else {
             this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
-            await this.reporter.reportErrors(id, "<not yet implemented>", errors);
+            await this.reporter.reportErrors(id, newest, errors);
         }
     }
 

@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
+import { EmployeeID, OnePager, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class LocalFileValidationReporter implements ValidationReporter {
     private readonly dataDir: string;
@@ -22,7 +22,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
         await fs.writeFile(this.validationFile(id), JSON.stringify([]));
     }
 
-    async reportErrors(id: EmployeeID, name: string, errors: ValidationError[]): Promise<void> {
+    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
         await this.ensureDataDir();
         await fs.writeFile(this.validationFile(id), JSON.stringify(errors));
     }

@@ -5,9 +5,15 @@ import { createSharepointClient, hasSharepointClientOptions } from "../src/funct
 import { LocalFileValidationReporter } from "../src/functions/validator/adapter/localfile/LocalFileValidationReporter";
 import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
 import { SharepointListValidationReporter } from "../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter";
-import { ValidationReporter } from "../src/functions/validator/DomainTypes";
+import { OnePager, ValidationReporter } from "../src/functions/validator/DomainTypes";
 
 type ReporterFactory = () => Promise<ValidationReporter>;
+
+const someOnePager: OnePager = {
+    lastUpdateByEmployee: new Date(),
+    fileLocation: new URL("https://example.com/onepager"),
+    webLocation: new URL("https://example.com/onepager/web"),
+};
 
 const testFactory = (name: string, reporterFactory: ReporterFactory) => {
     describe(name, () => {
@@ -21,7 +27,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should return errors when reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("111",someOnePager, ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
             await expect(reporter.getResultFor("111")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
         });
@@ -29,7 +35,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should clean up errors when valid is reported", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
+            await reporter.reportErrors("111", someOnePager, ["OLDER_THAN_SIX_MONTHS"]);
             await reporter.reportValid("111");
 
             await expect(reporter.getResultFor("111")).resolves.toEqual([]);
@@ -38,7 +44,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should not return errors of other employee", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("000", "Employee Name", ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("000", someOnePager, ["OLDER_THAN_SIX_MONTHS", "MISSING_ONE_PAGER"]);
 
             await expect(reporter.getResultFor("111")).resolves.toEqual([]);
         });
@@ -46,7 +52,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should not clean up errors when valid is reported for other employee", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
+            await reporter.reportErrors("111", someOnePager, ["OLDER_THAN_SIX_MONTHS"]);
             await reporter.reportValid("000");
 
             await expect(reporter.getResultFor("111")).resolves.toEqual(["OLDER_THAN_SIX_MONTHS"]);
@@ -55,8 +61,8 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it("should replace previous error with new ones", async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors("111", "Employee Name", ["OLDER_THAN_SIX_MONTHS"]);
-            await reporter.reportErrors("111", "Employee Name", ["MISSING_ONE_PAGER"]);
+            await reporter.reportErrors("111", someOnePager, ["OLDER_THAN_SIX_MONTHS"]);
+            await reporter.reportErrors("111", someOnePager, ["MISSING_ONE_PAGER"]);
 
 
             await expect(reporter.getResultFor("111")).resolves.toEqual(["MISSING_ONE_PAGER"]);

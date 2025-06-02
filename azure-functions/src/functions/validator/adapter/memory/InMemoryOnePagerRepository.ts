@@ -10,7 +10,7 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
         this.onePagers = Object.fromEntries(
             Object.entries(onePagers).map(([employeeId, onePagersArr]) => [
                 employeeId,
-                onePagersArr.map(d => ({ ...d, location: new URL(`file:///${CURRENT_TEMPLATE_PATH}`) }))
+                onePagersArr.map(d => ({ ...d, fileLocation: new URL(`file:///${CURRENT_TEMPLATE_PATH}`) }))
             ])
         );
     }

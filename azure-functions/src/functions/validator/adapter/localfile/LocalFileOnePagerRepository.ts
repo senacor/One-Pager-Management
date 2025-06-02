@@ -22,8 +22,8 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
             .map(file => {
                 const lastUpdateByEmployee = dateFromOnePagerFile(file);
                 const urlPath = path.resolve(employeeDir, file.split('/').map(encodeURIComponent).join('/'));
-                const location = new URL('file:///' + urlPath);
-                return { lastUpdateByEmployee, location };
+                const fileLocation = new URL('file:///' + urlPath);
+                return { lastUpdateByEmployee, fileLocation };
             });
     }
 

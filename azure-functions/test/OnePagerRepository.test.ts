@@ -60,8 +60,8 @@ const testFactory = (name: string, factory: RepoFactory) => {
             });
             let onePagers = await rep.getAllOnePagersOfEmployee(id);
             expect(onePagers).toHaveLength(1);
-            expect(onePagers[0].location).not.toBeFalsy();
-            expect(onePagers[0].location.pathname).not.toEqual("");
+            expect(onePagers[0].fileLocation).not.toBeFalsy();
+            expect(onePagers[0].fileLocation.pathname).not.toEqual("");
         });
     });
 }

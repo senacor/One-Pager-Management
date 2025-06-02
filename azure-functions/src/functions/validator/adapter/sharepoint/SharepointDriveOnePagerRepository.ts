@@ -1,8 +1,8 @@
+import { Client } from "@microsoft/microsoft-graph-client";
 import { DriveItem, Site } from "@microsoft/microsoft-graph-types";
 import { URL } from "node:url";
 import { EmployeeID, EmployeeRepository, OnePager, OnePagerRepository } from "../../DomainTypes";
 import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
-import { Client } from "@microsoft/microsoft-graph-client";
 
 type SharePointFolder = string;
 type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };
@@ -65,7 +65,8 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                 }
                 let onePager: OnePager = {
                     lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
-                    location: new URL(driveItem["@microsoft.graph.downloadUrl"])
+                    fileLocation: new URL(driveItem["@microsoft.graph.downloadUrl"]),
+                    webLocation: driveItem.webUrl ? new URL(driveItem.webUrl) : undefined,
                 };
                 this.onePagers[employeeId].push(onePager);
             }

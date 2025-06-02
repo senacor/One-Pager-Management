@@ -1,7 +1,7 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { List, ListItem, Site } from "@microsoft/microsoft-graph-types";
 import { FORCE_REFRESH } from "../../../configuration/CachingHandler";
-import { EmployeeID, ValidationError, ValidationReporter } from "../../DomainTypes";
+import { EmployeeID, OnePager, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 export class SharepointListValidationReporter implements ValidationReporter {
     private readonly listId: string;
@@ -40,19 +40,22 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
     }
 
-    async reportErrors(id: EmployeeID, name: string, errors: ValidationError[]): Promise<void> {
+    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
         let itemId = await this.getItemIdOfEmployee(id);
 
+        const onePagerUrl = onePager?.webLocation ? onePager.webLocation.toString() : "";
         if (itemId === undefined) {
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
                 fields: {
                     "MitarbeiterID": id,
-                    "Festgestellte_Fehler": errors.join("\n")
+                    "Festgestellte_Fehler": errors.join("\n"),
+                    "OnePager": onePagerUrl,
                 }
             });
         } else {
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`).patch({
-                "Festgestellte_Fehler": errors.join("\n")
+                "Festgestellte_Fehler": errors.join("\n"),
+                "OnePager": onePagerUrl,
             });
         }
     }

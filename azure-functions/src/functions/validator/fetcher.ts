@@ -1,16 +1,16 @@
 import { readFile } from "fs/promises";
 import { Logger } from "./DomainTypes";
 
-export async function fetchOnePagerContent(log: Logger, onePager: { location: URL }): Promise<Buffer> {
-    if (onePager.location.protocol === 'file:') {
-        let filePath = onePager.location.pathname;
+export async function fetchOnePagerContent(log: Logger, onePager: { fileLocation: URL }): Promise<Buffer> {
+    if (onePager.fileLocation.protocol === 'file:') {
+        let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);
         const fsPath = filePath.startsWith('//') ? filePath.slice(1) : process.cwd() + filePath;
         log.log(`Reading file from path: ${fsPath}`);
         return await readFile(fsPath);
     } else {
         // HTTP(S) fetch
-        const url = onePager.location.toString();
+        const url = onePager.fileLocation.toString();
         log.log(`Fetching file from URL: ${url}`);
         const response = await fetch(url);
         if(!response.ok) {

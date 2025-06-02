@@ -1,13 +1,13 @@
 import { URL } from "node:url";
 import { OnePager, ValidationError } from "../src/functions/validator/DomainTypes";
-import { allRules, combineContentRules, combineRules, hasOnePager, lastModifiedRule, usesCurrentTemplate } from "../src/functions/validator/validationRules";
+import { combineContentRules, combineRules, hasOnePager, lastModifiedRule, usesCurrentTemplate } from "../src/functions/validator/validationRules";
 
 const location = new URL("http://example.com/onepager.pptx")
 
 describe("validationRules", () => {
     describe("hasOnePager", () => {
         it("should report no error if onePager is defined", async () => {
-            const onePager: OnePager = { lastUpdateByEmployee: new Date(), location };
+            const onePager: OnePager = { lastUpdateByEmployee: new Date(), fileLocation: location };
             await expect(hasOnePager(onePager)).resolves.toEqual([]);
         });
         it("should report an error if onePager is undefined", async () => {
@@ -22,13 +22,13 @@ describe("validationRules", () => {
         it("should report no error if lastUpdateByEmployee is within 6 months", async () => {
             const recent = new Date();
             recent.setMonth(recent.getMonth() - 3);
-            const onePager: OnePager = { lastUpdateByEmployee: recent, location };
+            const onePager: OnePager = { lastUpdateByEmployee: recent, fileLocation: location };
             await expect(lastModifiedRule(onePager)).resolves.toEqual([]);
         });
         it("should report an error if lastUpdateByEmployee is older than 6 months", async () => {
             const old = new Date();
             old.setMonth(old.getMonth() - 7);
-            const onePager: OnePager = { lastUpdateByEmployee: old, location };
+            const onePager: OnePager = { lastUpdateByEmployee: old, fileLocation: location };
             await expect(lastModifiedRule(onePager)).resolves.toEqual(["OLDER_THAN_SIX_MONTHS"]);
         });
     });
@@ -42,7 +42,7 @@ describe("validationRules", () => {
         it("should identify onepager using current template as valid", async () => {
             const onePager: OnePager = {
                 lastUpdateByEmployee: new Date(),
-                location: new URL("file:///examples/Mustermann%2C%20Max_DE_240209.pptx")
+                fileLocation: new URL("file:///examples/Mustermann%2C%20Max_DE_240209.pptx")
             };
             await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual([]);
         });
@@ -50,7 +50,7 @@ describe("validationRules", () => {
         it.each(onePagerWithOldTemplates)("should identify onepager using old template as invalid", async (url) => {
             const onePager: OnePager = {
                 lastUpdateByEmployee: new Date(),
-                location: new URL(url)
+                fileLocation: new URL(url)
             };
             await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual(["USING_OLD_TEMPLATE"]);
         });
