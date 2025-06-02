@@ -1,6 +1,5 @@
 import { createHash } from 'crypto';
 import { readFile } from 'fs/promises';
-import fetch from 'isomorphic-fetch';
 import JSZip from 'jszip';
 import { Logger, ValidationError, ValidationRule } from "./DomainTypes";
 import { fetchOnePagerContent } from './fetcher';
@@ -15,10 +14,6 @@ export const lastModifiedRule: ValidationRule = whenPresent(async onePager => {
     return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
 });
 
-export const alwaysFail: ValidationRule = async (onePager) => {
-    return ["ALWAYS_FAIL"];
-};
-
 export const usesCurrentTemplate: ContentValidationRule = async content => {
     const templateData = await readFile(CURRENT_TEMPLATE_PATH);
     const currentThemeHash = await calculateThemeHash(templateData);
@@ -32,7 +27,6 @@ export function allRules(log: Logger) {
     return combineRules(
         hasOnePager,
         lastModifiedRule,
-        alwaysFail,
         combineContentRules(log,
             usesCurrentTemplate
         )

@@ -20,7 +20,7 @@ export interface EmployeeRepository {
     getAllEmployees(): Promise<EmployeeID[]>;
 }
 
-export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "ALWAYS_FAIL" | "USING_OLD_TEMPLATE";
+export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "USING_OLD_TEMPLATE";
 
 export interface ValidationReporter {
     reportValid(id: EmployeeID): Promise<void>;
