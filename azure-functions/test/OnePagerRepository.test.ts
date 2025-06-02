@@ -68,13 +68,13 @@ const testFactory = (name: string, factory: RepoFactory) => {
 
 testFactory("InMemoryOnePagerRepository", async (data) => new InMemoryOnePagerRepository(data));
 
-const opts = process.env
+const opts = process.env;
 if (hasSharepointClientOptions(opts)) {
     testFactory("SharepointDriveOnePagerRepository", async (data) => {
         const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
         const listName: string = "OnePagerAutomatedTestEnv";
 
-        const client = createSharepointClient(opts)
+        const client = createSharepointClient({...opts, SHAREPOINT_API_LOGGING: "true"});
 
         const siteID: string = (await client.api(`/sites/${siteIDAlias}`).select("id").get()).id as string;
         const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).select(["id", "name"]).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
