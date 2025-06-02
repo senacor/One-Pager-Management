@@ -4,11 +4,21 @@ import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { EmployeeRepository } from "./validator/DomainTypes";
 import { printError } from "./ErrorHandling";
 
+/**
+ * Azure Queue used to store One Pager validation requests.
+ */
 const queueOutput = output.storageQueue({
     queueName: onepagerValidationRequests,
     connection: '',
 });
 
+/**
+ * A function that is triggered by an HTTP request to validate all employees.
+ * It retrieves all employee IDs from the repository and adds them to a queue for validation.
+ * @param request The HTTP request object given by Azure Functions.
+ * @param context The invocation context given by Azure Functions.
+ * @returns The HTTP response.
+ */
 export async function ValidateAllHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     try {
         context.log(`(ValidateAllHttpTrigger.ts: ValidateAllHttpTrigger) Http function processed request for url "${request.url}"!`);
@@ -25,6 +35,7 @@ export async function ValidateAllHttpTrigger(request: HttpRequest, context: Invo
     }
 };
 
+// Register the ValidateAllHttpTrigger function with Azure Functions to handle HTTP requests.
 app.http('ValidateAllHttpTrigger', {
     methods: ['POST'],
     route: 'validateAll',

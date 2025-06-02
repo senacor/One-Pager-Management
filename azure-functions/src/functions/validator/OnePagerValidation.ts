@@ -1,5 +1,8 @@
 import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
 
+/**
+ * Validates one-pagers of employees based on a given validation rule.
+ */
 export class OnePagerValidation {
     private readonly logger: Logger;
     private readonly onePagers: OnePagerRepository;
@@ -7,6 +10,14 @@ export class OnePagerValidation {
     private readonly reporter: ValidationReporter;
     private readonly validationRule: ValidationRule;
 
+    /**
+     * Creates an instance of OnePagerValidation.
+     * @param onePagers The one pager repository to fetch one-pagers from.
+     * @param employees A class for fetching all employee IDs.
+     * @param reporter The reporter to report validation results.
+     * @param validationRule The validation rule to apply to the one-pagers.
+     * @param logger The logger to use for logging messages (default is console).
+     */
     constructor(
         onePagers: OnePagerRepository, employees: EmployeeRepository,
         reporter: ValidationReporter, validationRule: ValidationRule, logger: Logger = console
@@ -18,7 +29,12 @@ export class OnePagerValidation {
         this.validationRule = validationRule;
     }
 
-    async validateOnePagersOfEmployee(id: EmployeeID) {
+    /**
+     * The main function to validate all one-pagers of all employees.
+     * It fetches all one-pager of a given employee, selects the newest and applies the validation rule.
+     * @param id The employee ID to validate one-pagers for.
+     */
+    async validateOnePagersOfEmployee(id: EmployeeID): Promise<void> {
         if (!(await this.employees.getAllEmployees()).includes(id)) {
             this.logger.error(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} does not exist.`);
             return;
@@ -30,6 +46,7 @@ export class OnePagerValidation {
         const newest = this.selectNewestOnePager(onePagers);
         this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
+        // Check the newest one-pager against the validation rule and receive all errors as an array.
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
@@ -41,6 +58,11 @@ export class OnePagerValidation {
         }
     }
 
+    /**
+     * A function to select the newest one-pager.
+     * @param onePagers The list of one-pagers to select from.
+     * @returns The newest one-pager or undefined if no one-pagers are found.
+     */
     private selectNewestOnePager(onePagers: OnePager[]): OnePager | undefined {
         if (onePagers.length === 0) {
             this.logger.log(`(OnePagerValidation.ts: selectNewestOnePager) No one-pagers found for current employee!`);

@@ -10,18 +10,22 @@ export type QueueItem = { employeeId: string };
 export const onepagerValidationRequests = 'onepager-validation-requests';
 
 /**
- * Arbeitet die Queue ab.
- * @param queueItem
- * @param context
+ * This function is triggered by items added to the Azure Storage Queue.
+ * @param queueItem The QueueItem containing the employee ID to process.
+ * @param context The Azure Functions invocation context.
  */
 export async function FileChangeQueueTrigger(queueItem: unknown, context: InvocationContext): Promise<void> {
+    context.log(`--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
     try {
         const item = queueItem as QueueItem;
 
         if (isEmployeeId(item.employeeId)) {
             context.log(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Processing valid queue item ${JSON.stringify(queueItem)}`);
 
+            // Establish a connection to the repository containing one-pagers and our report output list.
             const config = loadConfigFromEnv(context);
+
+            // Validate the one-pagers of the employee specified in the queue item.
             const validator = new OnePagerValidation(
                 await config.onePagers(),
                 await config.employees(),
@@ -29,17 +33,20 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
                 validationRules.allRules(context),
                 context
             );
-
             await validator.validateOnePagersOfEmployee(item.employeeId);
         } else {
-            context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Invalid queue item "${JSON.stringify(queueItem)}"! It is not an employee id!`);
+            context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`);
         }
     } catch (error) {
         context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`);
         throw error;
+    } finally {
+        context.log(`--------- END of Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
     }
 }
 
+
+// Register the FileChangeQueueTrigger function with Azure Functions to work on queue items.
 app.storageQueue('FileChangeQueueTrigger', {
     queueName: onepagerValidationRequests,
     connection: '',
