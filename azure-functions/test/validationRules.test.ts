@@ -1,6 +1,7 @@
 import { URL } from "node:url";
 import { OnePager, ValidationError } from "../src/functions/validator/DomainTypes";
 import { combineContentRules, combineRules, hasOnePager, lastModifiedRule, usesCurrentTemplate } from "../src/functions/validator/validationRules";
+import { readdirSync } from "node:fs";
 
 const location = new URL("http://example.com/onepager.pptx")
 
@@ -39,7 +40,7 @@ describe("validationRules", () => {
     ]
 
     describe("usesCurrentTemplate", () => {
-        it("should identify onepager using current template as valid", async () => {
+        it.only("should identify onepager using current template as valid", async () => {
             const onePager: OnePager = {
                 lastUpdateByEmployee: new Date(),
                 fileLocation: new URL("file:///examples/Mustermann%2C%20Max_DE_240209.pptx")
@@ -47,12 +48,21 @@ describe("validationRules", () => {
             await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual([]);
         });
 
-        it.each(onePagerWithOldTemplates)("should identify onepager using old template as invalid", async (url) => {
+        it.each(onePagerWithOldTemplates)("should identify onepager using old template as invalid: %s", async (url) => {
             const onePager: OnePager = {
                 lastUpdateByEmployee: new Date(),
                 fileLocation: new URL(url)
             };
             await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual(["USING_OLD_TEMPLATE"]);
+        });
+
+        const files = readdirSync("examples/non-exact-template").filter(file => file.endsWith(".pptx"));
+        it.only.each(files)("should identify non-exact template usage in %s", async (url) => {
+            const onePager: OnePager = {
+                lastUpdateByEmployee: new Date(),
+                fileLocation: new URL(`file:///examples/non-exact-template/${encodeURIComponent(url)}`)
+            };
+            await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual(["USING_MODIFIED_TEMPLATE"]);
         });
     });
 

@@ -1,2 +1,4 @@
 __*
-.vscode
+.vscode/
+.idea/
+.DS_Store

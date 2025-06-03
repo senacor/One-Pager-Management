@@ -46,7 +46,7 @@ export type OnePager = {
 /**
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
-export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "USING_OLD_TEMPLATE";
+export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "USING_UNKNOWN_TEMPLATE" | "USING_MODIFIED_TEMPLATE";
 
 /**
  *

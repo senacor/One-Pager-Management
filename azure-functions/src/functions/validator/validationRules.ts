@@ -30,48 +30,64 @@ export const lastModifiedRule: ValidationRule = whenPresent(async onePager => {
 /*
  * -------- Validation rules concerning the content of a OnePager. --------
  */
-export const usesCurrentTemplate: ContentValidationRule = async content => {
+export const usesCurrentTemplate = async (content: Buffer) => {
     const templateData = await readFile(CURRENT_TEMPLATE_PATH);
-    const currentThemeHash = await calculateThemeHash(templateData);
+    const templateHashes = await calculateThemeHash(templateData);
+    const contentHashes = await calculateThemeHash(content);
 
-    const hash = await calculateThemeHash(content);
+    const templateKeys = Object.keys(templateHashes.hashes);
+    const contentKeys = Object.keys(contentHashes.hashes);
 
-    return currentThemeHash === hash ? [] : ["USING_OLD_TEMPLATE"];
+    // no error if theme contents are equal
+    if (templateKeys.length === contentKeys.length &&
+        templateKeys.every(key => contentKeys.includes(key) && templateHashes.hashes[key] === contentHashes.hashes[key])) {
+        console.log("No error: Template and content themes are equal.");
+        return [];
+    }
+
+    const themeCountWithSameContent = templateKeys.filter(key => contentKeys.includes(key)).length;
+    const hasSomeOriginalTemplateThemes = templateHashes.names.some(name => contentHashes.names.includes(name));
+
+    console.log(`Template keys: ${templateKeys.length}, Content keys: ${contentKeys.length}, Matching themes: ${themeCountWithSameContent}, template names: ${templateHashes.names}, content names: ${contentHashes.names}`);
+
+    // if we detect at least one theme of the template we consider the current one-pager based on it
+    const error: ValidationError[] = [themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes ? "USING_MODIFIED_TEMPLATE" : "USING_UNKNOWN_TEMPLATE"];
+    return error;
 };
-
-
-
-
 
 /*
  * -------- Auxiliary functions to help in defining validation rules of OnePagers. --------
  */
-
-/**
- * An auxiliary function to calculate the MD5 hash of the theme of a PowerPoint file.
- * @param pptxContent
- * @returns
- */
-export async function calculateThemeHash(pptxContent: Buffer): Promise<string> {
+export async function calculateThemeHash(pptxContent: Buffer): Promise<{names: string[], hashes: Record<string, string>}> {
     const zip = new JSZip();
     const pptx = await zip.loadAsync(pptxContent);
-    const themes = Object.keys(pptx.files).filter(file => file.startsWith("ppt/theme/")).sort();
+    const masterFiles = Object.keys(pptx.files).filter(file => file.match(/ppt\/(theme)\//)).sort();
 
-    const hash = createHash('md5');
+    const hashes: Record<string, string> = {};
+    const names: string[] = [];
+    for (const f of masterFiles) {
+        const xmlContent = await pptx.files[f].async("string");
 
-    for (const t of themes) {
-        hash.update(await pptx.files[t].async("base64"));
+        const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
+        if(!match) {
+            continue;
+        }
+        const themeName = match[1];
+        // these seem to be default themes we do not care about
+        if(themeName.toLocaleLowerCase().includes("office")) {
+            continue;
+        }
+
+        const hash = createHash('md5');
+        hash.update(xmlContent);
+        const digest = hash.digest("hex");
+
+        hashes[digest] = f;
+        names.push(themeName);
     }
 
-    return hash.digest("hex");
+    return { names, hashes };
 }
-
-
-
-
-
-
-
 
 
 /*
