@@ -43,7 +43,6 @@ export async function FileChangeHttpTrigger(request: HttpRequest, context: Invoc
         const item: QueueItem = { employeeId: id };
         context.extraOutputs.set(queueOutput, item);
 
-
         context.log(`(FileChangeHttpTrigger.ts: FileChangeHttpTrigger) Queue item created for employee id: "${id}"!`);
         return { body: `Received change notification for: "${id}"` };
     } catch (error) {
@@ -53,7 +52,6 @@ export async function FileChangeHttpTrigger(request: HttpRequest, context: Invoc
         context.log(`--------- END of Trigger FileChangeHttpTrigger ---------`);
     }
 };
-
 
 // Register the HTTP trigger with Azure Functions
 app.http('FileChangeHttpTrigger', {

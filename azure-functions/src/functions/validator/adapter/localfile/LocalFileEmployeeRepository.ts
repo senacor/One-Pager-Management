@@ -8,25 +8,21 @@ import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePage
  * LocalFileEmployeeRepository is an implementation of EmployeeRepository that reads employee IDs from a local file system directory.
  */
 export class LocalFileEmployeeRepository implements EmployeeRepository {
+
+    /**
+     * The directory where employee one-pagers are stored.
+     * It is expected to contain folders named after employee IDs.
+     */
     private readonly onePagerDir: string;
     private readonly logger: Logger;
 
-    /**
-     * Creates an instance of LocalFileEmployeeRepository.
-     * @param dataDir The directory where all data is stored.
-     * @param logger The logger to use for logging messages (default is console).
-     */
     constructor(dataDir: string, logger: Logger = console) {
         this.onePagerDir = path.join(dataDir, ONE_PAGER_DIR);
         this.logger = logger;
     }
 
-    /**
-     * Retrieves all employee IDs from the local file system.
-     * @returns A promise that resolves to an array containting all employee IDs found in the one-pager directory.
-     */
     async getAllEmployees(): Promise<EmployeeID[]> {
-        this.logger.log(`(LocalFileEmployeeRepository.ts: getAllEmployees) Retrieving all employees!`);
+        this.logger.log(`Retrieving all employees!`);
         await fs.mkdir(this.onePagerDir, { recursive: true });
         const folders = await fs.readdir(this.onePagerDir);
         let _this = this;

@@ -120,7 +120,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
             return [];
         } else {
             //TODO: runtime type check
-            return (item.fields as { [key: string]: string })["Festgestellte_Fehler"].split("\n") as ValidationError[];
+            return (item.fields as Record<string, string>)["Festgestellte_Fehler"].split("\n") as ValidationError[];
         }
     }
 

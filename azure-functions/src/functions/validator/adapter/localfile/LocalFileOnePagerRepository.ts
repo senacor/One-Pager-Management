@@ -13,24 +13,19 @@ export const ONE_PAGER_DIR = `onepagers`;
  * LocalFileOnePagerRepository is an implementation of OnePagerRepository that reads and writes one-pagers to a local file system directory.
  */
 export class LocalFileOnePagerRepository implements OnePagerRepository {
+
+    /**
+     * The directory where employee one-pagers are stored.
+     * It is expected to contain folders named after employee IDs.
+     */
     private readonly onePagerDir: string;
     private readonly logger: Logger;
 
-    /**
-     * Creates an instance of LocalFileOnePagerRepository.
-     * @param dataDir The directory where all data is stored, including one-pagers.
-     * @param logger The logger to use for logging messages (default is console).
-     */
     constructor(dataDir: string, logger: Logger = console) {
         this.onePagerDir = path.join(dataDir, ONE_PAGER_DIR);
         this.logger = logger;
     }
 
-    /**
-     * Retrieves all one-pagers of an employee from the local file system.
-     * @param employeeId The ID of the employee whose one-pagers should be retrieved.
-     * @returns A promise that resolves to an array of OnePager objects
-     */
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         const employeeDir = await this.employeeDir(employeeId);
         const files = await fs.readdir(employeeDir);

@@ -5,7 +5,7 @@ import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository } 
 import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
 
 type SharePointFolder = string;
-type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };
+type OnePagerMap = Record<EmployeeID, OnePager[] | SharePointFolder>;
 type DriveItemWithDownloadUrl = DriveItem & { "@microsoft.graph.downloadUrl"?: string };
 
 /**
@@ -82,11 +82,14 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
         this.onePagers[employeeId] = [];
         if (folderContents) {
             for (const driveItem of folderContents) {
+
+                // check if the drive item is a valid one-pager file
                 // if the output does not have a date of last chage or is not a file, continue
                 if (!driveItem.lastModifiedDateTime ||
-                    !(driveItem.name || "").match(/$.+_\d{8}(_.+)?\.pptx$/) ||
+                    !(driveItem.name || "").match(/^.+_\d{8}(_.+)?\.pptx$/) ||
                     !driveItem.file ||
                     !driveItem["@microsoft.graph.downloadUrl"]) {
+                    this.logger.log(`Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`);
                     continue;
                 }
                 let onePager: OnePager = {

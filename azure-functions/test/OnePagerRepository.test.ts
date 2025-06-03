@@ -8,7 +8,7 @@ import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/m
 import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { EmployeeID, OnePagerRepository } from "../src/functions/validator/DomainTypes";
 
-type RepoFactory = (onePagers: { [employeeId: EmployeeID]: { lastUpdateByEmployee: Date }[] }) => Promise<OnePagerRepository>;
+type RepoFactory = (onePagers: Record<EmployeeID, { lastUpdateByEmployee: Date }[]>) => Promise<OnePagerRepository>;
 
 const testFactory = (name: string, factory: RepoFactory) => {
     describe(name, () => {
@@ -93,11 +93,11 @@ if (hasSharepointClientOptions(opts)) {
                 "@microsoft.graph.conflictBehavior": "rename"
             });
             for (let i = 0; i < data[employeeId as EmployeeID].length; ++i) {
-                await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i}.pptx:/content`).put("iwas");
+                await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i.toString().padStart(8, "0")}.pptx:/content`).put("iwas");
             }
         }
 
-        return await SharepointDriveOnePagerRepository.getInstance(client, siteIDAlias, listName);
+        return await SharepointDriveOnePagerRepository.getInstance(client, siteIDAlias, listName, console);
     });
 }
 

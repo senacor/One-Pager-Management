@@ -5,7 +5,7 @@ import { CURRENT_TEMPLATE_PATH } from "../../validationRules";
  * A map that associates employee IDs with their respective one-pagers.
  * It is used to store and retrieve one-pagers for each employee.
  */
-type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] };
+type OnePagerMap = Record<EmployeeID, OnePager[]>;
 
 /**
  * This class implements an in-memory repository for storing and retrieving one-pagers of employees.
@@ -20,7 +20,7 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
      * @param onePagers An object which keys are employee IDs and values are arrays of one-pagers.
      * @param logger The logger to use for logging messages (default is console).
      */
-    constructor(onePagers: { [employeeId: EmployeeID]: { lastUpdateByEmployee: Date }[] }, logger: Logger = console) {
+    constructor(onePagers: Record<EmployeeID, { lastUpdateByEmployee: Date }[]>, logger: Logger = console) {
         // Add file location to each one-pager and save it in memory
         this.onePagers = Object.fromEntries(
             Object.entries(onePagers).map(([employeeId, onePagersArr]) => [

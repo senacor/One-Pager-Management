@@ -63,7 +63,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
 
     switch (opts.STORAGE_SOURCE) {
         case "memory":
-            logger.log("(AppConfiguration.ts: loadConfigFromEnv) Using in-memory storage!");
+            logger.log("Using in-memory storage!");
             const ids = opts.EMPLOYEES ? opts.EMPLOYEES.split(",").map(id => id.trim()).filter(id => isEmployeeId(id)) : [];
             const repo = new InMemoryOnePagerRepository({});
             return {
@@ -73,14 +73,14 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             };
         case "localfile":
             const dataDir = opts.DATA_DIR || process.cwd();
-            logger.log(`(AppConfiguration.ts: loadConfigFromEnv) Using local file storage at ${dataDir}!`);
+            logger.log(`Using local file storage at ${dataDir}!`);
             return {
                 onePagers: async () => new LocalFileOnePagerRepository(dataDir, logger),
                 employees: async () => new LocalFileEmployeeRepository(dataDir, logger),
                 reporter: async () => new LocalFileValidationReporter(dataDir, logger)
             };
         case "sharepoint":
-            logger.log("(AppConfiguration.ts: loadConfigFromEnv) Using SharePoint storage!");
+            logger.log("Using SharePoint storage!");
             return getSharepointConfig(opts, logger);
     }
 }
@@ -96,7 +96,7 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         logger.error("(AppConfiguration.ts: getSharepointConfig) Missing SharePoint One Pager site name in environment variables!");
-        throw new Error("(AppConfiguration.ts: getSharepointConfig) Missing SharePoint One Pager site name in environment variables!");
+        throw new Error("Missing SharePoint One Pager site name in environment variables!");
     }
 
     const onePagerSiteName = opts.SHAREPOINT_ONE_PAGER_SITE_NAME;
@@ -104,8 +104,8 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
     const validationResultListName = opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || "onepager-status";
 
-    logger.log(`(AppConfiguration.ts: getSharepointConfig) Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`);
-    logger.log(`(AppConfiguration.ts: getSharepointConfig) Storing validation results on SharePoint list with site: "${validationSiteName}", name: "${validationResultListName}"!`);
+    logger.log(`Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`);
+    logger.log(`Storing validation results on SharePoint list with site: "${validationSiteName}", name: "${validationResultListName}"!`);
 
     let promise: Promise<SharepointDriveOnePagerRepository>;
     let repo = () => {
@@ -122,12 +122,6 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
     };
 }
 
-const CachingMiddleware: Middleware = {
-    execute: async (context) => {
-
-    }
-};
-
 /**
  * This function creates a SharePoint client using the provided options.
  * It uses the ClientSecretCredential for authentication and sets up the middleware chain.
@@ -137,8 +131,7 @@ const CachingMiddleware: Middleware = {
  */
 export function createSharepointClient(opts: SharepointClientOptions, logger: Logger = console): Client {
     if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
-        logger.error("(AppConfiguration.ts: createSharepointClient) Missing SharePoint authentication configuration in environment variables!");
-        throw new Error("(AppConfiguration.ts: createSharepointClient) Missing SharePoint authentication configuration in environment variables!");
+        throw new Error("Missing SharePoint authentication configuration in environment variables!");
     }
 
     // Use ClientSecretCredential for authentication.
@@ -148,11 +141,6 @@ export function createSharepointClient(opts: SharepointClientOptions, logger: Lo
         opts.SHAREPOINT_CLIENT_SECRET,
     );
 
-    if (!credential) {
-        logger.error("(AppConfiguration.ts: createSharepointClient) Failed to create ClientSecretCredential!");
-        throw new Error("(AppConfiguration.ts: createSharepointClient) Failed to create ClientSecretCredential!");
-    }
-
     // Define the authentication provider using TokenCredentialAuthenticationProvider.
     // This provider will use the credential to authenticate requests to the Microsoft Graph API.
     // It requires the scopes to be set for the Microsoft Graph API.
@@ -160,11 +148,6 @@ export function createSharepointClient(opts: SharepointClientOptions, logger: Lo
     const authProvider = new TokenCredentialAuthenticationProvider(credential, {
         scopes: ['https://graph.microsoft.com/.default']
     });
-
-    if (!authProvider) {
-        logger.error("(AppConfiguration.ts: createSharepointClient) Failed to create TokenCredentialAuthenticationProvider!");
-        throw new Error("(AppConfiguration.ts: createSharepointClient) Failed to create TokenCredentialAuthenticationProvider!");
-    }
 
     // define the middleware chain
     const handlers: Middleware[] = [
@@ -177,8 +160,7 @@ export function createSharepointClient(opts: SharepointClientOptions, logger: Lo
     // convert array of handlers to a chain of middleware
     handlers.reduce((prev, next, index) => {
         if(!prev.setNext) {
-            logger.error(`(AppConfiguration.ts: createSharepointClient) Handler ${index} must support setting next middleware!`);
-            throw new Error(`(AppConfiguration.ts: createSharepointClient) Handler ${index} must support setting next middleware!`);
+            throw new Error(`Handler ${index} must support setting next middleware!`);
         }
         prev.setNext(next);
         return next;

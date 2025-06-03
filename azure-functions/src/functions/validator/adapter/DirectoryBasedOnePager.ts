@@ -31,8 +31,7 @@ export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFol
 export function employeeIdFromFolder(folder: EmployeeFolder, logger: Logger = console): EmployeeID {
     const lastPart = folder.split("_").pop(); // we are guranteed that it works because EmployeeFolder has at least 3 parts
     if (!isEmployeeId(lastPart)) {
-        logger.error(`(DirectoryBasedOnePager.ts: employeeIdFromFolder) Invalid folder name: "${folder}"!`);
-        throw new Error(`(DirectoryBasedOnePager.ts: employeeIdFromFolder) Invalid folder name: ${folder}`);
+        throw new Error(`Invalid folder name: ${folder}`);
     }
     return lastPart;
 }
@@ -87,7 +86,6 @@ export function onePagerFile(name: string, familyName: string, lastUpdated: Date
 export function dateFromOnePagerFile(file: OnePagerFile, logger: Logger = console): Date {
     const match = file.match(/_(\d{6})\.pptx$/);
     if (!match) {
-        logger.error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
         throw new Error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
     }
     return fromYYMMDD(match[1], logger);
@@ -113,7 +111,6 @@ function toYYMMDD(date: Date): string {
  */
 function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
-        logger.error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
         throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
     }
     const year = Number(yyMMdd.slice(0, 2));
