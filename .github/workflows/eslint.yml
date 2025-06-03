@@ -1,0 +1,20 @@
+name: reviewdog with es lint and tsc
+on: [pull_request]
+jobs:
+  tsc:
+    name: tsc reviewdog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node ${{ env.NODE_VERSION }} Environment
+        uses: actions/setup-node@v4
+        with:
+            node-version: ${{ env.NODE_VERSION }}
+            cache: 'npm'
+            cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
+      - name: Install eslint save-dev
+        run: npm install eslint -D
+      - uses: reviewdog/action-eslint@2fee6dd72a5419ff4113f694e2068d2a03bb35dd # v1.33.2
+        with:
+          reporter: github-pr-review
+          eslint_flags: "src/"
