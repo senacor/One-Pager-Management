@@ -8,6 +8,9 @@ type CacheEntry = {
     headers: Headers
 };
 
+/**
+ * CachingHandler is a middleware for caching HTTP responses in a Node.js environment.
+ */
 export class CachingHandler implements Middleware {
 
     private readonly cache = new NodeCache({
@@ -19,6 +22,12 @@ export class CachingHandler implements Middleware {
     });
     private nextMiddleware?: Middleware;
 
+    /**
+     * Executes the caching logic for HTTP requests.
+     * It checks if the response is cached and returns it if available.
+     * If not cached, it calls the next middleware in the chain to fetch the response.
+     * @param context The context containing the request and options.
+     */
     async execute(context: Context): Promise<void> {
         const [url, method, headers] = typeof context.request === "string" ?
             [context.request, context.options?.method, context.options?.headers] :
@@ -66,6 +75,10 @@ export class CachingHandler implements Middleware {
         }
     }
 
+    /**
+     * Sets the next middleware in the chain.
+     * @param middleware The next middleware to set.
+     */
     setNext(middleware: Middleware) {
         this.nextMiddleware = middleware;
     }

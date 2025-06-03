@@ -2,12 +2,18 @@ import { readFile } from "fs/promises";
 import { Logger } from "./DomainTypes";
 import { HardenedFetch } from "hardened-fetch";
 
-export async function fetchOnePagerContent(log: Logger, onePager: { fileLocation: URL }): Promise<Buffer> {
+/**
+ * An auxiliary function to fetch the content of a OnePager file.
+ * @param logger The logger to use for logging messages.
+ * @param onePager The OnePager to fetch.
+ * @returns A promise that resolves to the content of the OnePager file as a Buffer.
+ */
+export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocation: URL }): Promise<Buffer> {
     if (onePager.fileLocation.protocol === 'file:') {
         let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);
         const fsPath = filePath.startsWith('//') ? filePath.slice(1) : process.cwd() + filePath;
-        log.log(`(fetcher.ts: fetchOnePagerContent) Reading file from path: ${fsPath}`);
+        logger.log(`(fetcher.ts: fetchOnePagerContent) Reading file from path: ${fsPath}`);
         return await readFile(fsPath);
     } else {
         const client = new HardenedFetch({
@@ -20,14 +26,14 @@ export async function fetchOnePagerContent(log: Logger, onePager: { fileLocation
         });
         // HTTP(S) fetch
         const url = onePager.fileLocation.toString();
-   
-        log.log(`(fetcher.ts: fetchOnePagerContent) Fetching file from URL: ${url}`);
+
+        logger.log(`(fetcher.ts: fetchOnePagerContent) Fetching file from URL: ${url}`);
         const response = await client.fetch(url);
         if (response.status !== 200) {
-            throw new Error(`failed to fetch ${url}, returned with status ${response.status}: ${await response.text()}`)
+            throw new Error(`(fetcher.ts: fetchOnePagerContent) Failed to fetch "${url}"! It returned with status "${response.status}": "${await response.text()}"!`)
         }
         const buffer = Buffer.from(await response.arrayBuffer());
-        log.log(`Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes`);
+        logger.log(`(fetcher.ts: fetchOnePagerContent) Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`);
         return buffer;
     }
 }

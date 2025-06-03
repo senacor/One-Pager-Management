@@ -73,7 +73,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
 testFactory("InMemoryValidationReporter", async () => new InMemoryValidationReporter());
 
-const opts = process.env
+const opts = process.env;
 if (hasSharepointClientOptions(opts)) {
     testFactory("SharepointListValidationReporter", async () => {
         const client = createSharepointClient({...opts, SHAREPOINT_API_LOGGING: "true"});
