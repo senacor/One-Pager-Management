@@ -22,7 +22,7 @@ jobs:
             node-version: ${{ env.NODE_VERSION }}
             cache: 'npm'
             cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
-      - name: Install eslint save-dev
+      - name: Install eslint
         run: |
             npm ci
             npm install eslint
