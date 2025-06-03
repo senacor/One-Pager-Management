@@ -1,5 +1,7 @@
 name: reviewdog with es lint and tsc
 on: [pull_request]
+permissions:
+  contents: read
 jobs:
   tsc:
     name: tsc reviewdog
