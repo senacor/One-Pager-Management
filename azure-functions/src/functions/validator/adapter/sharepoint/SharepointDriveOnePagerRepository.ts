@@ -86,7 +86,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                 // check if the drive item is a valid one-pager file
                 // if the output does not have a date of last chage or is not a file, continue
                 if (!driveItem.lastModifiedDateTime ||
-                    !(driveItem.name || "").match(/^.+_\d{8}(_.+)?\.pptx$/) ||
+                    !(driveItem.name || "").match(/^.+_\d{6}(_.+)?\.pptx$/) ||
                     !driveItem.file ||
                     !driveItem["@microsoft.graph.downloadUrl"]) {
                     this.logger.log(`Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`);

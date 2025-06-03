@@ -93,7 +93,7 @@ if (hasSharepointClientOptions(opts)) {
                 "@microsoft.graph.conflictBehavior": "rename"
             });
             for (let i = 0; i < data[employeeId as EmployeeID].length; ++i) {
-                await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i.toString().padStart(8, "0")}.pptx:/content`).put("iwas");
+                await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i.toString().padStart(6, "0")}.pptx:/content`).put("iwas");
             }
         }
 
