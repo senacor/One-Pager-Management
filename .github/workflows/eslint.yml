@@ -28,8 +28,9 @@ jobs:
      # this is already included in the package.json
      # - name: Install eslint
      #   run: npm install --save-dev eslint @eslint/js typescript typescript-eslint
-      - uses: reviewdog/action-eslint@2fee6dd72a5419ff4113f694e2068d2a03bb35dd # v1.33.2
+      - uses: reviewdog/action-eslint@v1 # v1.33.2
         with:
           reporter: github-pr-review
           eslint_flags: "src/"
           workdir: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          filter_mode: nofilter
