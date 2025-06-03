@@ -5,6 +5,11 @@ import { URL } from "node:url";
  */
 export type EmployeeID = `${number}`;
 
+/**
+ * A function to check if a given variable is a valid EmployeeID.
+ * @param txt A variable to check if it is a valid EmployeeID.
+ * @returns Is the variable a valid EmployeeID?
+ */
 export function isEmployeeId(txt: unknown): txt is EmployeeID {
     return typeof txt === "string" && /\d+/.test(txt);
 }
@@ -35,6 +40,9 @@ export interface OnePagerRepository {
     getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]>;
 }
 
+/**
+ * Interface for fetching all employee IDs.
+ */
 export interface EmployeeRepository {
 
     /**
