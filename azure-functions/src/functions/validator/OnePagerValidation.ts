@@ -10,14 +10,6 @@ export class OnePagerValidation {
     private readonly reporter: ValidationReporter;
     private readonly validationRule: ValidationRule;
 
-    /**
-     * Creates an instance of OnePagerValidation.
-     * @param onePagers The one pager repository to fetch one-pagers from.
-     * @param employees A class for fetching all employee IDs.
-     * @param reporter The reporter to report validation results.
-     * @param validationRule The validation rule to apply to the one-pagers.
-     * @param logger The logger to use for logging messages (default is console).
-     */
     constructor(
         onePagers: OnePagerRepository, employees: EmployeeRepository,
         reporter: ValidationReporter, validationRule: ValidationRule, logger: Logger = console
@@ -36,24 +28,24 @@ export class OnePagerValidation {
      */
     async validateOnePagersOfEmployee(id: EmployeeID): Promise<void> {
         if (!(await this.employees.getAllEmployees()).includes(id)) {
-            this.logger.error(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} does not exist.`);
+            this.logger.error(`Employee ${id} does not exist.`);
             return;
         }
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
-        this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
+        this.logger.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
 
         const newest = this.selectNewestOnePager(onePagers);
-        this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+        this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
 
         // Check the newest one-pager against the validation rule and receive all errors as an array.
         const errors = await this.validationRule(newest);
 
         if (errors.length === 0) {
-            this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} has valid OnePagers!`);
+            this.logger.log(`Employee ${id} has valid OnePagers!`);
             await this.reporter.reportValid(id);
         } else {
-            this.logger.log(`(OnePagerValidation.ts: validateOnePagersOfEmployee) Employee ${id} has the following errors: ${errors.join(' ')}!`);
+            this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
             await this.reporter.reportErrors(id, newest, errors);
         }
     }
@@ -65,7 +57,7 @@ export class OnePagerValidation {
      */
     private selectNewestOnePager(onePagers: OnePager[]): OnePager | undefined {
         if (onePagers.length === 0) {
-            this.logger.log(`(OnePagerValidation.ts: selectNewestOnePager) No one-pagers found for current employee!`);
+            this.logger.log(`No one-pagers found for current employee!`);
             return undefined;
         }
 

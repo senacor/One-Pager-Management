@@ -131,8 +131,7 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
  */
 export function createSharepointClient(opts: SharepointClientOptions, logger: Logger = console): Client {
     if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
-        logger.error("(AppConfiguration.ts: createSharepointClient) Missing SharePoint authentication configuration in environment variables!");
-        throw new Error("(AppConfiguration.ts: createSharepointClient) Missing SharePoint authentication configuration in environment variables!");
+        throw new Error("Missing SharePoint authentication configuration in environment variables!");
     }
 
     // Use ClientSecretCredential for authentication.
@@ -161,7 +160,6 @@ export function createSharepointClient(opts: SharepointClientOptions, logger: Lo
     // convert array of handlers to a chain of middleware
     handlers.reduce((prev, next, index) => {
         if(!prev.setNext) {
-            logger.error(`(AppConfiguration.ts: createSharepointClient) Handler ${index} must support setting next middleware!`);
             throw new Error(`Handler ${index} must support setting next middleware!`);
         }
         prev.setNext(next);

@@ -5,7 +5,7 @@ import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository } 
 import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
 
 type SharePointFolder = string;
-type OnePagerMap = { [employeeId: EmployeeID]: OnePager[] | SharePointFolder };
+type OnePagerMap = Record<EmployeeID, OnePager[] | SharePointFolder>;
 type DriveItemWithDownloadUrl = DriveItem & { "@microsoft.graph.downloadUrl"?: string };
 
 /**

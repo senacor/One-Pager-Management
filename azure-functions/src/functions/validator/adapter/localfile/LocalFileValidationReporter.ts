@@ -6,14 +6,14 @@ import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } fro
  * A validation reporter that stores validation results in local files.
  */
 export class LocalFileValidationReporter implements ValidationReporter {
+
+    /**
+     * The directory where validation results are stored.
+     * Files named after employee IDs with a "_validation.json" suffix will be stored in it.
+     */
     private readonly dataDir: string;
     private readonly logger: Logger;
 
-    /**
-     * Creates an instance of LocalFileValidationReporter.
-     * @param dataDir The directory where all validation results are stored.
-     * @param logger The logger to use for logging messages (default is console).
-     */
     constructor(dataDir: string, logger: Logger = console) {
         this.dataDir = dataDir;
         this.logger = logger;

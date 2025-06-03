@@ -19,24 +19,25 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
     try {
         const item = queueItem as QueueItem;
 
-        if (isEmployeeId(item.employeeId)) {
-            context.log(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Processing valid queue item ${JSON.stringify(queueItem)}`);
-
-            // Establish a connection to the repository containing one-pagers and our report output list.
-            const config = loadConfigFromEnv(context);
-
-            // Validate the one-pagers of the employee specified in the queue item.
-            const validator = new OnePagerValidation(
-                await config.onePagers(),
-                await config.employees(),
-                await config.reporter(),
-                validationRules.allRules(context),
-                context
-            );
-            await validator.validateOnePagersOfEmployee(item.employeeId);
-        } else {
-            context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`);
+        if (!isEmployeeId(item.employeeId)) {
+            context.error(`Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`);
+            return;
         }
+
+        context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
+
+        // Establish a connection to the repository containing one-pagers and our report output list.
+        const config = loadConfigFromEnv(context);
+
+        // Validate the one-pagers of the employee specified in the queue item.
+        const validator = new OnePagerValidation(
+            await config.onePagers(),
+            await config.employees(),
+            await config.reporter(),
+            validationRules.allRules(context),
+            context
+        );
+        await validator.validateOnePagersOfEmployee(item.employeeId);
     } catch (error) {
         context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`);
         throw error;
@@ -44,7 +45,6 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
         context.log(`--------- END of Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
     }
 }
-
 
 // Register the FileChangeQueueTrigger function with Azure Functions to work on queue items.
 app.storageQueue('FileChangeQueueTrigger', {

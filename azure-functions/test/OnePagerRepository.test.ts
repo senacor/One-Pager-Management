@@ -8,7 +8,7 @@ import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/m
 import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { EmployeeID, OnePagerRepository } from "../src/functions/validator/DomainTypes";
 
-type RepoFactory = (onePagers: { [employeeId: EmployeeID]: { lastUpdateByEmployee: Date }[] }) => Promise<OnePagerRepository>;
+type RepoFactory = (onePagers: Record<EmployeeID, { lastUpdateByEmployee: Date }[]>) => Promise<OnePagerRepository>;
 
 const testFactory = (name: string, factory: RepoFactory) => {
     describe(name, () => {

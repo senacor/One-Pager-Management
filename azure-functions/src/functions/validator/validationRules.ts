@@ -4,15 +4,13 @@ import JSZip from 'jszip';
 import { Logger, ValidationError, ValidationRule } from "./DomainTypes";
 import { fetchOnePagerContent } from './fetcher';
 
-// The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = "src/templates/OP_Template_PPT_DE_240119.pptx"
-
-
 
 /*
  * -------- Validation rules to check the metadata of a OnePager. --------
  *
  */
+
 export const hasOnePager: ValidationRule = async onePager => onePager ? [] : ["MISSING_ONE_PAGER"];
 
 export const lastModifiedRule: ValidationRule = whenPresent(async onePager => {
@@ -21,15 +19,10 @@ export const lastModifiedRule: ValidationRule = whenPresent(async onePager => {
     return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
 });
 
-
-
-
-
-
-
 /*
  * -------- Validation rules concerning the content of a OnePager. --------
  */
+
 export const usesCurrentTemplate = async (content: Buffer) => {
     const templateData = await readFile(CURRENT_TEMPLATE_PATH);
     const templateHashes = await calculateThemeHash(templateData);
@@ -55,10 +48,7 @@ export const usesCurrentTemplate = async (content: Buffer) => {
     return error;
 };
 
-/*
- * -------- Auxiliary functions to help in defining validation rules of OnePagers. --------
- */
-export async function calculateThemeHash(pptxContent: Buffer): Promise<{names: string[], hashes: Record<string, string>}> {
+async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[], hashes: Record<string, string> }> {
     const zip = new JSZip();
     const pptx = await zip.loadAsync(pptxContent);
     const masterFiles = Object.keys(pptx.files).filter(file => file.match(/ppt\/(theme)\//)).sort();
@@ -69,12 +59,12 @@ export async function calculateThemeHash(pptxContent: Buffer): Promise<{names: s
         const xmlContent = await pptx.files[f].async("string");
 
         const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
-        if(!match) {
+        if (!match) {
             continue;
         }
         const themeName = match[1];
         // these seem to be default themes we do not care about
-        if(themeName.toLocaleLowerCase().includes("office")) {
+        if (themeName.toLocaleLowerCase().includes("office")) {
             continue;
         }
 
@@ -89,17 +79,12 @@ export async function calculateThemeHash(pptxContent: Buffer): Promise<{names: s
     return { names, hashes };
 }
 
-
 /*
  * -------- Functions to combine all above rules into one validation rule. --------
  */
 
-
-
 /**
- * A function combining all validation rules for a OnePager into one rule.
- * @param log
- * @returns
+ * Combination of all rules we have defined for the one-pager validation.
  */
 export function allRules(log: Logger) {
     return combineRules(
@@ -123,11 +108,6 @@ export function combineRules(...rules: ValidationRule[]): ValidationRule {
     };
 }
 
-
-
-/**
- * A function to fetch the content of a OnePager and apply a validation rule to it.
- */
 type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationError[]>;
 
 /**
