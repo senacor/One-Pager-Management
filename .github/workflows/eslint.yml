@@ -1,9 +1,13 @@
 name: reviewdog with es lint and tsc
 on: [pull_request]
+<<<<<<< HEAD
 
 env:
   NODE_VERSION: '22.x'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure-functions'
+
+permissions:
+  contents: read
 
 jobs:
   tsc:
