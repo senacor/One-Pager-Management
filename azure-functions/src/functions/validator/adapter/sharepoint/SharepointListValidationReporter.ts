@@ -144,7 +144,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async clearList(): Promise<void> {
         this.logger.log(`(SharepointListValidationReporter.ts: clearList) Clearing SharePoint list with ID "${this.listId}" on site "${this.siteId}"!`);
 
-        let { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).get() as { value?: ListItem[] };
+        var { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).get() as { value?: ListItem[] };
 
         if (items) {
             await Promise.all(items.map(item =>

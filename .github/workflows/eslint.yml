@@ -34,4 +34,4 @@ jobs:
             reporter: github-pr-review
             eslint_flags: "src/"
             workdir: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-            filter_mode: nofilter
+            filter_mode: diff_context
