@@ -30,4 +30,5 @@ jobs:
       - uses: reviewdog/action-eslint@2fee6dd72a5419ff4113f694e2068d2a03bb35dd # v1.33.2
         with:
           reporter: github-pr-review
-          eslint_flags: "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/src/"
+          eslint_flags: "src/"
+          workdir: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
