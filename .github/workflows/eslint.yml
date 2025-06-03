@@ -23,10 +23,10 @@ jobs:
             node-version: ${{ env.NODE_VERSION }}
             cache: 'npm'
             cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
+      - name: Node install
+        run: npm ci
       - name: Install eslint
-        run: |
-            npm ci
-            npm install eslint
+        run: npm i eslint -D
       - uses: reviewdog/action-eslint@2fee6dd72a5419ff4113f694e2068d2a03bb35dd # v1.33.2
         with:
           reporter: github-pr-review
