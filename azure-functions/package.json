@@ -9,7 +9,8 @@
         "clean": "rimraf dist",
         "prestart": "npm run clean && npm run build",
         "start": "func start",
-        "test": "jest"
+        "test": "jest",
+        "featuretest": "cucumber-js --require features/support/*.ts --format progress --format json:reports/cucumber-report.json"
     },
     "dependencies": {
         "@azure/functions": "^4.7.2",
@@ -24,6 +25,8 @@
         "node-pptx-parser": "^1.0.1"
     },
     "devDependencies": {
+        "@cucumber/cucumber": "^11.3.0",
+        "@eslint/js": "^9.28.0",
         "@microsoft/microsoft-graph-types": "^2.40.0",
         "@types/isomorphic-fetch": "^0.0.39",
         "@types/jest": "^29.5.14",
