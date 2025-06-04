@@ -1,4 +1,3 @@
-import * as cld from "cld";
 import { franc } from "franc-min";
 import PptxParser from "node-pptx-parser";
 
@@ -16,9 +15,7 @@ async function detect(ex: string) {
     console.log(`PptxParser detected ${JSON.stringify(slides.map(slide => ({ id: slide.id, path: slide.path })))}`);
 
     for (const [i, slide] of slides.entries()) {
-        const cldResp = await cld.detect(slide.text.join("\n"), { isHTML: false });
         console.log(`Slide ${i + 1} (${slide.id}, ${slide.path}):`);
-        console.log(`CLD Detected language: ${JSON.stringify(cldResp.languages[0])}, reliable: ${cldResp.reliable}`);
 
         const francResp = await franc(slide.text.join("\n"));
         console.log(`Franc Detected language: ${francResp}`);

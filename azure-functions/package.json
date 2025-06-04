@@ -16,7 +16,6 @@
         "@azure/functions": "^4.7.2",
         "@azure/identity": "^4.10.0",
         "@microsoft/microsoft-graph-client": "^3.0.7",
-        "cld": "^2.10.1",
         "franc-min": "^6.2.0",
         "hardened-fetch": "^1.2.3",
         "isomorphic-fetch": "^3.0.0",
