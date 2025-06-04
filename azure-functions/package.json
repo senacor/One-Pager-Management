@@ -15,10 +15,13 @@
         "@azure/functions": "^4.7.2",
         "@azure/identity": "^4.10.0",
         "@microsoft/microsoft-graph-client": "^3.0.7",
+        "cld": "^2.10.1",
+        "franc-min": "^6.2.0",
         "hardened-fetch": "^1.2.3",
         "isomorphic-fetch": "^3.0.0",
         "jszip": "^3.10.1",
-        "node-cache": "^5.1.2"
+        "node-cache": "^5.1.2",
+        "node-pptx-parser": "^1.0.1"
     },
     "devDependencies": {
         "@microsoft/microsoft-graph-types": "^2.40.0",

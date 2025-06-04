@@ -36,7 +36,11 @@ export class OnePagerValidation {
         this.logger.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
 
         const newest = this.selectNewestOnePager(onePagers);
-        this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+        //this.logger.log(`Newest OnePager is ${newest?.lastUpdateByEmployee}!`);
+
+        const results: { onePager: OnePager, errors: string[], language: string }[] = [];
+
+        // if two german ignore
 
         // Check the newest one-pager against the validation rule and receive all errors as an array.
         const errors = await this.validationRule(newest);
@@ -55,14 +59,17 @@ export class OnePagerValidation {
      * @param onePagers The list of one-pagers to select from.
      * @returns The newest one-pager or undefined if no one-pagers are found.
      */
-    private selectNewestOnePager(onePagers: OnePager[]): OnePager | undefined {
+    private selectNewestOnePager(onePagers: OnePager[]): OnePager[] {
+
+        // try to select newest per language
+
         if (onePagers.length === 0) {
             this.logger.log(`No one-pagers found for current employee!`);
-            return undefined;
+            return [];
         }
 
-        return onePagers.reduce((newest, current) => {
+        return [onePagers.reduce((newest, current) => {
             return current.lastUpdateByEmployee > newest.lastUpdateByEmployee ? current : newest;
-        });
+        })];
     }
 }
