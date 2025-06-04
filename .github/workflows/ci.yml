@@ -28,18 +28,24 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - run: npm test || true
         env:
             SHAREPOINT_CLIENT_ID: "1621d264-a7bb-40b6-bfef-9b2839cb7eec"
             SHAREPOINT_TENANT_ID: "52497ec2-0945-4f55-8021-79766363dd96"
             SHAREPOINT_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}
-      - name: Test Report
+      - name: Jest Test Report
         uses: dorny/test-reporter@v2
-        if: ${{ !cancelled() }}       # run this step even if previous step failed
         with:
           name: JEST Tests
-          path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/reports/jest-*.xml'
+          path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/reports/jest-junit.xml'
           reporter: jest-junit
+      - run: npm run featuretest || true
+      - name: Cucumber Test Report
+        uses: dorny/test-reporter@v2
+        with:
+          name: Cucumber Tests
+          path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/reports/cucumber-report.xml'
+          reporter: java-junit
 
   check-integration:
     runs-on: ubuntu-latest
