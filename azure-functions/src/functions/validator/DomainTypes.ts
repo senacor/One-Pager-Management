@@ -28,7 +28,16 @@ export type OnePager = {
 /**
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
-export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "USING_UNKNOWN_TEMPLATE" | "USING_MODIFIED_TEMPLATE";
+export type ValidationError =
+    "OLDER_THAN_SIX_MONTHS" | // one-pager is older than 6 months
+    "MISSING_ONE_PAGER" | // no one-pager exists for the employee
+    "USING_UNKNOWN_TEMPLATE" | // one-pager is using an unknown template, in most cases an outdated template with old styling
+    "USING_MODIFIED_TEMPLATE" | // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
+    "MISSING_LANGUAGE_INDICATOR_IN_NAME" | // one-pager is missing a language indicator in the file name
+    "MISSING_DE_VERSION" | // employee has no one-pager in German
+    "MISSING_EN_VERSION" | // employee has no one-pager in English
+    "MIXED_LANGUAGE_VERSION" | // one-pager has slides in different languages
+    "WRONG_LANGUAGE_CONTENT"; // one-pager indicates a different language as is used
 
 export type ValidationRule = (onePager: OnePager) => Promise<ValidationError[]>;
 

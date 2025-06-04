@@ -14,7 +14,13 @@ export const CURRENT_TEMPLATE_PATH = "src/templates/OP_Template_PPT_DE_240119.pp
 export const lastModifiedRule: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
+    return onePager.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
+};
+
+export const missing: ValidationRule = async onePager => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    return onePager.local ? [] : ["MISSING_LANGUAGE_INDICATOR_IN_NAME"];
 };
 
 /*
