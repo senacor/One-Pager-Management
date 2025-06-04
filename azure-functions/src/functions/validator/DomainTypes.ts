@@ -26,7 +26,7 @@ export type OnePager = {
  */
 export type ValidationError = "OLDER_THAN_SIX_MONTHS" | "MISSING_ONE_PAGER" | "USING_UNKNOWN_TEMPLATE" | "USING_MODIFIED_TEMPLATE";
 
-export type ValidationRule = (onePager: OnePager | undefined) => Promise<ValidationError[]>;
+export type ValidationRule = (onePager: OnePager) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
 

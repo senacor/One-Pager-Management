@@ -1,5 +1,4 @@
-import { on } from "events";
-import { EmployeeID, EmployeeRepository, Local, Logger, OnePager, OnePagerRepository, ValidationReporter, ValidationRule } from "./DomainTypes";
+import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository, ValidationError, ValidationReporter, ValidationRule } from "./DomainTypes";
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -38,7 +37,9 @@ export class OnePagerValidation {
 
         const candidates = this.selectNewestOnePagers(onePagers);
 
-        const results = await Promise.all(candidates.map(async op => ({onePager: op, errors: await this.validationRule(op)})));
+        const results = candidates.length === 0 ?
+            [{ onePager: undefined, errors: ["MISSING_ONE_PAGER"] as ValidationError[] }] :
+            await Promise.all(candidates.map(async op => ({ onePager: op, errors: await this.validationRule(op) })));
 
         const errors = results.flatMap(r => r.errors);
         if (errors.length === 0) {

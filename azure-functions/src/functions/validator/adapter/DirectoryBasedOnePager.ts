@@ -121,7 +121,7 @@ function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     return new Date(fullYear, month, day);
 }
 
-    private extractLanguageCode(name: string): string | undefined {
-        const match = name.match(/_(DE|EN)_/i);
-        return match ? match[1].toUpperCase() : undefined;
-    }
+function extractLanguageCode(name: string): string | undefined {
+    const match = name.match(/_(DE|EN)_/i);
+    return match ? match[1].toUpperCase() : undefined;
+}

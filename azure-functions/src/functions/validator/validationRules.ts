@@ -11,13 +11,11 @@ export const CURRENT_TEMPLATE_PATH = "src/templates/OP_Template_PPT_DE_240119.pp
  *
  */
 
-export const hasOnePager: ValidationRule = async onePager => onePager ? [] : ["MISSING_ONE_PAGER"];
-
-export const lastModifiedRule: ValidationRule = whenPresent(async onePager => {
+export const lastModifiedRule: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager?.lastUpdateByEmployee < sixMonthsAgo ? ["OLDER_THAN_SIX_MONTHS"] : [];
-});
+};
 
 /*
  * -------- Validation rules concerning the content of a OnePager. --------
@@ -34,14 +32,11 @@ export const usesCurrentTemplate = async (content: Buffer) => {
     // no error if theme contents are equal
     if (templateKeys.length === contentKeys.length &&
         templateKeys.every(key => contentKeys.includes(key) && templateHashes.hashes[key] === contentHashes.hashes[key])) {
-        console.log("No error: Template and content themes are equal.");
         return [];
     }
 
     const themeCountWithSameContent = templateKeys.filter(key => contentKeys.includes(key)).length;
     const hasSomeOriginalTemplateThemes = templateHashes.names.some(name => contentHashes.names.includes(name));
-
-    console.log(`Template keys: ${templateKeys.length}, Content keys: ${contentKeys.length}, Matching themes: ${themeCountWithSameContent}, template names: ${templateHashes.names}, content names: ${contentHashes.names}`);
 
     // if we detect at least one theme of the template we consider the current one-pager based on it
     const error: ValidationError[] = [themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes ? "USING_MODIFIED_TEMPLATE" : "USING_UNKNOWN_TEMPLATE"];
@@ -88,7 +83,6 @@ async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[
  */
 export function allRules(log: Logger) {
     return combineRules(
-        hasOnePager,
         lastModifiedRule,
         combineContentRules(log,
             usesCurrentTemplate
@@ -111,17 +105,6 @@ export function combineRules(...rules: ValidationRule[]): ValidationRule {
 type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationError[]>;
 
 /**
- * An auxiliary function to create a validation rule that only applies if the value is present.
- * @param fn The function to apply if its value is present.
- * @returns A function that takes a value and returns a promise of validation errors.
- */
-function whenPresent<T>(fn: (value: T) => Promise<ValidationError[]>): (value: T | undefined) => Promise<ValidationError[]> {
-    return value => value ? fn(value) : Promise.resolve([]);
-}
-
-
-
-/**
  * A function to convert multiple ContentValidationRules into one ValidationRule.
  * This rule will fetch the content of the OnePager and apply all rules to it.
  * @param log
@@ -129,9 +112,9 @@ function whenPresent<T>(fn: (value: T) => Promise<ValidationError[]>): (value: T
  * @returns The resulting validation rule.
  */
 export function combineContentRules(log: Logger, ...rules: ContentValidationRule[]): ValidationRule {
-    return whenPresent(async onePager => {
+    return async onePager => {
         const content = await fetchOnePagerContent(log, onePager);
         const errors = await Promise.all(rules.map(rule => rule(content)));
         return errors.flat();
-    });
+    };
 }
