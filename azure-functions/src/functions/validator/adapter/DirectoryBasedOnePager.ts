@@ -86,6 +86,7 @@ export function onePagerFile(name: string, familyName: string, local: Local | un
 export function dateFromOnePagerFile(file: OnePagerFile, logger: Logger = console): Date {
     const match = file.match(/_(\d{6})\.pptx$/);
     if (!match) {
+        logger.error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
         throw new Error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
     }
     return fromYYMMDD(match[1], logger);
@@ -111,6 +112,7 @@ function toYYMMDD(date: Date): string {
  */
 function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
+        logger.error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
         throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
     }
     const year = Number(yyMMdd.slice(0, 2));

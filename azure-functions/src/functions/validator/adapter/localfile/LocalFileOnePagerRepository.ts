@@ -26,6 +26,11 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         this.logger = logger;
     }
 
+    /**
+     * Retrieves all one-pagers of an employee from the local file system.
+     * @param employeeId The ID of the employee whose one-pagers should be retrieved.
+     * @returns A promise that resolves to an array of OnePager objects
+     */
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         const employeeDir = await this.employeeDir(employeeId);
         const files = await fs.readdir(employeeDir);

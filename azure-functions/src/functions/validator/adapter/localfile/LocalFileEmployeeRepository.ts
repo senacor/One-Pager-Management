@@ -21,6 +21,10 @@ export class LocalFileEmployeeRepository implements EmployeeRepository {
         this.logger = logger;
     }
 
+    /**
+     * Retrieves all employee IDs from the local file system.
+     * @returns A promise that resolves to an array containting all employee IDs found in the one-pager directory.
+     */
     async getAllEmployees(): Promise<EmployeeID[]> {
         this.logger.log(`Retrieving all employees!`);
         await fs.mkdir(this.onePagerDir, { recursive: true });

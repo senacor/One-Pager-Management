@@ -10,6 +10,14 @@ export class OnePagerValidation {
     private readonly reporter: ValidationReporter;
     private readonly validationRule: ValidationRule;
 
+    /**
+     * Creates an instance of OnePagerValidation.
+     * @param onePagers The one pager repository to fetch one-pagers from.
+     * @param employees A class for fetching all employee IDs.
+     * @param reporter The reporter to report validation results.
+     * @param validationRule The validation rule to apply to the one-pagers.
+     * @param logger The logger to use for logging messages (default is console).
+     */
     constructor(
         onePagers: OnePagerRepository, employees: EmployeeRepository,
         reporter: ValidationReporter, validationRule: ValidationRule, logger: Logger = console

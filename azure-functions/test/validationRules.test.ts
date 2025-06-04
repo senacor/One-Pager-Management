@@ -24,7 +24,7 @@ describe("validationRules", () => {
     const onePagerWithOldTemplates = [
         "file:///examples/Mustermann%2C%20Max%20DE_201028.pptx",
         "file:///examples/Mustermann%2C%20Max%20DE_190130.pptx",
-    ]
+    ];
 
     describe("usesCurrentTemplate", () => {
         it("should identify onepager using current template as valid", async () => {
