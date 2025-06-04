@@ -120,3 +120,8 @@ function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     const fullYear = year + 2000;
     return new Date(fullYear, month, day);
 }
+
+    private extractLanguageCode(name: string): string | undefined {
+        const match = name.match(/_(DE|EN)_/i);
+        return match ? match[1].toUpperCase() : undefined;
+    }

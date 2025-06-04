@@ -9,11 +9,14 @@ export function isEmployeeId(txt: unknown): txt is EmployeeID {
     return typeof txt === "string" && /\d+/.test(txt);
 }
 
+export type Local = 'DE' | 'EN';
+
 /**
  * Represents a one-pager document for an employee.
  */
 export type OnePager = {
     lastUpdateByEmployee: Date;
+    language?: Local;
     webLocation?: URL;
     fileLocation: URL;
 };
