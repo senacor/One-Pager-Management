@@ -1,4 +1,4 @@
-import { EmployeeID, isEmployeeId, Logger } from "../DomainTypes";
+import { EmployeeID, isEmployeeId, isLocal, Local, Logger } from "../DomainTypes";
 
 /**
  * Represents a folder name for an employee in the format "Name_FamilyName_EmployeeID".
@@ -121,7 +121,15 @@ function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     return new Date(fullYear, month, day);
 }
 
-function extractLanguageCode(name: string): string | undefined {
-    const match = name.match(/_(DE|EN)_/i);
-    return match ? match[1].toUpperCase() : undefined;
+export function extractLanguageCode(name: string): Local | undefined {
+    const match = name.match(/_([A-Z]{2})_/i);
+
+    if (match) {
+        const group = match[1].toUpperCase();
+        if (isLocal(group)) {
+            return group;
+        }
+    }
+
+    return undefined;
 }

@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { EmployeeID, Logger, OnePager, OnePagerRepository } from "../../DomainTypes";
 import { CURRENT_TEMPLATE_PATH } from "../../validationRules";
-import { dateFromOnePagerFile, folderNameFromEmployee, isOnePagerFile, onePagerFile } from "../DirectoryBasedOnePager";
+import { dateFromOnePagerFile, extractLanguageCode, folderNameFromEmployee, isOnePagerFile, onePagerFile } from "../DirectoryBasedOnePager";
 
 /**
  * The sub directory where all one-pagers are stored. Base directory is the data directory.
@@ -40,7 +40,8 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
                 const lastUpdateByEmployee = dateFromOnePagerFile(file, this.logger);
                 const urlPath = path.resolve(employeeDir, file.split('/').map(encodeURIComponent).join('/'));
                 const fileLocation = new URL('file:///' + urlPath);
-                return { lastUpdateByEmployee, fileLocation };
+                const language = extractLanguageCode(file);
+                return { lastUpdateByEmployee, fileLocation, language } as OnePager;
             });
     }
 

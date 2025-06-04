@@ -11,6 +11,10 @@ export function isEmployeeId(txt: unknown): txt is EmployeeID {
 
 export type Local = 'DE' | 'EN';
 
+export function isLocal(txt: unknown): txt is Local {
+    return txt === 'DE' || txt === 'EN';
+}
+
 /**
  * Represents a one-pager document for an employee.
  */

@@ -96,6 +96,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                     lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
                     fileLocation: new URL(driveItem["@microsoft.graph.downloadUrl"]),
                     webLocation: driveItem.webUrl ? new URL(driveItem.webUrl) : undefined,
+                    language: extractLanguageCode(driveItem.name)
                 };
                 this.onePagers[employeeId].push(onePager);
             }
