@@ -65,7 +65,7 @@ export class OnePagerValidation {
         const noLanguage = "NO_LANGUAGE";
 
         let candidates = onePagers.reduce((acc, current) => {
-            const lang = current.language || noLanguage;
+            const lang = current.local || noLanguage;
             const lastUpdate = acc[lang]?.lastUpdateByEmployee;
             if (!lastUpdate || current.lastUpdateByEmployee > lastUpdate) {
                 acc[lang] = current;

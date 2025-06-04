@@ -50,7 +50,7 @@ export function folderNameFromEmployee(name: string, familyName: string, employe
 /**
  * Represents a one-pager file name in the format "FamilyName, Name_DE_YYMMDD.pptx".
  */
-export type OnePagerFile = `${string}, ${string}_DE_${number}.pptx`;
+export type OnePagerFile = `${string}, ${string}_${Local}_${number}.pptx`;
 
 /**
  * This function checks if a given file name is a valid OnePagerFile.
@@ -62,7 +62,7 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
         return false;
     }
 
-    return !!fileName.match(/.+, .+_DE_(\d{6})\.pptx$/);
+    return !!fileName.match(/.+, .+(_[A-Z]{2})?_(\d{6})\.pptx$/);
 }
 
 /**
@@ -72,8 +72,8 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
  * @param lastUpdated The date when the one-pager was last updated.
  * @returns The one-pager file name in the format "FamilyName, Name_DE_YYMMDD.pptx".
  */
-export function onePagerFile(name: string, familyName: string, lastUpdated: Date): string {
-    return `${familyName}, ${name}_DE_${toYYMMDD(lastUpdated)}.pptx`;
+export function onePagerFile(name: string, familyName: string, local: Local | undefined, lastUpdated: Date): string {
+    return `${familyName}, ${name}_${local ? local + "_" : ""}${toYYMMDD(lastUpdated)}.pptx`;
 }
 
 /**

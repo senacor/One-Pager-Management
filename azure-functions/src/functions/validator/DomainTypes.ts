@@ -20,7 +20,7 @@ export function isLocal(txt: unknown): txt is Local {
  */
 export type OnePager = {
     lastUpdateByEmployee: Date;
-    language?: Local;
+    local?: Local;
     webLocation?: URL;
     fileLocation: URL;
 };

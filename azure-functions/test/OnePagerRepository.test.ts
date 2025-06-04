@@ -3,12 +3,13 @@ import { promises as fs } from "fs";
 import { tmpdir } from 'node:os';
 import path from "path";
 import { createSharepointClient, hasSharepointClientOptions } from "../src/functions/configuration/AppConfiguration";
+import { onePagerFile } from "../src/functions/validator/adapter/DirectoryBasedOnePager";
 import { LocalFileOnePagerRepository } from "../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository";
 import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
 import { SharepointDriveOnePagerRepository } from "../src/functions/validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
-import { EmployeeID, OnePagerRepository } from "../src/functions/validator/DomainTypes";
+import { EmployeeID, Local, OnePagerRepository } from "../src/functions/validator/DomainTypes";
 
-type RepoFactory = (onePagers: Record<EmployeeID, { lastUpdateByEmployee: Date }[]>) => Promise<OnePagerRepository>;
+type RepoFactory = (onePagers: Record<EmployeeID, { lastUpdateByEmployee: Date, local: Local | undefined }[]>) => Promise<OnePagerRepository>;
 
 const testFactory = (name: string, factory: RepoFactory) => {
     describe(name, () => {
@@ -31,8 +32,8 @@ const testFactory = (name: string, factory: RepoFactory) => {
             const id: EmployeeID = "111";
             const rep: OnePagerRepository = await factory({
                 [id]: [
-                    { lastUpdateByEmployee: new Date("2020-01-01") },
-                    { lastUpdateByEmployee: new Date("2024-01-01") }
+                    { lastUpdateByEmployee: new Date("2020-01-01"), local: undefined },
+                    { lastUpdateByEmployee: new Date("2024-01-01"), local: undefined }
                 ]
             });
 
@@ -44,7 +45,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
             const rep: OnePagerRepository = await factory({
                 [id]: [],
                 "000": [
-                    { lastUpdateByEmployee: new Date() }
+                    { lastUpdateByEmployee: new Date(), local: undefined }
                 ]
             });
 
@@ -55,13 +56,37 @@ const testFactory = (name: string, factory: RepoFactory) => {
             const id: EmployeeID = "111";
             const rep: OnePagerRepository = await factory({
                 [id]: [
-                    { lastUpdateByEmployee: new Date() }
+                    { lastUpdateByEmployee: new Date(), local: undefined }
                 ]
             });
             let onePagers = await rep.getAllOnePagersOfEmployee(id);
             expect(onePagers).toHaveLength(1);
             expect(onePagers[0].fileLocation).not.toBeFalsy();
             expect(onePagers[0].fileLocation.pathname).not.toEqual("");
+        });
+
+        it("should extract local of one-pager", async () => {
+            const id: EmployeeID = "111";
+            const rep: OnePagerRepository = await factory({
+                [id]: [
+                    { lastUpdateByEmployee: new Date(), local: "DE" }
+                ]
+            });
+            let onePagers = await rep.getAllOnePagersOfEmployee(id);
+            expect(onePagers).toHaveLength(1);
+            expect(onePagers[0].local).toEqual("DE");
+        });
+
+        it("should accept missing local", async () => {
+            const id: EmployeeID = "111";
+            const rep: OnePagerRepository = await factory({
+                [id]: [
+                    { lastUpdateByEmployee: new Date(), local: undefined }
+                ]
+            });
+            let onePagers = await rep.getAllOnePagersOfEmployee(id);
+            expect(onePagers).toHaveLength(1);
+            expect(onePagers[0].local).toBeFalsy();
         });
     });
 }
@@ -74,7 +99,7 @@ if (hasSharepointClientOptions(opts)) {
         const siteIDAlias: string = "senacor.sharepoint.com:/teams/MaInfoTest";
         const listName: string = "OnePagerAutomatedTestEnv";
 
-        const client = createSharepointClient({...opts, SHAREPOINT_API_LOGGING: "true"});
+        const client = createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: "true" });
 
         const siteID: string = (await client.api(`/sites/${siteIDAlias}`).select("id").get()).id as string;
         const onePagerDriveId: string = (await client.api(`/sites/${siteID}/drives`).select(["id", "name"]).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
@@ -93,7 +118,9 @@ if (hasSharepointClientOptions(opts)) {
                 "@microsoft.graph.conflictBehavior": "rename"
             });
             for (let i = 0; i < data[employeeId as EmployeeID].length; ++i) {
-                await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/Name_Vorname_${i.toString().padStart(8, "0")}.pptx:/content`).put("iwas");
+                const onePager = data[employeeId as EmployeeID][i];
+                const fileName = onePagerFile("Vorname", "Name", onePager.local, onePager.lastUpdateByEmployee);
+                await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/${fileName}:/content`).put("iwas");
             }
         }
 
@@ -108,7 +135,7 @@ testFactory("LocalFileOnePagerRepository", async (data) => {
 
     for (const employeeId in data) {
         const id = employeeId as EmployeeID
-        await repo.saveOnePagersOfEmployee(id, data[id].map(d => d.lastUpdateByEmployee));
+        await repo.saveOnePagersOfEmployee(id, data[id]);
     }
 
     return repo;

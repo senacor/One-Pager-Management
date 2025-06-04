@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { EmployeeID, Logger, OnePager, OnePagerRepository } from "../../DomainTypes";
+import { EmployeeID, Local, Logger, OnePager, OnePagerRepository } from "../../DomainTypes";
 import { CURRENT_TEMPLATE_PATH } from "../../validationRules";
 import { dateFromOnePagerFile, extractLanguageCode, folderNameFromEmployee, isOnePagerFile, onePagerFile } from "../DirectoryBasedOnePager";
 
@@ -40,8 +40,8 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
                 const lastUpdateByEmployee = dateFromOnePagerFile(file, this.logger);
                 const urlPath = path.resolve(employeeDir, file.split('/').map(encodeURIComponent).join('/'));
                 const fileLocation = new URL('file:///' + urlPath);
-                const language = extractLanguageCode(file);
-                return { lastUpdateByEmployee, fileLocation, language } as OnePager;
+                const local = extractLanguageCode(file);
+                return { lastUpdateByEmployee, fileLocation, local } as OnePager;
             });
     }
 
@@ -62,10 +62,10 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
      * @param employeeId The ID of the employee for whom to save one-pagers.
      * @param onePagerDates An array representing the dates for which one-pagers should be created.
      */
-    async saveOnePagersOfEmployee(employeeId: EmployeeID, onePagerDates: Date[]): Promise<void> {
+    async saveOnePagersOfEmployee(employeeId: EmployeeID, onePagerDates: { lastUpdateByEmployee: Date, local: Local | undefined }[]): Promise<void> {
         const employeeDir = await this.employeeDir(employeeId)
         await Promise.all(onePagerDates.map(d => {
-            const file = path.join(employeeDir, onePagerFile("Max", "Mustermann", d));
+            const file = path.join(employeeDir, onePagerFile("Max", "Mustermann", d.local, d.lastUpdateByEmployee));
             return fs.copyFile(CURRENT_TEMPLATE_PATH, file)
         }));
         this.logger.log(`(LocalFileOnePagerRepository.ts: saveOnePagersOfEmployee) Saved ${onePagerDates.length} one-pagers for employee "${employeeId}" in "${employeeDir}"!`);

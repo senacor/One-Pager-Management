@@ -2,7 +2,7 @@ import { Client } from "@microsoft/microsoft-graph-client";
 import { DriveItem, Site } from "@microsoft/microsoft-graph-types";
 import { URL } from "node:url";
 import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository } from "../../DomainTypes";
-import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
+import { employeeIdFromFolder, extractLanguageCode, isEmployeeFolder } from "../DirectoryBasedOnePager";
 
 type SharePointFolder = string;
 type OnePagerMap = Record<EmployeeID, OnePager[] | SharePointFolder>;
@@ -86,7 +86,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                 // check if the drive item is a valid one-pager file
                 // if the output does not have a date of last chage or is not a file, continue
                 if (!driveItem.lastModifiedDateTime ||
-                    !(driveItem.name || "").match(/^.+_\d{8}(_.+)?\.pptx$/) ||
+                    !(driveItem.name || "").match(/^.+_\d{6}(_.+)?\.pptx$/) ||
                     !driveItem.file ||
                     !driveItem["@microsoft.graph.downloadUrl"]) {
                     this.logger.log(`Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`);
@@ -96,7 +96,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                     lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
                     fileLocation: new URL(driveItem["@microsoft.graph.downloadUrl"]),
                     webLocation: driveItem.webUrl ? new URL(driveItem.webUrl) : undefined,
-                    language: extractLanguageCode(driveItem.name)
+                    local: extractLanguageCode(driveItem.name || ""),
                 };
                 this.onePagers[employeeId].push(onePager);
             }
