@@ -69,11 +69,11 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
      * @param employeeId The ID of the employee for whom to save one-pagers.
      * @param onePagerDates An array representing the dates for which one-pagers should be created.
      */
-    async saveOnePagersOfEmployee(employeeId: EmployeeID, onePagerDates: { lastUpdateByEmployee: Date, local: Local | undefined }[]): Promise<void> {
+    async saveOnePagersOfEmployee(employeeId: EmployeeID, onePagerDates: { lastUpdateByEmployee: Date, local: Local | undefined }[], templatePath: string = CURRENT_TEMPLATE_PATH): Promise<void> {
         const employeeDir = await this.fakeEmployeeDir(employeeId)
         await Promise.all(onePagerDates.map(d => {
             const file = path.join(employeeDir, onePagerFile("Max", "Mustermann", d.local, d.lastUpdateByEmployee));
-            return fs.copyFile(CURRENT_TEMPLATE_PATH, file)
+            return fs.copyFile(templatePath, file)
         }));
         this.logger.log(`Saved ${onePagerDates.length} one-pagers for employee "${employeeId}" in "${employeeDir}"!`);
     }

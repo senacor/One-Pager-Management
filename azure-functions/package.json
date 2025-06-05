@@ -10,7 +10,7 @@
         "prestart": "npm run clean && npm run build",
         "start": "func start",
         "test": "jest",
-        "featuretest": "cucumber-js --require features/step_definitions/*.ts --format progress --format junit:reports/cucumber-report.xml"
+        "featuretest": "cucumber-js --require-module ts-node/register --require features/step_definitions/*.ts --format progress --format junit:reports/cucumber-report.xml"
     },
     "dependencies": {
         "@azure/functions": "^4.7.2",
@@ -19,9 +19,11 @@
         "franc-min": "^6.2.0",
         "hardened-fetch": "^1.2.3",
         "isomorphic-fetch": "^3.0.0",
+        "jest-cucumber": "^4.5.0",
         "jszip": "^3.10.1",
         "node-cache": "^5.1.2",
-        "node-pptx-parser": "^1.0.1"
+        "node-pptx-parser": "^1.0.1",
+        "ts-node": "^10.9.2"
     },
     "devDependencies": {
         "@cucumber/cucumber": "^11.3.0",

@@ -96,7 +96,7 @@ export function dateFromOnePagerFile(file: OnePagerFile, logger: Logger = consol
  * Converts a JS Date object to a string in yyMMdd format.
  * @param date - The date to convert.
  */
-function toYYMMDD(date: Date): string {
+export function toYYMMDD(date: Date): string {
     const yy = String(date.getFullYear()).slice(-2);
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');
@@ -110,7 +110,7 @@ function toYYMMDD(date: Date): string {
  * @returns A Date object representing the date.
  * @throws Error if the input string is not in the correct format.
  */
-function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
+export function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
         logger.error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
         throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);

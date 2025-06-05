@@ -12,7 +12,7 @@ export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocat
     if (onePager.fileLocation.protocol === 'file:') {
         let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);
-        const fsPath = filePath.startsWith('//') ? filePath.slice(1) : process.cwd() + filePath;
+        const fsPath = filePath.startsWith('/') ? filePath.slice(1) : process.cwd() + filePath; // pathname always starts with a slash
         logger.log(`(fetcher.ts: fetchOnePagerContent) Reading file from path: ${fsPath}`);
         return await readFile(fsPath);
     } else {

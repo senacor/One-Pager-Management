@@ -18,5 +18,6 @@ module.exports = {
             ancestorSeparator: " › ",
             usePathForSuiteName: "true"
         }]
-    ]
+    ],
+    testTimeout: 5000 // 5 seconds
 };
