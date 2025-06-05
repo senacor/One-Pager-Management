@@ -10,7 +10,7 @@
         "prestart": "npm run clean && npm run build",
         "start": "func start",
         "test": "jest",
-        "featuretest": "cucumber-js --require-module ts-node/register --require features/step_definitions/*.ts --format progress --format junit:reports/cucumber-report.xml"
+        "featuretest": "jest \"test/Feature_Tests/.*\\.test\\.ts\""
     },
     "dependencies": {
         "@azure/functions": "^4.7.2",

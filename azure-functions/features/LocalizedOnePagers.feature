@@ -2,14 +2,14 @@ Feature: Locale One Pagers
     Our Program can handle one-pagers in different languages.
 
 
-    Scenario: German and Englisch valid one-pagers
+    Scenario: German and Englisch valid localized one-pagers
         Given today is "2024-02-19"
         And a valid one-pager "Max, Mustermann_DE_240209.pptx" of an employee with Id "111" exists
         And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
         When the one-pagers of the employee with Id "111" are validated
         Then no validation errors are reported for the employee with Id "111"
 
-    Scenario: Missing English version
+    Scenario: Missing English version (localized and nonlocalized)
         Given today is "2024-02-19"
         And a valid one-pager "Max, Mustermann_DE_240209.pptx" of an employee with Id "111" exists
         When the one-pagers of the employee with Id "111" are validated
@@ -18,7 +18,7 @@ Feature: Locale One Pagers
             | MISSING_EN_VERSION |
 
     # This Scenario needs to be adapted to nongerman employees
-    Scenario: Missing German version
+    Scenario: Missing German version (localized and nonlocalized)
         Given today is "2024-02-19"
         And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
         When the one-pagers of the employee with Id "111" are validated
@@ -26,11 +26,11 @@ Feature: Locale One Pagers
             | errors |
             | MISSING_DE_VERSION |
 
-    Scenario: Old outdated onePager exists
+    Scenario: Old outdated version of localized one-pager and new localized one-pager exist
         Given today is "2024-02-19"
         And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
-        And an one-pager "Max, Mustermann_DE_200209.pptx" of an employee with Id "111" exists based on an outdated template
-        And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
+        And an one-pager "Max, Mustermann_EN_200209.pptx" of an employee with Id "111" exists based on an outdated template
+        And a valid one-pager "Max, Mustermann_DE_200209.pptx" of an employee with Id "111" exists
         When the one-pagers of the employee with Id "111" are validated
         Then no validation errors are reported for the employee with Id "111"
 
@@ -44,7 +44,7 @@ Feature: Locale One Pagers
             | errors |
             | USING_UNKNOWN_TEMPLATE |
 
-    Scenario: Mixed language content
+    Scenario: One localized old one-pager and one localized new one-pager with outdated template
         Given today is "2025-06-01"
         And an one-pager "Max, Mustermann_DE_250209.pptx" of an employee with Id "111" exists based on an outdated template
         And a valid one-pager "Max, Mustermann_EN_240101.pptx" of an employee with Id "111" exists
@@ -54,16 +54,16 @@ Feature: Locale One Pagers
             | USING_UNKNOWN_TEMPLATE |
             | OLDER_THAN_SIX_MONTHS |
 
-    Scenario: Wrong language content
+    Scenario: Wrong language of content combined with current localized one-pager of this language
         Given today is "2024-06-01"
-        And a valid one-pager "Max, Mustermann_DE_240209.pptx" of an employee with Id "111" exists with slides in "EN"
+        And a valid one-pager "Max, Mustermann_DE_240208.pptx" of an employee with Id "111" exists with slides in "EN"
         And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
         When the one-pagers of the employee with Id "111" are validated
         Then the following validation errors are reported for the employee with Id "111":
             | errors |
             | WRONG_LANGUAGE_CONTENT |
 
-    Scenario: Wrong language content in name
+    Scenario: Wrong language of content combined with outdated localized one-pager of this language
         Given today is "2025-06-01"
         And a valid one-pager "Max, Mustermann_DE_250209.pptx" of an employee with Id "111" exists with slides in "EN"
         And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
@@ -91,7 +91,7 @@ Feature: Locale One Pagers
             | errors |
             | MIXED_LANGUAGE_VERSION |
 
-    Scenario: Missing language indicator in name and older than six months
+    Scenario: Missing language indicator in name of newest file and other are older than six months
         Given today is "2025-06-01"
         And a valid one-pager "Max, Mustermann_250209.pptx" of an employee with Id "111" exists with slides in "DE"
         And a valid one-pager "Max, Mustermann_EN_240209.pptx" of an employee with Id "111" exists
@@ -102,13 +102,15 @@ Feature: Locale One Pagers
             | OLDER_THAN_SIX_MONTHS |
 
 
-    Scenario: Old nonlocalized one-pager is ignored
+    Scenario: Nonlocalized one-pagers are ignored if they are older than localized one-pagers
         Given today is "2025-06-01"
         And a valid one-pager "Max, Mustermann_DE_250209.pptx" of an employee with Id "111" exists
         And a valid one-pager "Max, Mustermann_EN_250202.pptx" of an employee with Id "111" exists
         And a valid one-pager "Max, Mustermann_250101.pptx" of an employee with Id "111" exists with slides in "EN"
+        And a valid one-pager "Max, Mustermann_250102.pptx" of an employee with Id "111" exists with slides in "DE"
         When the one-pagers of the employee with Id "111" are validated
         Then no validation errors are reported for the employee with Id "111"
+
 
     Scenario: Unlocalized one-pager with slides in English and newer than localized englisch one-pager
         Given today is "2025-06-01"
