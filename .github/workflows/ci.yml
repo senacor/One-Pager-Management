@@ -71,7 +71,10 @@ jobs:
             npx azurite &
 
             echo "Starting local Azure Functions..."
-            STORAGE_SOURCE=localfile DATA_DIR=.storage npx azure-functions-core-tools start &
+            STORAGE_SOURCE=localfile \
+            ONE_PAGER_DIR=.storage/onepagers \
+            VALIDATION_RESULT_DIR=.storage \
+             npx azure-functions-core-tools start &
           wait-for: 5m
           wait-on: |
             http://localhost:7071

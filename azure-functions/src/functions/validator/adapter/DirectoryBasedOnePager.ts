@@ -18,7 +18,7 @@ export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFol
     }
 
     const parts = folderName.split("_");
-    return parts.length === 3 && parts.every(part => part.length > 0);
+    return parts.length === 3 && parts.every(part => part.length > 0) && isEmployeeId(parts[2]);
 }
 
 /**

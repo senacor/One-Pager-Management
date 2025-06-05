@@ -24,7 +24,8 @@ type MemoryStorageOptions = {
 
 type LocalStorageOptions = {
     STORAGE_SOURCE: "localfile";
-    DATA_DIR?: string;
+    ONE_PAGER_DIR?: string;
+    VALIDATION_RESULT_DIR?: string;
 }
 
 type SharepointStorageOptions = SharepointClientOptions & {
@@ -72,12 +73,13 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 reporter: async () => new InMemoryValidationReporter(logger)
             };
         case "localfile":
-            const dataDir = opts.DATA_DIR || process.cwd();
-            logger.log(`Using local file storage at ${dataDir}!`);
+            const onePagerDir = opts.ONE_PAGER_DIR || process.cwd();
+            const resultDir = opts.VALIDATION_RESULT_DIR || process.cwd();
+            logger.log(`Using local file storage for one-pagers at ${onePagerDir} and validation results at ${resultDir}!`);
             return {
-                onePagers: async () => new LocalFileOnePagerRepository(dataDir, logger),
-                employees: async () => new LocalFileEmployeeRepository(dataDir, logger),
-                reporter: async () => new LocalFileValidationReporter(dataDir, logger)
+                onePagers: async () => new LocalFileOnePagerRepository(onePagerDir, logger),
+                employees: async () => new LocalFileEmployeeRepository(onePagerDir, logger),
+                reporter: async () => new LocalFileValidationReporter(resultDir, logger)
             };
         case "sharepoint":
             logger.log("Using SharePoint storage!");

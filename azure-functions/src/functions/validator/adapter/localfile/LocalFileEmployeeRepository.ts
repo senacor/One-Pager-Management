@@ -1,7 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { EmployeeID, EmployeeRepository, Logger } from "../../DomainTypes";
-import { ONE_PAGER_DIR } from "./LocalFileOnePagerRepository";
 import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
 
 /**
@@ -16,8 +15,8 @@ export class LocalFileEmployeeRepository implements EmployeeRepository {
     private readonly onePagerDir: string;
     private readonly logger: Logger;
 
-    constructor(dataDir: string, logger: Logger = console) {
-        this.onePagerDir = path.join(dataDir, ONE_PAGER_DIR);
+    constructor(onePagerDir: string, logger: Logger = console) {
+        this.onePagerDir = onePagerDir;
         this.logger = logger;
     }
 
@@ -26,10 +25,11 @@ export class LocalFileEmployeeRepository implements EmployeeRepository {
      * @returns A promise that resolves to an array containting all employee IDs found in the one-pager directory.
      */
     async getAllEmployees(): Promise<EmployeeID[]> {
-        this.logger.log(`Retrieving all employees!`);
         await fs.mkdir(this.onePagerDir, { recursive: true });
         const folders = await fs.readdir(this.onePagerDir);
         let _this = this;
-        return folders.filter(isEmployeeFolder).map((el) => {return employeeIdFromFolder(el, _this.logger);});
+        const employeeIds = folders.filter(isEmployeeFolder).map((el) => {return employeeIdFromFolder(el, _this.logger);});
+        this.logger.log(`Found ${employeeIds.length} employees in "${this.onePagerDir}"!`);
+        return employeeIds;
     }
 }
