@@ -6,6 +6,7 @@ import prettier from "eslint-plugin-prettier";
 import unusedImports from "eslint-plugin-unused-imports";
 
 const defaultRules = {
+    "prettier/prettier": "error",
     "no-extra-parens": ["warn", "all"],
     "no-await-in-loop": "warn",
     "no-duplicate-imports": "warn",
@@ -34,21 +35,17 @@ const defaultRules = {
     ]
 }
 
-const plugins = { js, prettier, unusedImports }
+const plugins = { js, prettier, "unused-imports": unusedImports }
 
 const extendsConf = [
-    "eslint:recommended",
-    "plugin:prettier/recommended",
-    "plugin:unused-imports/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "js/recommended"
 ];
 
 export default defineConfig([
     // Disallow console in main sources
-    { files: ["src/**/*.{js,mjs,cjs,ts,mts,cts}"], plugins, extends: extendsConf, rules: { "no-console": "error", "no-extra-parens": ["error", "all"], "prettier/prettier": "error" } },
+    { files: ["src/**/*.{js,mjs,cjs,ts,mts,cts}"], plugins: plugins, extends: extendsConf, rules: { ...defaultRules, "no-console": "error" } },
     // Allow console in test code
-    { files: ["test/**/*.{js,mjs,cjs,ts,mts,cts}"], plugins, extends: extendsConf, rules: { "no-console": "off", "no-extra-parens": ["error", "all"], "prettier/prettier": "error" } },
+    { files: ["test/**/*.{js,mjs,cjs,ts,mts,cts}"], plugins: plugins, extends: extendsConf, rules: { ...defaultRules, "no-console": "off" } },
     { files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], languageOptions: { globals: globals.node } },
     tseslint.configs.recommended,
 ]);

@@ -75,11 +75,9 @@ type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOpt
  */
 export function loadConfigFromEnv(logger: Logger = console, overrides?: Options): AppConfiguration {
     // defaults to memory
-    const opts: Options = {
-        ...(overrides
-            ? { ...process.env, ...overrides }
-            : { STORAGE_SOURCE: 'memory', ...process.env }),
-    };
+    const opts: Options = overrides
+        ? { ...process.env, ...overrides }
+        : { STORAGE_SOURCE: 'memory', ...process.env };
 
     switch (opts.STORAGE_SOURCE) {
         case 'memory': {
