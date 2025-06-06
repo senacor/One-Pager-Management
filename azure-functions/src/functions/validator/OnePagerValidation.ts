@@ -1,4 +1,13 @@
-import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository, ValidationError, ValidationReporter, ValidationRule } from "./DomainTypes";
+import {
+    EmployeeID,
+    EmployeeRepository,
+    Logger,
+    OnePager,
+    OnePagerRepository,
+    ValidationError,
+    ValidationReporter,
+    ValidationRule,
+} from './DomainTypes';
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -19,8 +28,11 @@ export class OnePagerValidation {
      * @param logger The logger to use for logging messages (default is console).
      */
     constructor(
-        onePagers: OnePagerRepository, employees: EmployeeRepository,
-        reporter: ValidationReporter, validationRule: ValidationRule, logger: Logger = console
+        onePagers: OnePagerRepository,
+        employees: EmployeeRepository,
+        reporter: ValidationReporter,
+        validationRule: ValidationRule,
+        logger: Logger = console,
     ) {
         this.logger = logger;
         this.onePagers = onePagers;
@@ -41,15 +53,23 @@ export class OnePagerValidation {
         }
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
-        this.logger.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
+        this.logger.log(
+            `Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`,
+        );
 
         const candidates = this.selectNewestOnePagers(onePagers);
 
-        const results = candidates.length === 0 ?
-            [{ onePager: undefined, errors: ["MISSING_ONE_PAGER"] as ValidationError[] }] :
-            await Promise.all(candidates.map(async op => ({ onePager: op, errors: await this.validationRule(op) })));
+        const results =
+            candidates.length === 0
+                ? [{ onePager: undefined, errors: ['MISSING_ONE_PAGER'] as ValidationError[] }]
+                : await Promise.all(
+                      candidates.map(async (op) => ({
+                          onePager: op,
+                          errors: await this.validationRule(op),
+                      })),
+                  );
 
-        const errors = results.flatMap(r => r.errors);
+        const errors = results.flatMap((r) => r.errors);
         if (errors.length === 0) {
             this.logger.log(`Employee ${id} has valid OnePagers!`);
             await this.reporter.reportValid(id);
@@ -70,24 +90,32 @@ export class OnePagerValidation {
             return [];
         }
 
-        const noLanguage = "NO_LANGUAGE";
+        const noLanguage = 'NO_LANGUAGE';
 
-        const candidates = onePagers.reduce((acc, current) => {
-            const lang = current.local || noLanguage;
-            const lastUpdate = acc[lang]?.lastUpdateByEmployee;
-            if (!lastUpdate || current.lastUpdateByEmployee > lastUpdate) {
-                acc[lang] = current;
-            }
-            return acc;
-        }, {} as Record<string, OnePager>);
+        const candidates = onePagers.reduce(
+            (acc, current) => {
+                const lang = current.local || noLanguage;
+                const lastUpdate = acc[lang]?.lastUpdateByEmployee;
+                if (!lastUpdate || current.lastUpdateByEmployee > lastUpdate) {
+                    acc[lang] = current;
+                }
+                return acc;
+            },
+            {} as Record<string, OnePager>,
+        );
 
         if (candidates[noLanguage]) {
-            const newestLanTagged =
-                [candidates.DE, candidates.EN]
-                    .filter(op => op !== undefined)
-                    .sort((a, b) => b.lastUpdateByEmployee.getTime() - a.lastUpdateByEmployee.getTime());
+            const newestLanTagged = [candidates.DE, candidates.EN]
+                .filter((op) => op !== undefined)
+                .sort(
+                    (a, b) => b.lastUpdateByEmployee.getTime() - a.lastUpdateByEmployee.getTime(),
+                );
 
-            if (newestLanTagged.length > 0 && candidates[noLanguage].lastUpdateByEmployee < newestLanTagged[0].lastUpdateByEmployee) {
+            if (
+                newestLanTagged.length > 0 &&
+                candidates[noLanguage].lastUpdateByEmployee <
+                    newestLanTagged[0].lastUpdateByEmployee
+            ) {
                 delete candidates[noLanguage];
             }
         }

@@ -21,5 +21,5 @@ function errorReplacer(key: string, value: unknown) {
  * @returns
  */
 export function printError(error: unknown): string {
-  return JSON.stringify(error, errorReplacer);
+    return JSON.stringify(error, errorReplacer);
 }

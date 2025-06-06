@@ -1,9 +1,9 @@
-import { InvocationContext, app } from "@azure/functions";
-import { loadConfigFromEnv } from "./configuration/AppConfiguration";
-import { isEmployeeId } from "./validator/DomainTypes";
-import { OnePagerValidation } from "./validator/OnePagerValidation";
-import * as validationRules from "./validator/validationRules";
-import { printError } from "./ErrorHandling";
+import { InvocationContext, app } from '@azure/functions';
+import { loadConfigFromEnv } from './configuration/AppConfiguration';
+import { isEmployeeId } from './validator/DomainTypes';
+import { OnePagerValidation } from './validator/OnePagerValidation';
+import * as validationRules from './validator/validationRules';
+import { printError } from './ErrorHandling';
 
 export type QueueItem = { employeeId: string };
 
@@ -14,13 +14,20 @@ export const onepagerValidationRequests = 'onepager-validation-requests';
  * @param queueItem The QueueItem containing the employee ID to process.
  * @param context The Azure Functions invocation context.
  */
-export async function FileChangeQueueTrigger(queueItem: unknown, context: InvocationContext): Promise<void> {
-    context.log(`--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
+export async function FileChangeQueueTrigger(
+    queueItem: unknown,
+    context: InvocationContext,
+): Promise<void> {
+    context.log(
+        `--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`,
+    );
     try {
         const item = queueItem as QueueItem;
 
         if (!isEmployeeId(item.employeeId)) {
-            context.error(`Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`);
+            context.error(
+                `Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`,
+            );
             return;
         }
 
@@ -35,14 +42,18 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
             await config.employees(),
             await config.reporter(),
             validationRules.allRules(context),
-            context
+            context,
         );
         await validator.validateOnePagersOfEmployee(item.employeeId);
     } catch (error) {
-        context.error(`(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`);
+        context.error(
+            `(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`,
+        );
         throw error;
     } finally {
-        context.log(`--------- END of Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
+        context.log(
+            `--------- END of Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`,
+        );
     }
 }
 
@@ -50,5 +61,5 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
 app.storageQueue('FileChangeQueueTrigger', {
     queueName: onepagerValidationRequests,
     connection: '',
-    handler: FileChangeQueueTrigger
+    handler: FileChangeQueueTrigger,
 });

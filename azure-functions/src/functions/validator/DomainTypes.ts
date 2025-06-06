@@ -1,4 +1,4 @@
-import { URL } from "node:url";
+import { URL } from 'node:url';
 
 /**
  * Represents an employee ID as a string that consists of digits only.
@@ -11,7 +11,7 @@ export type EmployeeID = `${number}`;
  * @returns Is the variable a valid EmployeeID?
  */
 export function isEmployeeId(txt: unknown): txt is EmployeeID {
-    return typeof txt === "string" && /\d+/.test(txt);
+    return typeof txt === 'string' && /\d+/.test(txt);
 }
 
 export type Local = 'DE' | 'EN';
@@ -34,20 +34,19 @@ export type OnePager = {
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
 export type ValidationError =
-    "OLDER_THAN_SIX_MONTHS" | // one-pager is older than 6 months
-    "MISSING_ONE_PAGER" | // no one-pager exists for the employee
-    "USING_UNKNOWN_TEMPLATE" | // one-pager is using an unknown template, in most cases an outdated template with old styling
-    "USING_MODIFIED_TEMPLATE" | // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
-    "MISSING_LANGUAGE_INDICATOR_IN_NAME" | // one-pager is missing a language indicator in the file name
-    "MISSING_DE_VERSION" | // employee has no one-pager in German
-    "MISSING_EN_VERSION" | // employee has no one-pager in English
-    "MIXED_LANGUAGE_VERSION" | // one-pager has slides in different languages
-    "WRONG_LANGUAGE_CONTENT"; // one-pager indicates a different language as is used
+    | 'OLDER_THAN_SIX_MONTHS' // one-pager is older than 6 months
+    | 'MISSING_ONE_PAGER' // no one-pager exists for the employee
+    | 'USING_UNKNOWN_TEMPLATE' // one-pager is using an unknown template, in most cases an outdated template with old styling
+    | 'USING_MODIFIED_TEMPLATE' // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
+    | 'MISSING_LANGUAGE_INDICATOR_IN_NAME' // one-pager is missing a language indicator in the file name
+    | 'MISSING_DE_VERSION' // employee has no one-pager in German
+    | 'MISSING_EN_VERSION' // employee has no one-pager in English
+    | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
+    | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
 export type ValidationRule = (onePager: OnePager) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
-
     /**
      * Fetch all one-pagers for a specific employee. An employee may have multiple one-pagers.
      * Common occurrences are: different languages, different versions, versions for specific purposes(customers), etc.
@@ -60,7 +59,6 @@ export interface OnePagerRepository {
  * Interface for fetching all employee IDs.
  */
 export interface EmployeeRepository {
-
     /**
      * Fetches IDs of all current employees.
      */
@@ -72,7 +70,6 @@ export interface EmployeeRepository {
  * It allows to report valid one-pagers and errors found during validation.
  */
 export interface ValidationReporter {
-
     /**
      * Reports that the one-pager of the given employee ID is valid.
      * @param id The ID of the employee whose one-pager is valid.
@@ -85,7 +82,11 @@ export interface ValidationReporter {
      * @param onePager The one-pager document being reported on, maybe undefined if no one-pager exists.
      * @param errors The validation errors found.
      */
-    reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void>;
+    reportErrors(
+        id: EmployeeID,
+        onePager: OnePager | undefined,
+        errors: ValidationError[],
+    ): Promise<void>;
 
     /**
      * Fetches the latest validation results for the given employee ID.
@@ -94,17 +95,9 @@ export interface ValidationReporter {
     getResultFor(id: EmployeeID): Promise<ValidationError[]>;
 }
 
-
-
-
-
-
-
-
 /**
  * --------------------- Auxiliary Interfaces ---------------------
  */
-
 
 /**
  * Interface for a simple logger used in nearly every class.

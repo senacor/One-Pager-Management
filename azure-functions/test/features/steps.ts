@@ -1,21 +1,21 @@
 import { Given, Then, When, defineParameterType } from '@cucumber/cucumber';
 
 defineParameterType({
-  name: 'errors',
-  regexp: /\[(.*?)\]/,
-  transformer: (s) => s.split(/\s*,\s*/)
+    name: 'errors',
+    regexp: /\[(.*?)\]/,
+    transformer: (s) => s.split(/\s*,\s*/),
 });
 
 type OnePagerExemplar = {
-    name: string
-    templateVersion?: string
-    slideLanguage?: string
+    name: string;
+    templateVersion?: string;
+    slideLanguage?: string;
 };
 
 type EmployeeExemplar = {
-    id: string
-    name: string
-    familyName: string
+    id: string;
+    name: string;
+    familyName: string;
 };
 
 Given('today is {string}', async (date) => {
@@ -50,7 +50,10 @@ Then('{string} OnePagers have no validation errors', async (employee: string) =>
     return 'pending';
 });
 
-Then('{string} OnePagers have the validation error(s): {errors}', async (employee: string, errors: string[]) => {
-    // Write code here that turns the phrase above into concrete actions
-    return 'pending';
-});
+Then(
+    '{string} OnePagers have the validation error(s): {errors}',
+    async (employee: string, errors: string[]) => {
+        // Write code here that turns the phrase above into concrete actions
+        return 'pending';
+    },
+);
