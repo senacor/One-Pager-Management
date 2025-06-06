@@ -4,7 +4,7 @@
     "description": "",
     "main": "dist/src/functions/*.js",
     "scripts": {
-        "build": "rimraf build && tsc && npm run cucumber-check && npm run lint",
+        "build": "rimraf build && tsc && npm run cucumber-check",
         "watch": "tsc -w",
         "clean": "rimraf dist",
         "prestart": "npm run clean && npm run build",

@@ -92,7 +92,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                     this.logger.log(`Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`);
                     continue;
                 }
-                let onePager: OnePager = {
+                const onePager: OnePager = {
                     lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
                     fileLocation: new URL(driveItem["@microsoft.graph.downloadUrl"]),
                     webLocation: driveItem.webUrl ? new URL(driveItem.webUrl) : undefined,

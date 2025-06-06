@@ -63,7 +63,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @param id The employee ID for which the one-pager is valid.
      */
     async reportValid(id: EmployeeID): Promise<void> {
-        let itemId = await this.getItemIdOfEmployee(id);
+        const itemId = await this.getItemIdOfEmployee(id);
 
         if (itemId !== undefined) {
             this.logger.log(`(SharepointListValidationReporter.ts: reportValid) Reporting valid one-pager for employee with ID "${id}"!`);
@@ -78,7 +78,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @param errors An array of validation errors found in the one-pager.
      */
     async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
-        let itemId = await this.getItemIdOfEmployee(id);
+        const itemId = await this.getItemIdOfEmployee(id);
 
         this.logger.log(`(SharepointListValidationReporter.ts: reportErrors) Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`);
 
@@ -109,18 +109,18 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
         this.logger.log(`(SharepointListValidationReporter.ts: getResultFor) Getting results for employee with id "${id}"!`);
 
-        let itemId = await this.getItemIdOfEmployee(id);
+        const itemId = await this.getItemIdOfEmployee(id);
 
         if (!itemId) {
             return [];
         }
 
-        let item = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).headers(FORCE_REFRESH).select("fields").get() as ListItem;
+        const item = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).headers(FORCE_REFRESH).select("fields").get() as ListItem;
         if (!item.fields) {
             return [];
         } else {
             //TODO: runtime type check
-            return (item.fields as Record<string, string>)["Festgestellte_Fehler"].split("\n") as ValidationError[];
+            return (item.fields as Record<string, string>).Festgestellte_Fehler.split("\n") as ValidationError[];
         }
     }
 
@@ -132,7 +132,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
     private async getItemIdOfEmployee(id: EmployeeID): Promise<string | undefined> {
         this.logger.log(`(SharepointListValidationReporter.ts: getItemIdOfEmployee) Getting item ID for employee with ID "${id}"!`);
 
-        const { value: entries } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).filter("fields/MitarbeiterID eq '" + id + "'").get() as { value?: ListItem[] };
+        const { value: entries } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).filter(`fields/MitarbeiterID eq '${id}'`).get() as { value?: ListItem[] };
         const [entry] = entries || [];
         return entry?.id;
 
@@ -144,7 +144,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async clearList(): Promise<void> {
         this.logger.log(`(SharepointListValidationReporter.ts: clearList) Clearing SharePoint list with ID "${this.listId}" on site "${this.siteId}"!`);
 
-        var { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).get() as { value?: ListItem[] };
+        const { value: items } = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).headers(FORCE_REFRESH).get() as { value?: ListItem[] };
 
         if (items) {
             await Promise.all(items.map(item =>

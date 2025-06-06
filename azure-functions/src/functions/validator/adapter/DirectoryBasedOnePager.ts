@@ -1,4 +1,4 @@
-import { EmployeeID, isEmployeeId, isLocal, Local, Logger } from "../DomainTypes";
+import { EmployeeID, Local, Logger, isEmployeeId, isLocal } from "../DomainTypes";
 
 /**
  * Represents a folder name for an employee in the format "Name_FamilyName_EmployeeID".
@@ -62,7 +62,7 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
         return false;
     }
 
-    return !!fileName.match(/.+, .+(_[A-Z]{2})?_(\d{6})\.pptx$/);
+    return Boolean(fileName.match(/.+, .+(_[A-Z]{2})?_(\d{6})\.pptx$/));
 }
 
 /**
@@ -73,7 +73,7 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
  * @returns The one-pager file name in the format "FamilyName, Name_DE_YYMMDD.pptx".
  */
 export function onePagerFile(name: string, familyName: string, local: Local | undefined, lastUpdated: Date): string {
-    return `${familyName}, ${name}_${local ? local + "_" : ""}${toYYMMDD(lastUpdated)}.pptx`;
+    return `${familyName}, ${name}_${local ? `${local}_` : ""}${toYYMMDD(lastUpdated)}.pptx`;
 }
 
 /**

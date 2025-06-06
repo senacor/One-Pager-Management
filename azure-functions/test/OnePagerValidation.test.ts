@@ -5,7 +5,7 @@ import { InMemoryValidationReporter } from "../src/functions/validator/adapter/m
 
 describe("OnePagerValidation", () => {
 
-    var reporter: ValidationReporter;
+    let reporter: ValidationReporter;
 
     beforeEach(() => {
         reporter = new InMemoryValidationReporter();
@@ -43,8 +43,8 @@ describe("OnePagerValidation", () => {
     it("should clean errors for employee when one-pager becomes valid", async () => {
         const id = "111";
         const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date() }] });
-        var callCounter = 0;
-        const statefulValidator = async (op: OnePager | undefined) => callCounter++ == 0 ? ["OLDER_THAN_SIX_MONTHS"] as ValidationError[] : [];
+        let callCounter = 0;
+        const statefulValidator = async () => callCounter++ == 0 ? ["OLDER_THAN_SIX_MONTHS"] as ValidationError[] : [];
         const validation = new OnePagerValidation(repo, repo, reporter, statefulValidator);
 
         await validation.validateOnePagersOfEmployee(id);

@@ -1,5 +1,5 @@
 import { ClientSecretCredential } from "@azure/identity";
-import { AuthenticationHandler, ChaosHandler, Client, HTTPMessageHandler, Middleware, RetryHandler } from "@microsoft/microsoft-graph-client";
+import { AuthenticationHandler, Client, HTTPMessageHandler, Middleware, RetryHandler } from "@microsoft/microsoft-graph-client";
 import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
 import { LocalFileEmployeeRepository } from "../validator/adapter/localfile/LocalFileEmployeeRepository";
 import { LocalFileOnePagerRepository } from "../validator/adapter/localfile/LocalFileOnePagerRepository";
@@ -8,7 +8,7 @@ import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemory
 import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
 import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
-import { EmployeeRepository, isEmployeeId, Logger, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
+import { EmployeeRepository, Logger, OnePagerRepository, ValidationReporter, isEmployeeId } from "../validator/DomainTypes";
 import { CachingHandler } from "./CachingHandler";
 
 export type AppConfiguration = {
@@ -19,7 +19,6 @@ export type AppConfiguration = {
 
 type MemoryStorageOptions = {
     STORAGE_SOURCE: "memory";
-    EMPLOYEES?: string; // Comma-separated list of employee IDs to pre-populate the in-memory repository
 }
 
 type LocalStorageOptions = {
@@ -60,19 +59,19 @@ type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOpt
  */
 export function loadConfigFromEnv(logger: Logger = console, overrides?: Options): AppConfiguration {
     // defaults to memory
-    const opts: Options = { ...(overrides ? { ...process.env, ...overrides } : { STORAGE_SOURCE: "memory", ...process.env }) };
+    const opts: Options = { ...overrides ? { ...process.env, ...overrides } : { STORAGE_SOURCE: "memory", ...process.env } };
 
     switch (opts.STORAGE_SOURCE) {
-        case "memory":
+        case "memory": {
             logger.log("Using in-memory storage!");
-            const ids = opts.EMPLOYEES ? opts.EMPLOYEES.split(",").map(id => id.trim()).filter(id => isEmployeeId(id)) : [];
             const repo = new InMemoryOnePagerRepository({});
             return {
                 onePagers: async () => repo,
                 employees: async () => repo,
                 reporter: async () => new InMemoryValidationReporter(logger)
             };
-        case "localfile":
+        }
+        case "localfile": {
             const onePagerDir = opts.ONE_PAGER_DIR || process.cwd();
             const resultDir = opts.VALIDATION_RESULT_DIR || process.cwd();
             logger.log(`Using local file storage for one-pagers at ${onePagerDir} and validation results at ${resultDir}!`);
@@ -81,9 +80,11 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 employees: async () => new LocalFileEmployeeRepository(onePagerDir, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger)
             };
-        case "sharepoint":
+        }
+        case "sharepoint": {
             logger.log("Using SharePoint storage!");
             return getSharepointConfig(opts, logger);
+        }
     }
 }
 
@@ -110,7 +111,7 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
     logger.log(`Storing validation results on SharePoint list with site: "${validationSiteName}", name: "${validationResultListName}"!`);
 
     let promise: Promise<SharepointDriveOnePagerRepository>;
-    let repo = () => {
+    const repo = () => {
         if (!promise) {
             promise = SharepointDriveOnePagerRepository.getInstance(client, onePagerSiteName, onePagerDriveName, logger);
         }

@@ -78,7 +78,7 @@ if (hasSharepointClientOptions(opts)) {
     testFactory("SharepointListValidationReporter", async () => {
         const client = createSharepointClient({...opts, SHAREPOINT_API_LOGGING: "true"});
 
-        let reporter = await SharepointListValidationReporter.getInstance(
+        const reporter = await SharepointListValidationReporter.getInstance(
             client, "senacor.sharepoint.com:/teams/MaInfoTest", "one-pager-status-automated-test-env"
         );
 

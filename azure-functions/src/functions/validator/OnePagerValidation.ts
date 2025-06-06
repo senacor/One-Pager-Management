@@ -72,7 +72,7 @@ export class OnePagerValidation {
 
         const noLanguage = "NO_LANGUAGE";
 
-        let candidates = onePagers.reduce((acc, current) => {
+        const candidates = onePagers.reduce((acc, current) => {
             const lang = current.local || noLanguage;
             const lastUpdate = acc[lang]?.lastUpdateByEmployee;
             if (!lastUpdate || current.lastUpdateByEmployee > lastUpdate) {
@@ -83,7 +83,7 @@ export class OnePagerValidation {
 
         if (candidates[noLanguage]) {
             const newestLanTagged =
-                [candidates['DE'], candidates['EN']]
+                [candidates.DE, candidates.EN]
                     .filter(op => op !== undefined)
                     .sort((a, b) => b.lastUpdateByEmployee.getTime() - a.lastUpdateByEmployee.getTime());
 

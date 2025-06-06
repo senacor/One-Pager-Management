@@ -11,7 +11,7 @@ async function doit() {
 async function detect(ex: string) {
     console.log(`Detecting languages in: ${ex}`);
 
-    const slides = await new PptxParser("examples/" + ex).extractText();
+    const slides = await new PptxParser(`examples/${ex}`).extractText();
     console.log(`PptxParser detected ${JSON.stringify(slides.map(slide => ({ id: slide.id, path: slide.path })))}`);
 
     for (const [i, slide] of slides.entries()) {

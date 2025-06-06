@@ -59,7 +59,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
                     { lastUpdateByEmployee: new Date(), local: undefined }
                 ]
             });
-            let onePagers = await rep.getAllOnePagersOfEmployee(id);
+            const onePagers = await rep.getAllOnePagersOfEmployee(id);
             expect(onePagers).toHaveLength(1);
             expect(onePagers[0].fileLocation).not.toBeFalsy();
             expect(onePagers[0].fileLocation.pathname).not.toEqual("");
@@ -72,7 +72,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
                     { lastUpdateByEmployee: new Date(), local: "DE" }
                 ]
             });
-            let onePagers = await rep.getAllOnePagersOfEmployee(id);
+            const onePagers = await rep.getAllOnePagersOfEmployee(id);
             expect(onePagers).toHaveLength(1);
             expect(onePagers[0].local).toEqual("DE");
         });
@@ -84,7 +84,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
                     { lastUpdateByEmployee: new Date(), local: undefined }
                 ]
             });
-            let onePagers = await rep.getAllOnePagersOfEmployee(id);
+            const onePagers = await rep.getAllOnePagersOfEmployee(id);
             expect(onePagers).toHaveLength(1);
             expect(onePagers[0].local).toBeFalsy();
         });
@@ -106,7 +106,7 @@ if (hasSharepointClientOptions(opts)) {
 
         const folders = (await client.api(`/drives/${onePagerDriveId}/root/children`).select("id").top(100000).get()).value as DriveItem[];
 
-        for (let element of folders) {
+        for (const element of folders) {
             await client.api(`/drives/${onePagerDriveId}/items/${element.id}/permanentDelete`).post(null);
         }
 

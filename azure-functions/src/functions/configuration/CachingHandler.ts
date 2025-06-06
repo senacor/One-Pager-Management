@@ -48,7 +48,7 @@ export class CachingHandler implements Middleware {
 
         // a max-age of zero indicates that the data should be force refreshed
         // we never are using max-age=0 only sometimes for the same url, we therefor never need to cache these calls
-        const canCache = method === "GET" && (maxAge !== 0);
+        const canCache = method === "GET" && maxAge !== 0;
 
         if (canCache) {
             if (maxAge) {

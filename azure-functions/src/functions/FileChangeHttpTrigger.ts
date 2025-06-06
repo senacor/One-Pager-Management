@@ -1,8 +1,8 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@azure/functions";
-import { onepagerValidationRequests, QueueItem } from "./FileChangeQueueTrigger";
+import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from "@azure/functions";
+import { printError } from "./ErrorHandling";
+import { QueueItem, onepagerValidationRequests } from "./FileChangeQueueTrigger";
 import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { isEmployeeId } from "./validator/DomainTypes";
-import { printError } from "./ErrorHandling";
 
 /**
  * Azure Queue used to store One Pager validation requests.

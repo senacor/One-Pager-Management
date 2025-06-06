@@ -1,4 +1,4 @@
-import { app, InvocationContext } from "@azure/functions";
+import { InvocationContext, app } from "@azure/functions";
 import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { isEmployeeId } from "./validator/DomainTypes";
 import { OnePagerValidation } from "./validator/OnePagerValidation";
