@@ -20,6 +20,6 @@ function errorReplacer(key: string, value: any) {
  * @param error An object or a string.
  * @returns
  */
-export function printError(error: any): string {
+export function printError(error: unknown): string {
   return JSON.stringify(error, errorReplacer);
 }
