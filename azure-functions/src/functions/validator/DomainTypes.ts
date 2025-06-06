@@ -110,11 +110,11 @@ export interface ValidationReporter {
  * Interface for a simple logger used in nearly every class.
  */
 export interface Logger {
-    debug(...args: any[]): void;
+    debug(...args: unknown[]): void;
 
-    log(...args: any[]): void;
+    log(...args: unknown[]): void;
 
-    warn(...args: any[]): void;
+    warn(...args: unknown[]): void;
 
-    error(...args: any[]): void;
+    error(...args: unknown[]): void;
 }

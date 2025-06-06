@@ -1,4 +1,4 @@
-import { OnePager, ValidationError, ValidationReporter } from "../src/functions/validator/DomainTypes";
+import { ValidationError, ValidationReporter } from "../src/functions/validator/DomainTypes";
 import { OnePagerValidation } from "../src/functions/validator/OnePagerValidation";
 import { InMemoryOnePagerRepository } from "../src/functions/validator/adapter/memory/InMemoryOnePagerRepository";
 import { InMemoryValidationReporter } from "../src/functions/validator/adapter/memory/InMemoryValidationReporter";
@@ -13,7 +13,7 @@ describe("OnePagerValidation", () => {
 
     it("should not report errors for unknown employee", async () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, async op => ["MISSING_ONE_PAGER"]);
+        const validation = new OnePagerValidation(repo, repo, reporter, async () => ["MISSING_ONE_PAGER"]);
 
         await validation.validateOnePagersOfEmployee("000");
 
@@ -44,7 +44,7 @@ describe("OnePagerValidation", () => {
         const id = "111";
         const repo = new InMemoryOnePagerRepository({ [id]: [{ lastUpdateByEmployee: new Date() }] });
         let callCounter = 0;
-        const statefulValidator = async () => callCounter++ == 0 ? ["OLDER_THAN_SIX_MONTHS"] as ValidationError[] : [];
+        const statefulValidator = async () => callCounter++ === 0 ? ["OLDER_THAN_SIX_MONTHS"] as ValidationError[] : [];
         const validation = new OnePagerValidation(repo, repo, reporter, statefulValidator);
 
         await validation.validateOnePagersOfEmployee(id);

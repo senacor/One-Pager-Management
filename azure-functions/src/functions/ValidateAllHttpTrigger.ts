@@ -1,5 +1,5 @@
 import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from "@azure/functions";
-import { QueueItem, onepagerValidationRequests } from "./FileChangeQueueTrigger";
+import { onepagerValidationRequests } from "./FileChangeQueueTrigger";
 import { loadConfigFromEnv } from "./configuration/AppConfiguration";
 import { EmployeeRepository } from "./validator/DomainTypes";
 import { printError } from "./ErrorHandling";

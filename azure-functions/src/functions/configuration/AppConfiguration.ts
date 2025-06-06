@@ -8,7 +8,7 @@ import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemory
 import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
 import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
 import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
-import { EmployeeRepository, Logger, OnePagerRepository, ValidationReporter, isEmployeeId } from "../validator/DomainTypes";
+import { EmployeeRepository, Logger, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
 import { CachingHandler } from "./CachingHandler";
 
 export type AppConfiguration = {
@@ -43,8 +43,8 @@ export type SharepointClientOptions = {
     SHAREPOINT_API_CACHING?: string;
 }
 
-export function hasSharepointClientOptions(opts: any): opts is SharepointClientOptions {
-    return opts.SHAREPOINT_TENANT_ID && opts.SHAREPOINT_CLIENT_ID && opts.SHAREPOINT_CLIENT_SECRET;
+export function hasSharepointClientOptions(opts: Record<string, unknown>): opts is SharepointClientOptions {
+    return Boolean(opts.SHAREPOINT_TENANT_ID) && Boolean(opts.SHAREPOINT_CLIENT_ID) && Boolean(opts.SHAREPOINT_CLIENT_SECRET);
 }
 
 type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOptions;
@@ -95,10 +95,9 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
  * @returns An AppConfiguration object that provides access to the SharePoint repositories and reporter.
  */
 function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = console): AppConfiguration {
-    const client = createSharepointClient(opts, logger);
+    const client = createSharepointClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
-        logger.error("(AppConfiguration.ts: getSharepointConfig) Missing SharePoint One Pager site name in environment variables!");
         throw new Error("Missing SharePoint One Pager site name in environment variables!");
     }
 
@@ -132,7 +131,7 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createSharepointClient(opts: SharepointClientOptions, logger: Logger = console): Client {
+export function createSharepointClient(opts: SharepointClientOptions): Client {
     if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
         throw new Error("Missing SharePoint authentication configuration in environment variables!");
     }
@@ -155,7 +154,7 @@ export function createSharepointClient(opts: SharepointClientOptions, logger: Lo
     // define the middleware chain
     const handlers: Middleware[] = [
         new AuthenticationHandler(authProvider),
-        opts.SHAREPOINT_API_CACHING === "false" ? [] : [new CachingHandler()], // we default to having caching enabled
+        opts.SHAREPOINT_API_CACHING === "false" ? [] : [new CachingHandler(console)], // we default to having caching enabled
         new RetryHandler(),
         new HTTPMessageHandler()
     ].flat();

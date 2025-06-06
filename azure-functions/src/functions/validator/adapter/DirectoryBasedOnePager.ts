@@ -28,7 +28,7 @@ export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFol
  * @returns The employee ID extracted from the folder name.
  * @throws Error if the folder name does not match the expected format or if the last part is not a valid EmployeeID.
  */
-export function employeeIdFromFolder(folder: EmployeeFolder, logger: Logger = console): EmployeeID {
+export function employeeIdFromFolder(folder: EmployeeFolder): EmployeeID {
     const lastPart = folder.split("_").pop(); // we are guranteed that it works because EmployeeFolder has at least 3 parts
     if (!isEmployeeId(lastPart)) {
         throw new Error(`Invalid folder name: ${folder}`);

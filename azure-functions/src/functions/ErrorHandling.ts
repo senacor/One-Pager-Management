@@ -4,7 +4,7 @@
  * @param value
  * @returns
  */
-function errorReplacer(key: string, value: any) {
+function errorReplacer(key: string, value: unknown) {
     if (value instanceof Error) {
         return {
             name: value.name,

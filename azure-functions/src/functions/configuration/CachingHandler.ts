@@ -1,5 +1,6 @@
 import { Context, Middleware } from "@microsoft/microsoft-graph-client";
 import NodeCache from "node-cache";
+import { Logger } from "../validator/DomainTypes";
 
 export const FORCE_REFRESH = { "cache-control": "max-age=0" };
 
@@ -20,7 +21,13 @@ export class CachingHandler implements Middleware {
         forceString: false,
         maxKeys: 5000
     });
+    private readonly logger: Logger;
+
     private nextMiddleware?: Middleware;
+
+    constructor(logger: Logger) {
+        this.logger = logger;
+    }
 
     /**
      * Executes the caching logic for HTTP requests.
@@ -37,7 +44,7 @@ export class CachingHandler implements Middleware {
         let maxAge: number | undefined;
         if (cacheControl) {
             if (cacheControl === "clear-all") { // used in tests
-                console.info("(CachingHandler.ts: execute) clearing full http cache")
+                this.logger.log("(CachingHandler.ts: execute) clearing full http cache")
                 this.cache.flushAll();
             }
             maxAge = cacheControl.split(',').reduce((ttl, v) => {
@@ -52,12 +59,12 @@ export class CachingHandler implements Middleware {
 
         if (canCache) {
             if (maxAge) {
-                console.info(`(CachingHandler.ts: execute) resetting ttls of cache entry "${url}" to ${maxAge}`)
+                this.logger.info(`(CachingHandler.ts: execute) resetting ttls of cache entry "${url}" to ${maxAge}`)
                 this.cache.ttl(url, maxAge); // a ttl of 0 has the meaning of infinity for node-cache
             }
             const entry = this.cache.get<CacheEntry>(url);
             if (entry) {
-                console.info(`(CachingHandler.ts: execute) using cache entry for "${url}" to ${maxAge}`)
+                this.logger.log(`(CachingHandler.ts: execute) using cache entry for "${url}" to ${maxAge}`)
                 context.response = new Response(entry?.body, { status: 200, headers: entry?.headers });
                 return;
             }

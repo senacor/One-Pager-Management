@@ -60,7 +60,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                 continue;
             }
 
-            const employeeId: EmployeeID = employeeIdFromFolder(folderName, logger);
+            const employeeId: EmployeeID = employeeIdFromFolder(folderName);
             onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folderName}:/children` as SharePointFolder;
         }
 

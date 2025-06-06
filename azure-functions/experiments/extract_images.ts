@@ -1,7 +1,7 @@
 import JSZip from "jszip";
-import { loadConfigFromEnv } from "./configuration/AppConfiguration";
-import { Logger, OnePager } from "./validator/DomainTypes";
-import { fetchOnePagerContent } from "./validator/fetcher";
+import { loadConfigFromEnv } from "../src/functions/configuration/AppConfiguration";
+import { Logger, OnePager } from "../src/functions/validator/DomainTypes";
+import { fetchOnePagerContent } from "../src/functions/validator/fetcher";
 import { mkdirSync, writeFileSync } from "fs";
 
 const nopLogger: Logger = {

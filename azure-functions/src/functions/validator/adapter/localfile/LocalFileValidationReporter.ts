@@ -65,7 +65,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
         try {
             const file = await fs.readFile(this.validationFile(id), "utf-8");
             return JSON.parse(file) as ValidationError[];
-        } catch (e) {
+        } catch  {
             return [];
         }
     }

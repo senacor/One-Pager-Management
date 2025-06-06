@@ -57,14 +57,14 @@ async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[
 
     const hashes: Record<string, string> = {};
     const names: string[] = [];
-    for (const f of masterFiles) {
-        const xmlContent = await pptx.files[f].async("string");
 
+    const xmlContents = await Promise.all(masterFiles.map(f => pptx.files[f].async("string")));
+    for (const [i, xmlContent] of xmlContents.entries()) {
         const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
         if (!match) {
             continue;
         }
-        const themeName = match[1];
+        const [, themeName] = match;
         // these seem to be default themes we do not care about
         if (themeName.toLocaleLowerCase().includes("office")) {
             continue;
@@ -74,7 +74,7 @@ async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[
         hash.update(xmlContent);
         const digest = hash.digest("hex");
 
-        hashes[digest] = f;
+        hashes[digest] = masterFiles[i];
         names.push(themeName);
     }
 

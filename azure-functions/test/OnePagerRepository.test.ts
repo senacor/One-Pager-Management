@@ -106,23 +106,22 @@ if (hasSharepointClientOptions(opts)) {
 
         const folders = (await client.api(`/drives/${onePagerDriveId}/root/children`).select("id").top(100000).get()).value as DriveItem[];
 
-        for (const element of folders) {
-            await client.api(`/drives/${onePagerDriveId}/items/${element.id}/permanentDelete`).post(null);
-        }
+        await Promise.all(folders.map((element) => client.api(`/drives/${onePagerDriveId}/items/${element.id}/delete`).post(null)));
 
-        for (const employeeId in data) {
+        await Promise.all(Object.keys(data).map(async (employeeId) => {
             // Ordner anlegen
             const requests = await client.api(`/drives/${onePagerDriveId}/items/root/children`).post({
                 "name": `Name_Vorname_${employeeId}`,
                 "folder": {},
                 "@microsoft.graph.conflictBehavior": "rename"
             });
-            for (let i = 0; i < data[employeeId as EmployeeID].length; ++i) {
-                const onePager = data[employeeId as EmployeeID][i];
+
+            const employeeData = data[employeeId as EmployeeID];
+            await Promise.all(employeeData.map(async (onePager) => {
                 const fileName = onePagerFile("Vorname", "Name", onePager.local, onePager.lastUpdateByEmployee);
                 await client.api(`/drives/${onePagerDriveId}/items/${requests.id}:/${fileName}:/content`).put("iwas");
-            }
-        }
+            }));
+        }));
 
         return await SharepointDriveOnePagerRepository.getInstance(client, siteIDAlias, listName, console);
     });
@@ -133,10 +132,10 @@ testFactory("LocalFileOnePagerRepository", async (data) => {
     console.log(`Using temporary directory: ${tmp}`);
     const repo = new LocalFileOnePagerRepository(tmp);
 
-    for (const employeeId in data) {
+    await Promise.all(Object.keys(data).map(async (employeeId) => {
         const id = employeeId as EmployeeID
         await repo.saveOnePagersOfEmployee(id, data[id]);
-    }
+    }));
 
     return repo;
 });
