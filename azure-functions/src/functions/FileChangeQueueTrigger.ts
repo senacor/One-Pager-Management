@@ -4,6 +4,7 @@ import { isEmployeeId } from './validator/DomainTypes';
 import { OnePagerValidation } from './validator/OnePagerValidation';
 import * as validationRules from './validator/validationRules';
 import { printError } from './ErrorHandling';
+import { PptxContentLanguageDetector } from './validator/adapter/PptxContentLanguageDetector';
 
 export type QueueItem = { employeeId: string };
 
@@ -34,6 +35,7 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
             await config.onePagers(),
             await config.employees(),
             await config.reporter(),
+            new PptxContentLanguageDetector(context),
             validationRules.allRules(context),
             context,
         );

@@ -35,9 +35,9 @@ function getTemplateHashes(logger: Logger) {
  * -------- Validation rules concerning the content of a OnePager. --------
  */
 
- export const usesCurrentTemplate = (logger: Logger) => async (content: Buffer) => {
+ export const usesCurrentTemplate = (logger: Logger = console): ValidationRule => async onePager => {
      const templateHashes = await getTemplateHashes(logger);
-     const contentHashes = await calculateThemeHash(logger, content);
+     const contentHashes = await calculateThemeHash(logger, onePager.data);
 
     const templateKeys = Object.keys(templateHashes.hashes);
     const contentKeys = Object.keys(contentHashes.hashes);
@@ -110,7 +110,7 @@ async function calculateThemeHash(logger: Logger, pptxContent: Buffer): Promise<
  * Combination of all rules we have defined for the one-pager validation.
  */
 export function allRules(log: Logger = console): ValidationRule {
-    return combineRules(lastModifiedRule, combineContentRules(log, usesCurrentTemplate(log)));
+    return combineRules(lastModifiedRule, usesCurrentTemplate(log));
 }
 
 /**
@@ -121,23 +121,6 @@ export function allRules(log: Logger = console): ValidationRule {
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
     return async onePager => {
         const errors = await Promise.all(rules.map(rule => rule(onePager)));
-        return errors.flat();
-    };
-}
-
-type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationError[]>;
-
-/**
- * A function to convert multiple ContentValidationRules into one ValidationRule.
- * This rule will fetch the content of the OnePager and apply all rules to it.
- * @param log
- * @param rules The content validation rules to combine.
- * @returns The resulting validation rule.
- */
-export function combineContentRules(log: Logger, ...rules: ContentValidationRule[]): ValidationRule {
-    return async onePager => {
-        const content = await fetchOnePagerContent(log, onePager);
-        const errors = await Promise.all(rules.map(rule => rule(content)));
         return errors.flat();
     };
 }

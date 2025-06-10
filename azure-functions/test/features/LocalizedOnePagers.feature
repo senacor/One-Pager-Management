@@ -146,7 +146,7 @@ Feature: Localized OnePagers
                 | Max, Mustermann_DE_240209.pptx | DE            | 2020            |
             When we validate the OnePagers of "Max"
             # If the EN OnePager is picked we would expect the validation error "OLDER_THAN_SIX_MONTHS"
-            Then "Max" OnePagers have the validation error "MIXED_LANGUAGE_VERSION" and "USING_UNKNOWN_TEMPLATE"
+            Then "Max" OnePagers have the validation errors "MIXED_LANGUAGE_VERSION" and "USING_UNKNOWN_TEMPLATE"
 
         Scenario: OnePager with content in multiple languages does not supersedes newer OnePagers
             Given "Max" has the following OnePagers:

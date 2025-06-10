@@ -20,14 +20,15 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
      * @param onePagers An object which keys are employee IDs and values are arrays of one-pagers.
      * @param logger The logger to use for logging messages (default is console).
      */
-    constructor(onePagers: Record<EmployeeID, { lastUpdateByEmployee: Date }[]>, logger: Logger = console) {
+    constructor(onePagers: Record<EmployeeID, Partial<OnePager>[]>, logger: Logger = console) {
         // Add file location to each one-pager and save it in memory
         this.onePagers = Object.fromEntries(
             Object.entries(onePagers).map(([employeeId, onePagersArr]) => [
                 employeeId,
                 onePagersArr.map(d => ({
-                    ...d,
+                    lastUpdateByEmployee: new Date(),
                     fileLocation: new URL(`file:///${CURRENT_TEMPLATE_PATH}`),
+                    ...d,
                 })),
             ]),
         );
@@ -40,9 +41,6 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
      * @returns All one-pagers of the specified employee, or an empty array if none exist.
      */
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
-        this.logger.debug(
-            `(InMemoryOnePagerRepository.ts: getAllOnePagersOfEmployee) Retrieving one-pagers for employee ${employeeId}.`,
-        );
         return this.onePagers[employeeId] || [];
     }
 
@@ -51,7 +49,6 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
      * @returns An array of employee IDs.
      */
     async getAllEmployees(): Promise<EmployeeID[]> {
-        this.logger.debug('(InMemoryOnePagerRepository.ts: getAllEmployees) Returning all employees.');
         return Object.keys(this.onePagers) as EmployeeID[];
     }
 }

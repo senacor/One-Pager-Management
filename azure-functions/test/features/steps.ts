@@ -10,6 +10,8 @@ import { promises as fs } from 'fs';
 import { tmpdir } from 'node:os';
 import { LocalFileEmployeeRepository } from '../../src/functions/validator/adapter/localfile/LocalFileEmployeeRepository';
 import { InMemoryValidationReporter } from '../../src/functions/validator/adapter/memory/InMemoryValidationReporter';
+import { PptxContentLanguageDetector } from '../../src/functions/validator/adapter/PptxContentLanguageDetector';
+import { extractLanguageCode } from '../../src/functions/validator/adapter/DirectoryBasedOnePager';
 
 /* eslint-disable prefer-arrow-callback */
 
@@ -47,6 +49,7 @@ Before(async function (this: Context) {
         this.repo,
         new LocalFileEmployeeRepository(tmp),
         this.reporter,
+        new PptxContentLanguageDetector(),
         allRules()
     );
 });
@@ -87,20 +90,23 @@ async function createOnePagers(this: Context, employeeName: string, data: string
     }
 
     await Promise.all(onePagers.map(async onePager => {
-        const template = onePager.TemplateVersion? templatePath(onePager.TemplateVersion) : CURRENT_TEMPLATE_PATH
-        await this.repo.createOnePagerForEmployee(Id, onePager.Name, template);
+        const language = onePager.SlideLanguage || extractLanguageCode(onePager.Name);
+        if( !language) {
+            throw new Error(`A language for the OnePager must either be defined by the use of a local in the name or by provinding the SlideLanguage property.`);
+        }
+        const file = await templatePath(language, onePager.TemplateVersion);
+        await this.repo.createOnePagerForEmployee(Id, onePager.Name, file);
     }));
 }
 
-function templatePath(templateVersion: string): string {
-    switch (templateVersion) {
-        case '2024':
-            return 'examples/Mustermann, Max_DE_240209.pptx';
-        case '2020':
-            return 'examples/Mustermann, Max DE_201028.pptx';
-        default:
-            throw new Error(`Unknown template version: ${templateVersion}`);
+async function templatePath(language: string, templateVersion?: string): Promise<string> {
+    const file = `test/onepager/example-${templateVersion || '2024'}-${language}.pptx`;
+    try {
+        await fs.access(file);
+    } catch {
+        throw new Error(`No test example OnePager for language ${language} and template version ${templateVersion} found in "test/onepager"`);
     }
+    return file;
 }
 
 When('we validate the OnePagers of {string}', async function (this: Context, employee: string) {
@@ -132,8 +138,8 @@ async function checkErrors(this: Context, employee: string, ...errors: string[])
     const results = await this.reporter.getResultFor(Id);
 
     assert.deepEqual(
-        results,
-        errors,
+        results.sort(),
+        errors.sort(),
         `Expected errors for ${Id} to be ${JSON.stringify(errors)}, but got ${JSON.stringify(results)}`,
     );
 }
