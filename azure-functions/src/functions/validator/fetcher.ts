@@ -13,7 +13,7 @@ export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocat
         let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);
         const fsPath = filePath.startsWith('/') ? filePath.slice(1) : process.cwd() + filePath; // pathname always starts with a slash
-        logger.log(`(fetcher.ts: fetchOnePagerContent) Reading file from path: ${fsPath}`);
+        logger.log(`Reading file from path: ${fsPath}`);
         return await readFile(fsPath);
     } else {
         const client = new HardenedFetch({
@@ -27,16 +27,16 @@ export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocat
         // HTTP(S) fetch
         const url = onePager.fileLocation.toString();
 
-        logger.log(`(fetcher.ts: fetchOnePagerContent) Fetching file from URL: ${url}`);
+        logger.log(`Fetching file from URL: ${url}`);
         const response = await client.fetch(url);
         if (response.status !== 200) {
             throw new Error(
-                `(fetcher.ts: fetchOnePagerContent) Failed to fetch "${url}"! It returned with status "${response.status}": "${await response.text()}"!`,
+                `Failed to fetch "${url}"! It returned with status "${response.status}": "${await response.text()}"!`,
             );
         }
         const buffer = Buffer.from(await response.arrayBuffer());
         logger.log(
-            `(fetcher.ts: fetchOnePagerContent) Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`,
+            `Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`,
         );
         return buffer;
     }

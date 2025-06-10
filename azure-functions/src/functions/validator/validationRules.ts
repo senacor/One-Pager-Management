@@ -24,14 +24,20 @@ export const missing: ValidationRule = async onePager => {
     return onePager.local ? [] : ['MISSING_LANGUAGE_INDICATOR_IN_NAME'];
 };
 
+let templateHashes: Promise<{ names: string[]; hashes: Record<string, string> }>
+function getTemplateHashes(logger: Logger) {
+    if (!templateHashes) {
+        templateHashes = readFile(CURRENT_TEMPLATE_PATH).then(templateData => calculateThemeHash(logger, templateData));
+    }
+    return templateHashes;
+}
 /*
  * -------- Validation rules concerning the content of a OnePager. --------
  */
 
-export const usesCurrentTemplate = async (content: Buffer) => {
-    const templateData = await readFile(CURRENT_TEMPLATE_PATH);
-    const templateHashes = await calculateThemeHash(templateData);
-    const contentHashes = await calculateThemeHash(content);
+ export const usesCurrentTemplate = (logger: Logger) => async (content: Buffer) => {
+     const templateHashes = await getTemplateHashes(logger);
+     const contentHashes = await calculateThemeHash(logger, content);
 
     const templateKeys = Object.keys(templateHashes.hashes);
     const contentKeys = Object.keys(contentHashes.hashes);
@@ -56,7 +62,8 @@ export const usesCurrentTemplate = async (content: Buffer) => {
     return error;
 };
 
-async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[]; hashes: Record<string, string> }> {
+async function calculateThemeHash(logger: Logger, pptxContent: Buffer): Promise<{ names: string[]; hashes: Record<string, string> }> {
+
     const zip = new JSZip();
     const pptx = await zip.loadAsync(pptxContent);
     const masterFiles = Object.keys(pptx.files)
@@ -66,7 +73,13 @@ async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[
     const hashes: Record<string, string> = {};
     const names: string[] = [];
 
-    const xmlContents = await Promise.all(masterFiles.map(f => pptx.files[f].async('string')));
+    logger.log(`Calculating theme hashes from PPTX content... Found ${JSON.stringify(masterFiles)} master files.`);
+    const xmlContents = await Promise.all(masterFiles.map(async f => {
+        logger.log(`Reading content of master file: ${f}`);
+        const c = await pptx.files[f].async('string');
+        logger.log(`Content of ${f} read successfully.`);
+        return c;
+    }));
     for (const [i, xmlContent] of xmlContents.entries()) {
         const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
         if (!match) {
@@ -97,7 +110,7 @@ async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[
  * Combination of all rules we have defined for the one-pager validation.
  */
 export function allRules(log: Logger = console): ValidationRule {
-    return combineRules(lastModifiedRule, combineContentRules(log, usesCurrentTemplate));
+    return combineRules(lastModifiedRule, combineContentRules(log, usesCurrentTemplate(log)));
 }
 
 /**

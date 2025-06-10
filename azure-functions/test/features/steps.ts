@@ -1,7 +1,7 @@
 import { Given, Then, When, Before, After } from '@cucumber/cucumber';
 import { OnePagerValidation } from '../../src/functions/validator/OnePagerValidation';
 import path from 'path';
-import { allRules } from '../../src/functions/validator/validationRules';
+import { allRules, CURRENT_TEMPLATE_PATH } from '../../src/functions/validator/validationRules';
 import { EmployeeID, ValidationReporter } from '../../src/functions/validator/DomainTypes';
 import assert from 'assert';
 import sinon, { SinonFakeTimers } from 'sinon';
@@ -14,9 +14,9 @@ import { InMemoryValidationReporter } from '../../src/functions/validator/adapte
 /* eslint-disable prefer-arrow-callback */
 
 type OnePagerExemplar = {
-    name: string;
-    templateVersion?: string;
-    slideLanguage?: string;
+    Name: string;
+    TemplateVersion?: string;
+    SlideLanguage?: string;
 };
 
 type EmployeeExemplar = {
@@ -56,7 +56,10 @@ After(async function (this: Context) {
 });
 
 Given('today is {string}', function (this: Context, date: string) {
-    this.clock = sinon.useFakeTimers(new Date(date));
+    this.clock = sinon.useFakeTimers({
+        now: new Date(date),
+        shouldAdvanceTime: true,
+    });
 });
 
 Given('the following employees exist:', function (this: Context, employees: DataTable<EmployeeExemplar>) {
@@ -73,14 +76,31 @@ Given('{string} has OnePager {string}', createOnePagers);
 
 Given('{string} has the following OnePagers:', createOnePagers);
 
-async function createOnePagers(this: Context, employeeName: string, onePagers: OnePagerExemplar | OnePagerExemplar[]) {
+async function createOnePagers(this: Context, employeeName: string, data: string | DataTable<OnePagerExemplar>) {
     const { Id } = this.getEmployee(employeeName);
-    const dto = [onePagers].flat().map(op => ({
-        name: op.name,
-        templateVersion: op.templateVersion,
-        slideLanguage: op.slideLanguage,
+
+    let onePagers: OnePagerExemplar[];
+    if (typeof data === 'string') {
+        onePagers = [{ Name: data }];
+    } else {
+        onePagers = data.hashes();
+    }
+
+    await Promise.all(onePagers.map(async onePager => {
+        const template = onePager.TemplateVersion? templatePath(onePager.TemplateVersion) : CURRENT_TEMPLATE_PATH
+        await this.repo.createOnePagerForEmployee(Id, onePager.Name, template);
     }));
-    //await (this.repo as LocalFileOnePagerRepository).saveOnePagersOfEmployee(id, dto);
+}
+
+function templatePath(templateVersion: string): string {
+    switch (templateVersion) {
+        case '2024':
+            return 'examples/Mustermann, Max_DE_240209.pptx';
+        case '2020':
+            return 'examples/Mustermann, Max DE_201028.pptx';
+        default:
+            throw new Error(`Unknown template version: ${templateVersion}`);
+    }
 }
 
 When('we validate the OnePagers of {string}', async function (this: Context, employee: string) {

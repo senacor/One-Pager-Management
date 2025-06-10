@@ -56,17 +56,19 @@ export class OnePagerValidation {
         this.logger.log(`Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`);
 
         const candidates = this.selectNewestOnePagers(onePagers);
+        this.logger.log(`Identified ${candidates.length} candidate one-pagers for validation.`);
 
         const results =
             candidates.length === 0
                 ? [{ onePager: undefined, errors: ['MISSING_ONE_PAGER'] as ValidationError[] }]
                 : await Promise.all(
-                      candidates.map(async op => ({
-                          onePager: op,
-                          errors: await this.validationRule(op),
-                      })),
-                  );
+                    candidates.map(async op => ({
+                        onePager: op,
+                        errors: await this.validationRule(op),
+                    })),
+                );
 
+        this.logger.log(`Validation results for employee ${id}:`, results);
         const errors = results.flatMap(r => r.errors);
         if (errors.length === 0) {
             this.logger.log(`Employee ${id} has valid OnePagers!`);
