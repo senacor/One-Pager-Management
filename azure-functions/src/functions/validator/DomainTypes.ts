@@ -82,11 +82,7 @@ export interface ValidationReporter {
      * @param onePager The one-pager document being reported on, maybe undefined if no one-pager exists.
      * @param errors The validation errors found.
      */
-    reportErrors(
-        id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[],
-    ): Promise<void>;
+    reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void>;
 
     /**
      * Fetches the latest validation results for the given employee ID.

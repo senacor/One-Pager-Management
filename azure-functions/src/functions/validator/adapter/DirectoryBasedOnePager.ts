@@ -18,7 +18,7 @@ export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFol
     }
 
     const parts = folderName.split('_');
-    return parts.length === 3 && parts.every((part) => part.length > 0) && isEmployeeId(parts[2]);
+    return parts.length === 3 && parts.every(part => part.length > 0) && isEmployeeId(parts[2]);
 }
 
 /**
@@ -43,11 +43,7 @@ export function employeeIdFromFolder(folder: EmployeeFolder): EmployeeID {
  * @param employeeId The employee ID of the employee.
  * @returns The folder name in the format "Name_FamilyName_EmployeeID".
  */
-export function folderNameFromEmployee(
-    name: string,
-    familyName: string,
-    employeeId: EmployeeID,
-): EmployeeFolder {
+export function folderNameFromEmployee(name: string, familyName: string, employeeId: EmployeeID): EmployeeFolder {
     return `${name}_${familyName}_${employeeId}`;
 }
 
@@ -76,12 +72,7 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
  * @param lastUpdated The date when the one-pager was last updated.
  * @returns The one-pager file name in the format "FamilyName, Name_DE_YYMMDD.pptx".
  */
-export function onePagerFile(
-    name: string,
-    familyName: string,
-    local: Local | undefined,
-    lastUpdated: Date,
-): string {
+export function onePagerFile(name: string, familyName: string, local: Local | undefined, lastUpdated: Date): string {
     return `${familyName}, ${name}_${local ? `${local}_` : ''}${toYYMMDD(lastUpdated)}.pptx`;
 }
 
@@ -95,12 +86,8 @@ export function onePagerFile(
 export function dateFromOnePagerFile(file: OnePagerFile, logger: Logger = console): Date {
     const match = file.match(/_(\d{6})\.pptx$/);
     if (!match) {
-        logger.error(
-            `(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`,
-        );
-        throw new Error(
-            `(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`,
-        );
+        logger.error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
+        throw new Error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
     }
     return fromYYMMDD(match[1], logger);
 }
@@ -125,12 +112,8 @@ export function toYYMMDD(date: Date): string {
  */
 export function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
-        logger.error(
-            `(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`,
-        );
-        throw new Error(
-            `(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`,
-        );
+        logger.error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
+        throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
     }
     const year = Number(yyMMdd.slice(0, 2));
     const month = Number(yyMMdd.slice(2, 4)) - 1; // JS months are 0-based

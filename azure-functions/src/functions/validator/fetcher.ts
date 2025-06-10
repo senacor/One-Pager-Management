@@ -8,10 +8,7 @@ import { HardenedFetch } from 'hardened-fetch';
  * @param onePager The OnePager to fetch.
  * @returns A promise that resolves to the content of the OnePager file as a Buffer.
  */
-export async function fetchOnePagerContent(
-    logger: Logger,
-    onePager: { fileLocation: URL },
-): Promise<Buffer> {
+export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocation: URL }): Promise<Buffer> {
     if (onePager.fileLocation.protocol === 'file:') {
         let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);

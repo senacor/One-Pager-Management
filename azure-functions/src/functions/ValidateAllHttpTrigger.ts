@@ -33,7 +33,7 @@ export async function ValidateAllHttpTrigger(
 
         context.extraOutputs.set(
             queueOutput,
-            ids.map((id) => ({ employeeId: id })),
+            ids.map(id => ({ employeeId: id })),
         );
 
         return { body: `Triggered validation for ${ids.length} employees.` };

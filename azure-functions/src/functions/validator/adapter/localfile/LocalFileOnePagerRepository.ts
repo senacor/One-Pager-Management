@@ -33,7 +33,7 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
      */
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         const dirs = await fs.readdir(this.onePagerDir);
-        let employeeDir = dirs.find((dir) => dir.endsWith(employeeId));
+        let employeeDir = dirs.find(dir => dir.endsWith(employeeId));
         if (!employeeDir) {
             this.logger.warn(`No OnePagers found for employee "${employeeId}"!`);
             return [];
@@ -45,16 +45,11 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         // Filter for pptx files only
         const pptxFiles = files.filter(isOnePagerFile);
 
-        this.logger.log(
-            `Found ${pptxFiles.length} OnePagers for employee "${employeeId}" in "${employeeDir}"!`,
-        );
+        this.logger.log(`Found ${pptxFiles.length} OnePagers for employee "${employeeId}" in "${employeeDir}"!`);
 
-        return pptxFiles.map((file) => {
+        return pptxFiles.map(file => {
             const lastUpdateByEmployee = dateFromOnePagerFile(file, this.logger);
-            const urlPath = path.resolve(
-                employeeDir,
-                file.split('/').map(encodeURIComponent).join('/'),
-            );
+            const urlPath = path.resolve(employeeDir, file.split('/').map(encodeURIComponent).join('/'));
             const fileLocation = new URL(`file:///${urlPath}`);
             const local = extractLanguageCode(file);
             return { lastUpdateByEmployee, fileLocation, local } as OnePager;
@@ -67,10 +62,7 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
      * @returns The path to the employee's directory where one-pagers are stored.
      */
     async fakeEmployeeDir(employeeId: EmployeeID): Promise<string> {
-        const dir = path.join(
-            this.onePagerDir,
-            folderNameFromEmployee('Max', 'Mustermann', employeeId),
-        );
+        const dir = path.join(this.onePagerDir, folderNameFromEmployee('Max', 'Mustermann', employeeId));
         await fs.mkdir(dir, { recursive: true });
         this.logger.log(`Ensured directory exists for employee "${employeeId}": ${dir}`);
         return dir;
@@ -87,17 +79,21 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         templatePath: string = CURRENT_TEMPLATE_PATH,
     ): Promise<void> {
         const employeeDir = await this.fakeEmployeeDir(employeeId);
-        await Promise.all(
-            onePagerDates.map((d) => {
-                const file = path.join(
-                    employeeDir,
-                    onePagerFile('Max', 'Mustermann', d.local, d.lastUpdateByEmployee),
-                );
-                return fs.copyFile(templatePath, file);
-            }),
-        );
-        this.logger.log(
-            `Saved ${onePagerDates.length} one-pagers for employee "${employeeId}" in "${employeeDir}"!`,
-        );
+        await Promise.all(onePagerDates.map(d => {
+            const file = onePagerFile('Max', 'Mustermann', d.local, d.lastUpdateByEmployee);
+            return this.createOnePagerOfEmployee(employeeId, file, templatePath);
+        }));
+        this.logger.log(`Saved ${onePagerDates.length} one-pagers for employee "${employeeId}" in "${employeeDir}"!`);
+    }
+
+    async createOnePagerOfEmployee(
+        employeeId: EmployeeID,
+        fileName: string,
+        templatePath: string,
+    ): Promise<void> {
+        const employeeDir = await this.fakeEmployeeDir(employeeId);
+        const file = path.join(employeeDir, fileName);
+        await fs.copyFile(templatePath, file);
+        this.logger.log(`Created one-pager "${fileName}" in "${employeeDir}" from template "${templatePath}"!`);
     }
 }

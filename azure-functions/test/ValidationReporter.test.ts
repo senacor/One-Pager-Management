@@ -1,10 +1,7 @@
 import { promises as fs } from 'fs';
 import { tmpdir } from 'node:os';
 import path from 'path';
-import {
-    createSharepointClient,
-    hasSharepointClientOptions,
-} from '../src/functions/configuration/AppConfiguration';
+import { createSharepointClient, hasSharepointClientOptions } from '../src/functions/configuration/AppConfiguration';
 import { LocalFileValidationReporter } from '../src/functions/validator/adapter/localfile/LocalFileValidationReporter';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter';
@@ -29,15 +26,9 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should return errors when reported', async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors('111', someOnePager, [
-                'OLDER_THAN_SIX_MONTHS',
-                'MISSING_ONE_PAGER',
-            ]);
+            await reporter.reportErrors('111', someOnePager, ['OLDER_THAN_SIX_MONTHS', 'MISSING_ONE_PAGER']);
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual([
-                'OLDER_THAN_SIX_MONTHS',
-                'MISSING_ONE_PAGER',
-            ]);
+            await expect(reporter.getResultFor('111')).resolves.toEqual(['OLDER_THAN_SIX_MONTHS', 'MISSING_ONE_PAGER']);
         });
 
         it('should clean up errors when valid is reported', async () => {
@@ -52,10 +43,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should not return errors of other employee', async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors('000', someOnePager, [
-                'OLDER_THAN_SIX_MONTHS',
-                'MISSING_ONE_PAGER',
-            ]);
+            await reporter.reportErrors('000', someOnePager, ['OLDER_THAN_SIX_MONTHS', 'MISSING_ONE_PAGER']);
 
             await expect(reporter.getResultFor('111')).resolves.toEqual([]);
         });

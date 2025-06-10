@@ -2,10 +2,7 @@ import { DriveItem } from '@microsoft/microsoft-graph-types';
 import { promises as fs } from 'fs';
 import { tmpdir } from 'node:os';
 import path from 'path';
-import {
-    createSharepointClient,
-    hasSharepointClientOptions,
-} from '../src/functions/configuration/AppConfiguration';
+import { createSharepointClient, hasSharepointClientOptions } from '../src/functions/configuration/AppConfiguration';
 import { onePagerFile } from '../src/functions/validator/adapter/DirectoryBasedOnePager';
 import { LocalFileOnePagerRepository } from '../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository';
 import { InMemoryOnePagerRepository } from '../src/functions/validator/adapter/memory/InMemoryOnePagerRepository';
@@ -87,82 +84,60 @@ const testFactory = (name: string, factory: RepoFactory) => {
     });
 };
 
-testFactory('InMemoryOnePagerRepository', async (data) => new InMemoryOnePagerRepository(data));
+testFactory('InMemoryOnePagerRepository', async data => new InMemoryOnePagerRepository(data));
 
 const opts = process.env;
 if (hasSharepointClientOptions(opts)) {
-    testFactory('SharepointDriveOnePagerRepository', async (data) => {
+    testFactory('SharepointDriveOnePagerRepository', async data => {
         const siteIDAlias: string = 'senacor.sharepoint.com:/teams/MaInfoTest';
         const listName: string = 'OnePagerAutomatedTestEnv';
 
         const client = createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: 'true' });
 
-        const siteID: string = (await client.api(`/sites/${siteIDAlias}`).select('id').get())
-            .id as string;
+        const siteID: string = (await client.api(`/sites/${siteIDAlias}`).select('id').get()).id as string;
         const onePagerDriveId: string = (
             await client.api(`/sites/${siteID}/drives`).select(['id', 'name']).get()
         ).value.filter((drive: { name: string }) => drive.name === listName)[0].id as string;
 
-        const folders = (
-            await client
-                .api(`/drives/${onePagerDriveId}/root/children`)
-                .select('id')
-                .top(100000)
-                .get()
-        ).value as DriveItem[];
+        const folders = (await client.api(`/drives/${onePagerDriveId}/root/children`).select('id').top(100000).get())
+            .value as DriveItem[];
 
         await Promise.all(
-            folders.map((element) =>
-                client.api(`/drives/${onePagerDriveId}/items/${element.id}/delete`).post(null),
-            ),
+            folders.map(element => client.api(`/drives/${onePagerDriveId}/items/${element.id}/delete`).post(null)),
         );
 
         await Promise.all(
-            Object.keys(data).map(async (employeeId) => {
+            Object.keys(data).map(async employeeId => {
                 // Ordner anlegen
-                const requests = await client
-                    .api(`/drives/${onePagerDriveId}/items/root/children`)
-                    .post({
-                        name: `Name_Vorname_${employeeId}`,
-                        folder: {},
-                        '@microsoft.graph.conflictBehavior': 'rename',
-                    });
+                const requests = await client.api(`/drives/${onePagerDriveId}/items/root/children`).post({
+                    name: `Name_Vorname_${employeeId}`,
+                    folder: {},
+                    '@microsoft.graph.conflictBehavior': 'rename',
+                });
 
                 const employeeData = data[employeeId as EmployeeID];
                 await Promise.all(
-                    employeeData.map(async (onePager) => {
-                        const fileName = onePagerFile(
-                            'Vorname',
-                            'Name',
-                            onePager.local,
-                            onePager.lastUpdateByEmployee,
-                        );
+                    employeeData.map(async onePager => {
+                        const fileName = onePagerFile('Vorname', 'Name', onePager.local, onePager.lastUpdateByEmployee);
                         await client
-                            .api(
-                                `/drives/${onePagerDriveId}/items/${requests.id}:/${fileName}:/content`,
-                            )
+                            .api(`/drives/${onePagerDriveId}/items/${requests.id}:/${fileName}:/content`)
                             .put('iwas');
                     }),
                 );
             }),
         );
 
-        return await SharepointDriveOnePagerRepository.getInstance(
-            client,
-            siteIDAlias,
-            listName,
-            console,
-        );
+        return await SharepointDriveOnePagerRepository.getInstance(client, siteIDAlias, listName, console);
     });
 }
 
-testFactory('LocalFileOnePagerRepository', async (data) => {
+testFactory('LocalFileOnePagerRepository', async data => {
     const tmp = await fs.mkdtemp(path.join(tmpdir(), 'validation-reports-'));
     console.log(`Using temporary directory: ${tmp}`);
     const repo = new LocalFileOnePagerRepository(tmp);
 
     await Promise.all(
-        Object.keys(data).map(async (employeeId) => {
+        Object.keys(data).map(async employeeId => {
             const id = employeeId as EmployeeID;
             await repo.saveOnePagersOfEmployee(id, data[id]);
         }),

@@ -12,9 +12,7 @@ describe('OnePagerValidation', () => {
 
     it('should not report errors for unknown employee', async () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, async () => [
-            'MISSING_ONE_PAGER',
-        ]);
+        const validation = new OnePagerValidation(repo, repo, reporter, async () => ['MISSING_ONE_PAGER']);
 
         await validation.validateOnePagersOfEmployee('000');
 
@@ -24,7 +22,7 @@ describe('OnePagerValidation', () => {
     it('should report errors for employee without one-pager', async () => {
         const id = '111';
         const repo = new InMemoryOnePagerRepository({ [id]: [] });
-        const validation = new OnePagerValidation(repo, repo, reporter, async (op) =>
+        const validation = new OnePagerValidation(repo, repo, reporter, async op =>
             op === undefined ? ['MISSING_ONE_PAGER'] : [],
         );
 
@@ -38,7 +36,7 @@ describe('OnePagerValidation', () => {
         const repo = new InMemoryOnePagerRepository({
             [id]: [{ lastUpdateByEmployee: new Date() }],
         });
-        const validation = new OnePagerValidation(repo, repo, reporter, async (op) =>
+        const validation = new OnePagerValidation(repo, repo, reporter, async op =>
             op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : [],
         );
 
@@ -72,10 +70,8 @@ describe('OnePagerValidation', () => {
                 { lastUpdateByEmployee: new Date('2005-01-01') },
             ],
         });
-        const validation = new OnePagerValidation(repo, repo, reporter, async (op) =>
-            !op || op.lastUpdateByEmployee < new Date('2010-01-01')
-                ? ['OLDER_THAN_SIX_MONTHS']
-                : [],
+        const validation = new OnePagerValidation(repo, repo, reporter, async op =>
+            !op || op.lastUpdateByEmployee < new Date('2010-01-01') ? ['OLDER_THAN_SIX_MONTHS'] : [],
         );
 
         await validation.validateOnePagersOfEmployee(id);

@@ -1,18 +1,8 @@
 import { Client } from '@microsoft/microsoft-graph-client';
 import { DriveItem, Site } from '@microsoft/microsoft-graph-types';
 import { URL } from 'node:url';
-import {
-    EmployeeID,
-    EmployeeRepository,
-    Logger,
-    OnePager,
-    OnePagerRepository,
-} from '../../DomainTypes';
-import {
-    employeeIdFromFolder,
-    extractLanguageCode,
-    isEmployeeFolder,
-} from '../DirectoryBasedOnePager';
+import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository } from '../../DomainTypes';
+import { employeeIdFromFolder, extractLanguageCode, isEmployeeFolder } from '../DirectoryBasedOnePager';
 
 type SharePointFolder = string;
 type OnePagerMap = Record<EmployeeID, OnePager[] | SharePointFolder>;
@@ -64,13 +54,12 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
             );
         }
 
-        const onePagerDriveId: string = (
-            await client.api(`/sites/${site.id}/drives`).get()
-        ).value.filter((drive: { name: string }) => drive.name === listName)[0].id as string;
-        const { value: folders } = (await client
-            .api(`/drives/${onePagerDriveId}/root/children`)
-            .top(100000)
-            .get()) as { value?: DriveItem[] };
+        const onePagerDriveId: string = (await client.api(`/sites/${site.id}/drives`).get()).value.filter(
+            (drive: { name: string }) => drive.name === listName,
+        )[0].id as string;
+        const { value: folders } = (await client.api(`/drives/${onePagerDriveId}/root/children`).top(100000).get()) as {
+            value?: DriveItem[];
+        };
 
         if (folders === undefined) {
             logger.error(
@@ -89,8 +78,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
             }
 
             const employeeId: EmployeeID = employeeIdFromFolder(folderName);
-            onePagers[employeeId] =
-                `/drives/${onePagerDriveId}/root:/${folderName}:/children` as SharePointFolder;
+            onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folderName}:/children` as SharePointFolder;
         }
 
         return new SharepointDriveOnePagerRepository(client, onePagers, logger);
@@ -121,9 +109,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                     !driveItem.file ||
                     !driveItem['@microsoft.graph.downloadUrl']
                 ) {
-                    this.logger.log(
-                        `Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`,
-                    );
+                    this.logger.log(`Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`);
                     continue;
                 }
                 const onePager: OnePager = {

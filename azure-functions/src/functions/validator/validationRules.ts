@@ -12,13 +12,13 @@ export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pp
  *
  */
 
-export const lastModifiedRule: ValidationRule = async (onePager) => {
+export const lastModifiedRule: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
-export const missing: ValidationRule = async (onePager) => {
+export const missing: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager.local ? [] : ['MISSING_LANGUAGE_INDICATOR_IN_NAME'];
@@ -39,21 +39,13 @@ export const usesCurrentTemplate = async (content: Buffer) => {
     // no error if theme contents are equal
     if (
         templateKeys.length === contentKeys.length &&
-        templateKeys.every(
-            (key) =>
-                contentKeys.includes(key) &&
-                templateHashes.hashes[key] === contentHashes.hashes[key],
-        )
+        templateKeys.every(key => contentKeys.includes(key) && templateHashes.hashes[key] === contentHashes.hashes[key])
     ) {
         return [];
     }
 
-    const themeCountWithSameContent = templateKeys.filter((key) =>
-        contentKeys.includes(key),
-    ).length;
-    const hasSomeOriginalTemplateThemes = templateHashes.names.some((name) =>
-        contentHashes.names.includes(name),
-    );
+    const themeCountWithSameContent = templateKeys.filter(key => contentKeys.includes(key)).length;
+    const hasSomeOriginalTemplateThemes = templateHashes.names.some(name => contentHashes.names.includes(name));
 
     // if we detect at least one theme of the template we consider the current one-pager based on it
     const error: ValidationError[] = [
@@ -64,19 +56,17 @@ export const usesCurrentTemplate = async (content: Buffer) => {
     return error;
 };
 
-async function calculateThemeHash(
-    pptxContent: Buffer,
-): Promise<{ names: string[]; hashes: Record<string, string> }> {
+async function calculateThemeHash(pptxContent: Buffer): Promise<{ names: string[]; hashes: Record<string, string> }> {
     const zip = new JSZip();
     const pptx = await zip.loadAsync(pptxContent);
     const masterFiles = Object.keys(pptx.files)
-        .filter((file) => file.match(/ppt\/(theme)\//))
+        .filter(file => file.match(/ppt\/(theme)\//))
         .sort();
 
     const hashes: Record<string, string> = {};
     const names: string[] = [];
 
-    const xmlContents = await Promise.all(masterFiles.map((f) => pptx.files[f].async('string')));
+    const xmlContents = await Promise.all(masterFiles.map(f => pptx.files[f].async('string')));
     for (const [i, xmlContent] of xmlContents.entries()) {
         const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
         if (!match) {
@@ -106,7 +96,7 @@ async function calculateThemeHash(
 /**
  * Combination of all rules we have defined for the one-pager validation.
  */
-export function allRules(log: Logger) {
+export function allRules(log: Logger = console): ValidationRule {
     return combineRules(lastModifiedRule, combineContentRules(log, usesCurrentTemplate));
 }
 
@@ -116,8 +106,8 @@ export function allRules(log: Logger) {
  * @returns The combined validation rule.
  */
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
-    return async (onePager) => {
-        const errors = await Promise.all(rules.map((rule) => rule(onePager)));
+    return async onePager => {
+        const errors = await Promise.all(rules.map(rule => rule(onePager)));
         return errors.flat();
     };
 }
@@ -131,13 +121,10 @@ type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationErro
  * @param rules The content validation rules to combine.
  * @returns The resulting validation rule.
  */
-export function combineContentRules(
-    log: Logger,
-    ...rules: ContentValidationRule[]
-): ValidationRule {
-    return async (onePager) => {
+export function combineContentRules(log: Logger, ...rules: ContentValidationRule[]): ValidationRule {
+    return async onePager => {
         const content = await fetchOnePagerContent(log, onePager);
-        const errors = await Promise.all(rules.map((rule) => rule(content)));
+        const errors = await Promise.all(rules.map(rule => rule(content)));
         return errors.flat();
     };
 }

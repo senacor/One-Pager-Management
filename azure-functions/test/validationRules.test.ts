@@ -37,37 +37,28 @@ describe('validationRules', () => {
                 lastUpdateByEmployee: new Date(),
                 fileLocation: new URL('file:///examples/Mustermann%2C%20Max_DE_240209.pptx'),
             };
-            await expect(
-                combineContentRules(console, usesCurrentTemplate)(onePager),
-            ).resolves.toEqual([]);
+            await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual([]);
         });
 
-        it.each(onePagerWithOldTemplates)(
-            'should identify onepager using old template as invalid: %s',
-            async (url) => {
-                const onePager: OnePager = {
-                    lastUpdateByEmployee: new Date(),
-                    fileLocation: new URL(url),
-                };
-                await expect(
-                    combineContentRules(console, usesCurrentTemplate)(onePager),
-                ).resolves.toEqual(['USING_UNKNOWN_TEMPLATE']);
-            },
-        );
-
-        const files = readdirSync('examples/non-exact-template').filter((file) =>
-            file.endsWith('.pptx'),
-        );
-        it.each(files)('should identify non-exact template usage in %s', async (url) => {
+        it.each(onePagerWithOldTemplates)('should identify onepager using old template as invalid: %s', async url => {
             const onePager: OnePager = {
                 lastUpdateByEmployee: new Date(),
-                fileLocation: new URL(
-                    `file:///examples/non-exact-template/${encodeURIComponent(url)}`,
-                ),
+                fileLocation: new URL(url),
             };
-            await expect(
-                combineContentRules(console, usesCurrentTemplate)(onePager),
-            ).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
+            await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual([
+                'USING_UNKNOWN_TEMPLATE',
+            ]);
+        });
+
+        const files = readdirSync('examples/non-exact-template').filter(file => file.endsWith('.pptx'));
+        it.each(files)('should identify non-exact template usage in %s', async url => {
+            const onePager: OnePager = {
+                lastUpdateByEmployee: new Date(),
+                fileLocation: new URL(`file:///examples/non-exact-template/${encodeURIComponent(url)}`),
+            };
+            await expect(combineContentRules(console, usesCurrentTemplate)(onePager)).resolves.toEqual([
+                'USING_MODIFIED_TEMPLATE',
+            ]);
         });
     });
 
@@ -81,10 +72,7 @@ describe('validationRules', () => {
             const rule1 = async () => ['MISSING_ONE_PAGER' as ValidationError];
             const rule2 = async () => ['OLDER_THAN_SIX_MONTHS' as ValidationError];
             const combined = combineRules(rule1, rule2);
-            await expect(combined(exampleOnePager)).resolves.toEqual([
-                'MISSING_ONE_PAGER',
-                'OLDER_THAN_SIX_MONTHS',
-            ]);
+            await expect(combined(exampleOnePager)).resolves.toEqual(['MISSING_ONE_PAGER', 'OLDER_THAN_SIX_MONTHS']);
         });
     });
 
@@ -93,10 +81,7 @@ describe('validationRules', () => {
             const rule1 = async () => ['MISSING_ONE_PAGER' as ValidationError];
             const rule2 = async () => ['OLDER_THAN_SIX_MONTHS' as ValidationError];
             const combined = combineContentRules(console, rule1, rule2);
-            await expect(combined(exampleOnePager)).resolves.toEqual([
-                'MISSING_ONE_PAGER',
-                'OLDER_THAN_SIX_MONTHS',
-            ]);
+            await expect(combined(exampleOnePager)).resolves.toEqual(['MISSING_ONE_PAGER', 'OLDER_THAN_SIX_MONTHS']);
         });
     });
 });
