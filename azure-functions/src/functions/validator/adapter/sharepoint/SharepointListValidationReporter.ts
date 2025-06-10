@@ -97,7 +97,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
             );
         }
 
-        const [{ id: listId }] = lists.filter((list) => list.displayName === listDisplayName);
+        const [{ id: listId }] = lists.filter(list => list.displayName === listDisplayName);
         if (!listId) {
             logger.error(
                 `(SharepointListValidationReporter.ts: getInstance) Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`,
@@ -120,9 +120,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
             this.logger.log(
                 `(SharepointListValidationReporter.ts: reportValid) Reporting valid one-pager for employee with ID "${id}"!`,
             );
-            await this.client
-                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`)
-                .delete();
+            await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).delete();
         }
     }
 
@@ -132,11 +130,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @param onePager The one-pager that was validated, can be undefined if not available.
      * @param errors An array of validation errors found in the one-pager.
      */
-    async reportErrors(
-        id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[],
-    ): Promise<void> {
+    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
         const itemId = await this.getItemIdOfEmployee(id);
 
         this.logger.log(
@@ -197,7 +191,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
         let itemFields: ListItemWithFields  = item.fields;
 
-        return itemFields[COLUMN_VALIDATION_ERRORS].split("\n") as ValidationError[];
+        return itemFields[COLUMN_VALIDATION_ERRORS].split('\n') as ValidationError[];
 
     }
 
@@ -235,10 +229,8 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
         if (items) {
             await Promise.all(
-                items.map((item) =>
-                    this.client
-                        .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
-                        .delete(),
+                items.map(item =>
+                    this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`).delete(),
                 ),
             );
         }

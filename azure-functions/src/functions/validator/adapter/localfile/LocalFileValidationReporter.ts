@@ -1,12 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import {
-    EmployeeID,
-    Logger,
-    OnePager,
-    ValidationError,
-    ValidationReporter,
-} from '../../DomainTypes';
+import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } from '../../DomainTypes';
 
 /**
  * A validation reporter that stores validation results in local files.
@@ -55,11 +49,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * @param onePager The one-pager that was validated, can be undefined if not available.
      * @param errors The array of validation errors found in the one-pager.
      */
-    async reportErrors(
-        id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[],
-    ): Promise<void> {
+    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
         await this.ensureDataDir();
         await fs.writeFile(this.validationFile(id), JSON.stringify(errors));
     }

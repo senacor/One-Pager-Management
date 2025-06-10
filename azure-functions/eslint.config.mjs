@@ -2,11 +2,9 @@ import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import prettier from "eslint-plugin-prettier";
 import unusedImports from "eslint-plugin-unused-imports";
 
 const defaultRules = {
-    "prettier/prettier": "error",
     "no-extra-parens": ["warn", "all"],
     "no-await-in-loop": "warn",
     "no-duplicate-imports": "warn",
@@ -35,7 +33,7 @@ const defaultRules = {
     ]
 }
 
-const plugins = { js, prettier, "unused-imports": unusedImports }
+const plugins = { js, "unused-imports": unusedImports }
 
 const extendsConf = [
     "js/recommended"

@@ -63,16 +63,12 @@ export class CachingHandler implements Middleware {
 
         if (canCache) {
             if (maxAge) {
-                this.logger.info(
-                    `(CachingHandler.ts: execute) resetting ttls of cache entry "${url}" to ${maxAge}`,
-                );
+                this.logger.log(`(CachingHandler.ts: execute) resetting ttls of cache entry "${url}" to ${maxAge}`);
                 this.cache.ttl(url, maxAge); // a ttl of 0 has the meaning of infinity for node-cache
             }
             const entry = this.cache.get<CacheEntry>(url);
             if (entry) {
-                this.logger.log(
-                    `(CachingHandler.ts: execute) using cache entry for "${url}" to ${maxAge}`,
-                );
+                this.logger.log(`(CachingHandler.ts: execute) using cache entry for "${url}" to ${maxAge}`);
                 context.response = new Response(entry?.body, {
                     status: 200,
                     headers: entry?.headers,

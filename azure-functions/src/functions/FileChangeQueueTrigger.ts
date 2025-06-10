@@ -14,27 +14,20 @@ export const onepagerValidationRequests = 'onepager-validation-requests';
  * @param queueItem The QueueItem containing the employee ID to process.
  * @param context The Azure Functions invocation context.
  */
-export async function FileChangeQueueTrigger(
-    queueItem: unknown,
-    context: InvocationContext,
-): Promise<void> {
-    context.log(
-        `--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`,
-    );
+export async function FileChangeQueueTrigger(queueItem: unknown, context: InvocationContext): Promise<void> {
+    context.log(`--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
     try {
         const item = queueItem as QueueItem;
 
         if (!isEmployeeId(item.employeeId)) {
-            context.error(
-                `Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`,
-            );
+            context.error(`Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`);
             return;
         }
 
         context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
 
         // Establish a connection to the repository containing one-pagers and our report output list.
-        const config = loadConfigFromEnv(context);
+        const config = await loadConfigFromEnv(context);
 
         // Validate the one-pagers of the employee specified in the queue item.
         const validator = new OnePagerValidation(

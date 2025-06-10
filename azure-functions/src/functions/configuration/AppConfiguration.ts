@@ -14,12 +14,7 @@ import { InMemoryOnePagerRepository } from '../validator/adapter/memory/InMemory
 import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointDriveOnePagerRepository } from '../validator/adapter/sharepoint/SharepointDriveOnePagerRepository';
 import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
-import {
-    EmployeeRepository,
-    Logger,
-    OnePagerRepository,
-    ValidationReporter,
-} from '../validator/DomainTypes';
+import { EmployeeRepository, Logger, OnePagerRepository, ValidationReporter } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 
 export type AppConfiguration = {
@@ -54,9 +49,7 @@ export type SharepointClientOptions = {
     SHAREPOINT_API_CACHING?: string;
 };
 
-export function hasSharepointClientOptions(
-    opts: Record<string, unknown>,
-): opts is SharepointClientOptions {
+export function hasSharepointClientOptions(opts: Record<string, unknown>): opts is SharepointClientOptions {
     return (
         Boolean(opts.SHAREPOINT_TENANT_ID) &&
         Boolean(opts.SHAREPOINT_CLIENT_ID) &&
@@ -73,11 +66,9 @@ type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOpt
  * @param overrides In case you want to override the environment variables, you can pass an object with the desired options.
  * @returns The AppConfiguration object that provides access to the repositories and reporter.
  */
-export function loadConfigFromEnv(logger: Logger = console, overrides?: Options): AppConfiguration {
+export async function loadConfigFromEnv(logger: Logger = console, overrides?: Options): Promise<AppConfiguration> {
     // defaults to memory
-    const opts: Options = overrides
-        ? { ...process.env, ...overrides }
-        : { STORAGE_SOURCE: 'memory', ...process.env };
+    const opts: Options = overrides ? { ...process.env, ...overrides } : { STORAGE_SOURCE: 'memory', ...process.env };
 
     switch (opts.STORAGE_SOURCE) {
         case 'memory': {
@@ -103,7 +94,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
         }
         case 'sharepoint': {
             logger.log('Using SharePoint storage!');
-            return getSharepointConfig(opts, logger);
+            return await getSharepointConfig(opts, logger);
         }
     }
 }
@@ -114,11 +105,8 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
  * @param logger The logger to use for logging errors (default is console).
  * @returns An AppConfiguration object that provides access to the SharePoint repositories and reporter.
  */
-function getSharepointConfig(
-    opts: SharepointStorageOptions,
-    logger: Logger = console,
-): AppConfiguration {
-    const client = createSharepointClient(opts);
+async function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = console): Promise<AppConfiguration> {
+    const client = await createSharepointClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error('Missing SharePoint One Pager site name in environment variables!');
@@ -127,8 +115,7 @@ function getSharepointConfig(
     const onePagerSiteName = opts.SHAREPOINT_ONE_PAGER_SITE_NAME;
     const onePagerDriveName = opts.SHAREPOINT_ONE_PAGER_DRIVE_NAME || '01_OnePager';
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
-    const validationResultListName =
-        opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'onepager-status';
+    const validationResultListName = opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'onepager-status';
 
     logger.log(
         `Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`,
@@ -154,12 +141,7 @@ function getSharepointConfig(
         employees: repo,
         onePagers: repo,
         reporter: () =>
-            SharepointListValidationReporter.getInstance(
-                client,
-                validationSiteName,
-                validationResultListName,
-                logger,
-            ),
+            SharepointListValidationReporter.getInstance(client, validationSiteName, validationResultListName, logger),
     };
 }
 
@@ -170,15 +152,9 @@ function getSharepointConfig(
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createSharepointClient(opts: SharepointClientOptions): Client {
-    if (
-        !opts.SHAREPOINT_TENANT_ID ||
-        !opts.SHAREPOINT_CLIENT_ID ||
-        !opts.SHAREPOINT_CLIENT_SECRET
-    ) {
-        throw new Error(
-            'Missing SharePoint authentication configuration in environment variables!',
-        );
+export async function createSharepointClient(opts: SharepointClientOptions): Promise<Client> {
+    if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
+        throw new Error('Missing SharePoint authentication configuration in environment variables!');
     }
 
     // Use ClientSecretCredential for authentication.
@@ -195,6 +171,10 @@ export function createSharepointClient(opts: SharepointClientOptions): Client {
     const authProvider = new TokenCredentialAuthenticationProvider(credential, {
         scopes: ['https://graph.microsoft.com/.default'],
     });
+    // Scope for PowerBI: 'https://analysis.windows.net/powerbi/api/.default'
+
+    // Output access token
+    // console.log(await authProvider.getAccessToken());
 
     // define the middleware chain
     const handlers: Middleware[] = [

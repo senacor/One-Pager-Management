@@ -25,7 +25,7 @@ export class LocalFileEmployeeRepository implements EmployeeRepository {
     async getAllEmployees(): Promise<EmployeeID[]> {
         await fs.mkdir(this.onePagerDir, { recursive: true });
         const folders = await fs.readdir(this.onePagerDir);
-        const employeeIds = folders.filter(isEmployeeFolder).map((el) => {
+        const employeeIds = folders.filter(isEmployeeFolder).map(el => {
             return employeeIdFromFolder(el);
         });
         this.logger.log(`Found ${employeeIds.length} employees in "${this.onePagerDir}"!`);

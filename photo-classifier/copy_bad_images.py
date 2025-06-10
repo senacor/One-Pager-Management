@@ -4,6 +4,7 @@ import shutil
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import random
+import numpy as np
 
 INFER_CSV = 'inference_results_multilabel.csv'
 IMG_DIR = 'datasets/multi-label/photos'
@@ -20,12 +21,19 @@ results_df = pd.read_csv(INFER_CSV)
 
 # Define weights for each label (must match order in CSV)
 # Example: bright-background, neutral-background, white-shirt, high-quality, business-attire
-LABEL_WEIGHTS = [1.0, 1.0, 1.0, 1.0, 1.0]  # Adjust as needed for your labels
+LABEL_WEIGHTS = [2.0, 1.0, 1.0, 3.0, 3.0]  # Adjust as needed for your labels
+
+# Gain function for label score transformation
+def gain(x, k):
+    a = 0.5 * np.power(2.0 * np.where(x < 0.5, x, 1.0 - x), k)
+    return np.where(x < 0.5, a, 1.0 - a)
+
+GAIN_K = 3.0  # You can adjust this value as needed
+
+score_cols = [col for col in results_df.columns if col != 'filename']
+results_df[score_cols] = gain(results_df[score_cols], GAIN_K)
 
 # Compute a weighted quality score for each image as weighted sum / total weights * 100
-score_cols = [col for col in results_df.columns if col != 'filename']
-if len(score_cols) != len(LABEL_WEIGHTS):
-    raise ValueError(f"Number of label columns ({len(score_cols)}) does not match number of weights ({len(LABEL_WEIGHTS)})")
 weighted_sum = results_df[score_cols].mul(LABEL_WEIGHTS).sum(axis=1)
 total_weight = sum(LABEL_WEIGHTS)
 results_df['score'] = (weighted_sum / total_weight) * 100
@@ -78,6 +86,15 @@ for i, label in enumerate(results_df['bucket'].cat.categories):
                 img = mpimg.imread(img_path)
                 ax.imshow(img)
                 ax.set_title(images[j], fontsize=8)
+                # Overlay label scores
+                img_row = results_df[results_df['filename'] == images[j]]
+                if not img_row.empty:
+                    label_scores = img_row.iloc[0][score_cols].values
+                    label_text = '\n'.join([
+                        f"{col}: {score:.2f}" for col, score in zip(score_cols, label_scores)
+                    ])
+                    ax.text(0.02, 0.98, label_text, transform=ax.transAxes, fontsize=7, color='white',
+                            verticalalignment='top', bbox=dict(facecolor='black', alpha=0.5, boxstyle='round,pad=0.2'))
             except Exception as e:
                 ax.axis('off')
                 ax.set_title('Error', fontsize=8)
