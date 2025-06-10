@@ -43,7 +43,7 @@ export type ValidationError =
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
-export type LoadedOnePager = OnePager & {
+export type LoadedOnePager = Omit<OnePager, 'fileLocation'> & {
     contentLanguages: Local[];
     data: Buffer
 };

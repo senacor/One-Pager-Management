@@ -192,8 +192,8 @@ describe('OnePagerValidation', () => {
 
         it('should report nothing missing if versions for each language exist', () => {
             const result = validation.validateRequiredVersions([
-                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///de.pptx'), data: Buffer.from('') },
-                { local: 'EN', contentLanguages: ['EN'], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///en.pptx'), data: Buffer.from('') },
+                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                { local: 'EN', contentLanguages: ['EN'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
             ]);
 
             expect(result.map(r => r.errors)).toEqual([]);
@@ -201,8 +201,8 @@ describe('OnePagerValidation', () => {
 
         it('should report nothing missing if versions for each language exist (indicated language takes precedence)', () => {
             const result = validation.validateRequiredVersions([
-                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///de.pptx'), data: Buffer.from('') },
-                { local: 'EN', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///en.pptx'), data: Buffer.from('') },
+                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                { local: 'EN', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
             ]);
 
             expect(result.map(r => r.errors)).toEqual([]);
@@ -210,8 +210,8 @@ describe('OnePagerValidation', () => {
 
         it('should report nothing missing if versions for each language exist (content language is taken into account)', () => {
             const result = validation.validateRequiredVersions([
-                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///de.pptx'), data: Buffer.from('') },
-                { local: undefined, contentLanguages: ['EN'], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///en.pptx'), data: Buffer.from('') },
+                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                { local: undefined, contentLanguages: ['EN'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
             ]);
 
             expect(result.map(r => r.errors)).toEqual([]);
@@ -222,7 +222,7 @@ describe('OnePagerValidation', () => {
             { lang: 'DE' as Local, error: 'MISSING_EN_VERSION' },
         ])('should report missing DE version', ({ lang, error }) => {
             const result = validation.validateRequiredVersions([
-                { local: lang, contentLanguages: [lang], lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///en.pptx'), data: Buffer.from('') },
+                { local: lang, contentLanguages: [lang], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
             ]);
 
             expect(result).toEqual([

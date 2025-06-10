@@ -2,16 +2,16 @@ import { URL } from 'node:url';
 import { LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
 import {
     combineRules,
+    CURRENT_TEMPLATE_PATH,
     lastModifiedRule,
     usesCurrentTemplate,
 } from '../src/functions/validator/validationRules';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),
-    fileLocation: new URL('http://example.com/onepager.pptx'),
-    contentLanguage: 'DE',
-    data: Buffer.from('example data'),
+    contentLanguages: ['DE'],
+    data: readFileSync(CURRENT_TEMPLATE_PATH),
 };
 
 describe('validationRules', () => {
@@ -27,26 +27,26 @@ describe('validationRules', () => {
     });
 
     const onePagerWithOldTemplates = [
-        'file:///examples/Mustermann%2C%20Max%20DE_201028.pptx',
-        'file:///examples/Mustermann%2C%20Max%20DE_190130.pptx',
+        'examples/Mustermann, Max DE_201028.pptx',
+        'examples/Mustermann, Max DE_190130.pptx',
     ];
 
     describe('usesCurrentTemplate', () => {
         it('should identify onepager using current template as valid', async () => {
-            exampleOnePager.fileLocation = new URL('file:///examples/Mustermann%2C%20Max_DE_240209.pptx');
+            exampleOnePager.data = readFileSync('examples/Mustermann, Max_DE_240209.pptx');
             await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual([]);
         });
 
-        it.each(onePagerWithOldTemplates)('should identify onepager using old template as invalid: %s', async url => {
-            exampleOnePager.fileLocation = new URL(url);
+        it.each(onePagerWithOldTemplates)('should identify onepager using old template as invalid: %s', async file => {
+            exampleOnePager.data = readFileSync(file);
             await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual([
                 'USING_UNKNOWN_TEMPLATE',
             ]);
         });
 
         const files = readdirSync('examples/non-exact-template').filter(file => file.endsWith('.pptx'));
-        it.each(files)('should identify non-exact template usage in %s', async url => {
-            exampleOnePager.fileLocation = new URL(`file:///examples/non-exact-template/${encodeURIComponent(url)}`);
+        it.each(files)('should identify non-exact template usage in %s', async file => {
+            exampleOnePager.data = readFileSync(`examples/non-exact-template/${file}`);
             await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual([
                 'USING_MODIFIED_TEMPLATE',
             ]);
