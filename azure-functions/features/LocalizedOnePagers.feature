@@ -129,10 +129,6 @@ Feature: Locale One Pagers
     #         | errors |
     #         | "MISSING_EN_VERSION" |
 
-# //TODO:
-#     - describe them as valid
-#     - make sure dates in example names are not to old (do we need to define today?)
-
 
 
 

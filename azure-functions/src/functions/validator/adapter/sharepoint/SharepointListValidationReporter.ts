@@ -4,6 +4,29 @@ import { FORCE_REFRESH } from "../../../configuration/CachingHandler";
 import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } from "../../DomainTypes";
 
 /**
+ * The name of the SharePoint list field that stores the employee ID.
+ */
+const COLUMN_MA_ID:string = "MitarbeiterID";
+/**
+ * The name of the SharePoint list field that stores the validation errors.
+ */
+const COLUMN_VALIDATION_ERRORS: string = "Festgestellte_Fehler";
+/**
+ * The name of the SharePoint list field that stores the URL of the one-pager.
+ */
+const COLUMN_URL: string = "Location";
+
+
+
+type ListItemWithFields = {[COLUMN_MA_ID]: string, [COLUMN_VALIDATION_ERRORS]: string, [COLUMN_URL]: string};
+function isListItemWithFields(item: any): item is ListItemWithFields {
+    return typeof item === 'object' &&
+        COLUMN_MA_ID in item && typeof item[COLUMN_MA_ID] === 'string' &&
+        COLUMN_VALIDATION_ERRORS in item && typeof item[COLUMN_VALIDATION_ERRORS] === 'string' &&
+        COLUMN_URL in item && typeof item[COLUMN_URL] === 'string';
+}
+
+/**
  * A class that implements the ValidationReporter interface for reporting validation results to a SharePoint list.
  * It allows reporting valid one-pagers, errors found during validation, and retrieving validation results for specific employees.
  */
@@ -12,6 +35,8 @@ export class SharepointListValidationReporter implements ValidationReporter {
     private readonly client: Client;
     private readonly siteId: string;
     private readonly logger: Logger;
+
+
 
     /**
      * Creates an instance of SharepointListValidationReporter.
@@ -87,16 +112,16 @@ export class SharepointListValidationReporter implements ValidationReporter {
             this.logger.log(`(SharepointListValidationReporter.ts: reportErrors) Creating a new list entry for employee with ID "${id}"!`);
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
                 fields: {
-                    "MitarbeiterID": id,
-                    "Festgestellte_Fehler": errors.join("\n"),
-                    "Location": onePagerUrl,
+                    [COLUMN_MA_ID]: id,
+                    [COLUMN_VALIDATION_ERRORS]: errors.join("\n"),
+                    [COLUMN_URL]: onePagerUrl,
                 }
             });
         } else {
             this.logger.log(`(SharepointListValidationReporter.ts: reportErrors) Updating existing list entry for employee with ID "${id}"!`);
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`).patch({
-                "Festgestellte_Fehler": errors.join("\n"),
-                "Location": onePagerUrl,
+                [COLUMN_VALIDATION_ERRORS]: errors.join("\n"),
+                [COLUMN_URL]: onePagerUrl,
             });
         }
     }
@@ -116,12 +141,16 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
 
         let item = await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).headers(FORCE_REFRESH).select("fields").get() as ListItem;
-        if (!item.fields) {
+
+        if (item.fields === null || !isListItemWithFields(item.fields)) {
+            this.logger.error(`(SharepointListValidationReporter.ts: getResultFor) Item with ID "${itemId}" does not have the expected fields structure!`);
             return [];
-        } else {
-            //TODO: runtime type check
-            return (item.fields as Record<string, string>)["Festgestellte_Fehler"].split("\n") as ValidationError[];
         }
+
+        let itemFields: ListItemWithFields  = item.fields;
+
+        return itemFields[COLUMN_VALIDATION_ERRORS].split("\n") as ValidationError[];
+
     }
 
     /**

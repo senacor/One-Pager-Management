@@ -70,7 +70,7 @@ export class OnePagerValidation {
             return [];
         }
 
-        const noLanguage = "NO_LANGUAGE";
+        const noLanguage: string = "NO_LANGUAGE";
 
         let candidates = onePagers.reduce((acc, current) => {
             const lang = current.local || noLanguage;
