@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import os from "os";
 import path from "path";
 import { franc } from "franc-min";
+import { uniq } from "../OnePagerValidation";
 
 export class PptxContentLanguageDetector implements LanguageDetector {
     private readonly logger: Logger;
@@ -38,7 +39,7 @@ export class PptxContentLanguageDetector implements LanguageDetector {
                         return [];
                     }
                 }
-            }))).flat();
+            }))).flat().filter(uniq);
         } finally {
             // Clean up the temporary file
             await fs.unlink(tmpFile).catch(() => { });

@@ -44,7 +44,7 @@ export type ValidationError =
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
 export type LoadedOnePager = OnePager & {
-    contentLanguage: Local;
+    contentLanguages: Local[];
     data: Buffer
 };
 
