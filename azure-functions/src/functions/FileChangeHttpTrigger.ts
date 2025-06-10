@@ -38,7 +38,7 @@ export async function FileChangeHttpTrigger(
         }
 
         // Load the list of employees from the configuration
-        const employees = await loadConfigFromEnv(context).employees();
+        const employees = await (await loadConfigFromEnv(context)).employees();
         if (!(await employees.getAllEmployees()).includes(id)) {
             context.log(`(FileChangeHttpTrigger.ts: FileChangeHttpTrigger) Employee not found: "${id}"!`);
             return { status: 404, body: `Employee not found: "${id}"` };
