@@ -35,7 +35,6 @@ export type OnePager = {
  */
 export type ValidationError =
     | 'OLDER_THAN_SIX_MONTHS' // one-pager is older than 6 months
-    | 'MISSING_ONE_PAGER' // no one-pager exists for the employee
     | 'USING_UNKNOWN_TEMPLATE' // one-pager is using an unknown template, in most cases an outdated template with old styling
     | 'USING_MODIFIED_TEMPLATE' // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
     | 'MISSING_LANGUAGE_INDICATOR_IN_NAME' // one-pager is missing a language indicator in the file name
@@ -44,7 +43,12 @@ export type ValidationError =
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
-export type ValidationRule = (onePager: OnePager) => Promise<ValidationError[]>;
+export type LoadedOnePager = Omit<OnePager, 'fileLocation'> & {
+    contentLanguages: Local[];
+    data: Buffer
+};
+
+export type ValidationRule = (onePager: LoadedOnePager) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
     /**
@@ -89,6 +93,16 @@ export interface ValidationReporter {
      * @param id The ID of the employee whose validation results should be fetched.
      */
     getResultFor(id: EmployeeID): Promise<ValidationError[]>;
+}
+
+export interface LanguageDetector {
+
+    /**
+     * Detects the language of the given one-pager content.
+     * @param content The content of the one-pager.
+     * @returns The detected language, or undefined if no language could be detected.
+     */
+    detectLanguage(content: Buffer): Promise<Local[]>;
 }
 
 /**

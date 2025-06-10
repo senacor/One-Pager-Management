@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import JSZip from 'jszip';
 import { Logger, ValidationError, ValidationRule } from './DomainTypes';
 import { fetchOnePagerContent } from './fetcher';
+import { on } from 'events';
 
 // The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pptx';
@@ -18,10 +19,19 @@ export const lastModifiedRule: ValidationRule = async onePager => {
     return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
-export const missing: ValidationRule = async onePager => {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    return onePager.local ? [] : ['MISSING_LANGUAGE_INDICATOR_IN_NAME'];
+export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
+    if(onePager.contentLanguages.length > 1) {
+        return ['MIXED_LANGUAGE_VERSION'];
+    }
+
+    switch (onePager.local) {
+        case undefined:
+            return ['MISSING_LANGUAGE_INDICATOR_IN_NAME'];
+        case onePager.contentLanguages[0]:
+            return [];
+        default:
+            return ['WRONG_LANGUAGE_CONTENT'];
+    }
 };
 
 let templateHashes: Promise<{ names: string[]; hashes: Record<string, string> }>
@@ -35,9 +45,9 @@ function getTemplateHashes(logger: Logger) {
  * -------- Validation rules concerning the content of a OnePager. --------
  */
 
- export const usesCurrentTemplate = (logger: Logger) => async (content: Buffer) => {
-     const templateHashes = await getTemplateHashes(logger);
-     const contentHashes = await calculateThemeHash(logger, content);
+export const usesCurrentTemplate = (logger: Logger = console): ValidationRule => async onePager => {
+    const templateHashes = await getTemplateHashes(logger);
+    const contentHashes = await calculateThemeHash(logger, onePager.data);
 
     const templateKeys = Object.keys(templateHashes.hashes);
     const contentKeys = Object.keys(contentHashes.hashes);
@@ -110,7 +120,11 @@ async function calculateThemeHash(logger: Logger, pptxContent: Buffer): Promise<
  * Combination of all rules we have defined for the one-pager validation.
  */
 export function allRules(log: Logger = console): ValidationRule {
-    return combineRules(lastModifiedRule, combineContentRules(log, usesCurrentTemplate(log)));
+    return combineRules(
+        lastModifiedRule,
+        contentLanguageIsIndicatedInName,
+        usesCurrentTemplate(log)
+    );
 }
 
 /**
@@ -121,23 +135,6 @@ export function allRules(log: Logger = console): ValidationRule {
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
     return async onePager => {
         const errors = await Promise.all(rules.map(rule => rule(onePager)));
-        return errors.flat();
-    };
-}
-
-type ContentValidationRule = (onePagerContent: Buffer) => Promise<ValidationError[]>;
-
-/**
- * A function to convert multiple ContentValidationRules into one ValidationRule.
- * This rule will fetch the content of the OnePager and apply all rules to it.
- * @param log
- * @param rules The content validation rules to combine.
- * @returns The resulting validation rule.
- */
-export function combineContentRules(log: Logger, ...rules: ContentValidationRule[]): ValidationRule {
-    return async onePager => {
-        const content = await fetchOnePagerContent(log, onePager);
-        const errors = await Promise.all(rules.map(rule => rule(content)));
         return errors.flat();
     };
 }
