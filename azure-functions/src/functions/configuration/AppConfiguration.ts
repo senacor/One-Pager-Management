@@ -1,40 +1,50 @@
-import { ClientSecretCredential } from "@azure/identity";
-import { AuthenticationHandler, ChaosHandler, Client, HTTPMessageHandler, Middleware, RetryHandler } from "@microsoft/microsoft-graph-client";
-import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider";
-import { LocalFileEmployeeRepository } from "../validator/adapter/localfile/LocalFileEmployeeRepository";
-import { LocalFileOnePagerRepository } from "../validator/adapter/localfile/LocalFileOnePagerRepository";
-import { LocalFileValidationReporter } from "../validator/adapter/localfile/LocalFileValidationReporter";
-import { InMemoryOnePagerRepository } from "../validator/adapter/memory/InMemoryOnePagerRepository";
-import { InMemoryValidationReporter } from "../validator/adapter/memory/InMemoryValidationReporter";
-import { SharepointDriveOnePagerRepository } from "../validator/adapter/sharepoint/SharepointDriveOnePagerRepository";
-import { SharepointListValidationReporter } from "../validator/adapter/sharepoint/SharepointListValidationReporter";
-import { EmployeeRepository, isEmployeeId, Logger, OnePagerRepository, ValidationReporter } from "../validator/DomainTypes";
-import { CachingHandler } from "./CachingHandler";
+import { ClientSecretCredential } from '@azure/identity';
+import {
+    AuthenticationHandler,
+    Client,
+    HTTPMessageHandler,
+    Middleware,
+    RetryHandler,
+} from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider';
+import { LocalFileEmployeeRepository } from '../validator/adapter/localfile/LocalFileEmployeeRepository';
+import { LocalFileOnePagerRepository } from '../validator/adapter/localfile/LocalFileOnePagerRepository';
+import { LocalFileValidationReporter } from '../validator/adapter/localfile/LocalFileValidationReporter';
+import { InMemoryOnePagerRepository } from '../validator/adapter/memory/InMemoryOnePagerRepository';
+import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
+import { SharepointDriveOnePagerRepository } from '../validator/adapter/sharepoint/SharepointDriveOnePagerRepository';
+import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
+import {
+    EmployeeRepository,
+    Logger,
+    OnePagerRepository,
+    ValidationReporter,
+} from '../validator/DomainTypes';
+import { CachingHandler } from './CachingHandler';
 
 export type AppConfiguration = {
     onePagers: () => Promise<OnePagerRepository>;
     employees: () => Promise<EmployeeRepository>;
     reporter: () => Promise<ValidationReporter>;
-}
+};
 
 type MemoryStorageOptions = {
-    STORAGE_SOURCE: "memory";
-    EMPLOYEES?: string; // Comma-separated list of employee IDs to pre-populate the in-memory repository
-}
+    STORAGE_SOURCE: 'memory';
+};
 
 type LocalStorageOptions = {
-    STORAGE_SOURCE: "localfile";
+    STORAGE_SOURCE: 'localfile';
     ONE_PAGER_DIR?: string;
     VALIDATION_RESULT_DIR?: string;
-}
+};
 
 type SharepointStorageOptions = SharepointClientOptions & {
-    STORAGE_SOURCE: "sharepoint";
+    STORAGE_SOURCE: 'sharepoint';
     SHAREPOINT_ONE_PAGER_SITE_NAME?: string;
     SHAREPOINT_ONE_PAGER_DRIVE_NAME?: string;
     SHAREPOINT_VALIDATION_SITE_NAME?: string;
     SHAREPOINT_VALIDATION_RESULT_LIST_NAME?: string;
-}
+};
 
 export type SharepointClientOptions = {
     SHAREPOINT_TENANT_ID?: string;
@@ -42,14 +52,19 @@ export type SharepointClientOptions = {
     SHAREPOINT_CLIENT_SECRET?: string;
     SHAREPOINT_API_LOGGING?: string;
     SHAREPOINT_API_CACHING?: string;
-}
+};
 
-export function hasSharepointClientOptions(opts: any): opts is SharepointClientOptions {
-    return opts.SHAREPOINT_TENANT_ID && opts.SHAREPOINT_CLIENT_ID && opts.SHAREPOINT_CLIENT_SECRET;
+export function hasSharepointClientOptions(
+    opts: Record<string, unknown>,
+): opts is SharepointClientOptions {
+    return (
+        Boolean(opts.SHAREPOINT_TENANT_ID) &&
+        Boolean(opts.SHAREPOINT_CLIENT_ID) &&
+        Boolean(opts.SHAREPOINT_CLIENT_SECRET)
+    );
 }
 
 type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOptions;
-
 
 /**
  * A function to load the application configuration based on environment variables.
@@ -60,30 +75,36 @@ type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOpt
  */
 export function loadConfigFromEnv(logger: Logger = console, overrides?: Options): AppConfiguration {
     // defaults to memory
-    const opts: Options = { ...(overrides ? { ...process.env, ...overrides } : { STORAGE_SOURCE: "memory", ...process.env }) };
+    const opts: Options = overrides
+        ? { ...process.env, ...overrides }
+        : { STORAGE_SOURCE: 'memory', ...process.env };
 
     switch (opts.STORAGE_SOURCE) {
-        case "memory":
-            logger.log("Using in-memory storage!");
-            const ids = opts.EMPLOYEES ? opts.EMPLOYEES.split(",").map(id => id.trim()).filter(id => isEmployeeId(id)) : [];
+        case 'memory': {
+            logger.log('Using in-memory storage!');
             const repo = new InMemoryOnePagerRepository({});
             return {
                 onePagers: async () => repo,
                 employees: async () => repo,
-                reporter: async () => new InMemoryValidationReporter(logger)
+                reporter: async () => new InMemoryValidationReporter(logger),
             };
-        case "localfile":
+        }
+        case 'localfile': {
             const onePagerDir = opts.ONE_PAGER_DIR || process.cwd();
             const resultDir = opts.VALIDATION_RESULT_DIR || process.cwd();
-            logger.log(`Using local file storage for one-pagers at ${onePagerDir} and validation results at ${resultDir}!`);
+            logger.log(
+                `Using local file storage for one-pagers at ${onePagerDir} and validation results at ${resultDir}!`,
+            );
             return {
                 onePagers: async () => new LocalFileOnePagerRepository(onePagerDir, logger),
                 employees: async () => new LocalFileEmployeeRepository(onePagerDir, logger),
-                reporter: async () => new LocalFileValidationReporter(resultDir, logger)
+                reporter: async () => new LocalFileValidationReporter(resultDir, logger),
             };
-        case "sharepoint":
-            logger.log("Using SharePoint storage!");
+        }
+        case 'sharepoint': {
+            logger.log('Using SharePoint storage!');
             return getSharepointConfig(opts, logger);
+        }
     }
 }
 
@@ -93,26 +114,38 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
  * @param logger The logger to use for logging errors (default is console).
  * @returns An AppConfiguration object that provides access to the SharePoint repositories and reporter.
  */
-function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = console): AppConfiguration {
-    const client = createSharepointClient(opts, logger);
+function getSharepointConfig(
+    opts: SharepointStorageOptions,
+    logger: Logger = console,
+): AppConfiguration {
+    const client = createSharepointClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
-        logger.error("(AppConfiguration.ts: getSharepointConfig) Missing SharePoint One Pager site name in environment variables!");
-        throw new Error("Missing SharePoint One Pager site name in environment variables!");
+        throw new Error('Missing SharePoint One Pager site name in environment variables!');
     }
 
     const onePagerSiteName = opts.SHAREPOINT_ONE_PAGER_SITE_NAME;
-    const onePagerDriveName = opts.SHAREPOINT_ONE_PAGER_DRIVE_NAME || "01_OnePager";
+    const onePagerDriveName = opts.SHAREPOINT_ONE_PAGER_DRIVE_NAME || '01_OnePager';
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
-    const validationResultListName = opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || "onepager-status";
+    const validationResultListName =
+        opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'onepager-status';
 
-    logger.log(`Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`);
-    logger.log(`Storing validation results on SharePoint list with site: "${validationSiteName}", name: "${validationResultListName}"!`);
+    logger.log(
+        `Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`,
+    );
+    logger.log(
+        `Storing validation results on SharePoint list with site: "${validationSiteName}", name: "${validationResultListName}"!`,
+    );
 
     let promise: Promise<SharepointDriveOnePagerRepository>;
-    let repo = () => {
+    const repo = () => {
         if (!promise) {
-            promise = SharepointDriveOnePagerRepository.getInstance(client, onePagerSiteName, onePagerDriveName, logger);
+            promise = SharepointDriveOnePagerRepository.getInstance(
+                client,
+                onePagerSiteName,
+                onePagerDriveName,
+                logger,
+            );
         }
         return promise;
     };
@@ -120,7 +153,13 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
     return {
         employees: repo,
         onePagers: repo,
-        reporter: () => SharepointListValidationReporter.getInstance(client, validationSiteName, validationResultListName, logger)
+        reporter: () =>
+            SharepointListValidationReporter.getInstance(
+                client,
+                validationSiteName,
+                validationResultListName,
+                logger,
+            ),
     };
 }
 
@@ -131,9 +170,15 @@ function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = co
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createSharepointClient(opts: SharepointClientOptions, logger: Logger = console): Client {
-    if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
-        throw new Error("Missing SharePoint authentication configuration in environment variables!");
+export function createSharepointClient(opts: SharepointClientOptions): Client {
+    if (
+        !opts.SHAREPOINT_TENANT_ID ||
+        !opts.SHAREPOINT_CLIENT_ID ||
+        !opts.SHAREPOINT_CLIENT_SECRET
+    ) {
+        throw new Error(
+            'Missing SharePoint authentication configuration in environment variables!',
+        );
     }
 
     // Use ClientSecretCredential for authentication.
@@ -148,28 +193,28 @@ export function createSharepointClient(opts: SharepointClientOptions, logger: Lo
     // It requires the scopes to be set for the Microsoft Graph API.
     // The scope '.default' is used to request all permissions granted to the application.
     const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-        scopes: ['https://graph.microsoft.com/.default']
+        scopes: ['https://graph.microsoft.com/.default'],
     });
 
     // define the middleware chain
     const handlers: Middleware[] = [
         new AuthenticationHandler(authProvider),
-        opts.SHAREPOINT_API_CACHING === "false" ? [] : [new CachingHandler()], // we default to having caching enabled
+        opts.SHAREPOINT_API_CACHING === 'false' ? [] : [new CachingHandler(console)], // we default to having caching enabled
         new RetryHandler(),
-        new HTTPMessageHandler()
+        new HTTPMessageHandler(),
     ].flat();
 
     // convert array of handlers to a chain of middleware
     handlers.reduce((prev, next, index) => {
-        if(!prev.setNext) {
+        if (!prev.setNext) {
             throw new Error(`Handler ${index} must support setting next middleware!`);
         }
         prev.setNext(next);
         return next;
-    })
+    });
 
     return Client.initWithMiddleware({
-        debugLogging: opts.SHAREPOINT_API_LOGGING === "true",
-        middleware: handlers[0]
+        debugLogging: opts.SHAREPOINT_API_LOGGING === 'true',
+        middleware: handlers[0],
     });
 }

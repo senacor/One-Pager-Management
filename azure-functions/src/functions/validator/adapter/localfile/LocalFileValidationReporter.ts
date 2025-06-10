@@ -1,12 +1,17 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } from "../../DomainTypes";
+import { promises as fs } from 'fs';
+import path from 'path';
+import {
+    EmployeeID,
+    Logger,
+    OnePager,
+    ValidationError,
+    ValidationReporter,
+} from '../../DomainTypes';
 
 /**
  * A validation reporter that stores validation results in local files.
  */
 export class LocalFileValidationReporter implements ValidationReporter {
-
     /**
      * The directory where validation results are stored.
      * Files named after employee IDs with a "_validation.json" suffix will be stored in it.
@@ -50,7 +55,11 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * @param onePager The one-pager that was validated, can be undefined if not available.
      * @param errors The array of validation errors found in the one-pager.
      */
-    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
+    async reportErrors(
+        id: EmployeeID,
+        onePager: OnePager | undefined,
+        errors: ValidationError[],
+    ): Promise<void> {
         await this.ensureDataDir();
         await fs.writeFile(this.validationFile(id), JSON.stringify(errors));
     }
@@ -63,9 +72,9 @@ export class LocalFileValidationReporter implements ValidationReporter {
     async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
         await this.ensureDataDir();
         try {
-            const file = await fs.readFile(this.validationFile(id), "utf-8");
+            const file = await fs.readFile(this.validationFile(id), 'utf-8');
             return JSON.parse(file) as ValidationError[];
-        } catch (e) {
+        } catch {
             return [];
         }
     }

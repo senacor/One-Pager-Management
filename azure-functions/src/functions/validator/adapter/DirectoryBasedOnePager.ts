@@ -1,4 +1,4 @@
-import { EmployeeID, isEmployeeId, isLocal, Local, Logger } from "../DomainTypes";
+import { EmployeeID, Local, Logger, isEmployeeId, isLocal } from '../DomainTypes';
 
 /**
  * Represents a folder name for an employee in the format "Name_FamilyName_EmployeeID".
@@ -13,12 +13,12 @@ export type EmployeeFolder = `${string}_${string}_${string}`;
  * @returns Is the folder name a valid EmployeeFolder?
  */
 export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFolder {
-    if (typeof folderName !== "string") {
+    if (typeof folderName !== 'string') {
         return false;
     }
 
-    const parts = folderName.split("_");
-    return parts.length === 3 && parts.every(part => part.length > 0) && isEmployeeId(parts[2]);
+    const parts = folderName.split('_');
+    return parts.length === 3 && parts.every((part) => part.length > 0) && isEmployeeId(parts[2]);
 }
 
 /**
@@ -28,8 +28,8 @@ export function isEmployeeFolder(folderName: unknown): folderName is EmployeeFol
  * @returns The employee ID extracted from the folder name.
  * @throws Error if the folder name does not match the expected format or if the last part is not a valid EmployeeID.
  */
-export function employeeIdFromFolder(folder: EmployeeFolder, logger: Logger = console): EmployeeID {
-    const lastPart = folder.split("_").pop(); // we are guranteed that it works because EmployeeFolder has at least 3 parts
+export function employeeIdFromFolder(folder: EmployeeFolder): EmployeeID {
+    const lastPart = folder.split('_').pop(); // we are guranteed that it works because EmployeeFolder has at least 3 parts
     if (!isEmployeeId(lastPart)) {
         throw new Error(`Invalid folder name: ${folder}`);
     }
@@ -43,7 +43,11 @@ export function employeeIdFromFolder(folder: EmployeeFolder, logger: Logger = co
  * @param employeeId The employee ID of the employee.
  * @returns The folder name in the format "Name_FamilyName_EmployeeID".
  */
-export function folderNameFromEmployee(name: string, familyName: string, employeeId: EmployeeID): EmployeeFolder {
+export function folderNameFromEmployee(
+    name: string,
+    familyName: string,
+    employeeId: EmployeeID,
+): EmployeeFolder {
     return `${name}_${familyName}_${employeeId}`;
 }
 
@@ -58,11 +62,11 @@ export type OnePagerFile = `${string}, ${string}_${Local}_${number}.pptx`;
  * @returns Is the file name a valid name for a One Pager?
  */
 export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
-    if (typeof fileName !== "string") {
+    if (typeof fileName !== 'string') {
         return false;
     }
 
-    return !!fileName.match(/.+, .+(_[A-Z]{2})?_(\d{6})\.pptx$/);
+    return Boolean(fileName.match(/.+, .+(_[A-Z]{2})?_(\d{6})\.pptx$/));
 }
 
 /**
@@ -72,8 +76,13 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
  * @param lastUpdated The date when the one-pager was last updated.
  * @returns The one-pager file name in the format "FamilyName, Name_DE_YYMMDD.pptx".
  */
-export function onePagerFile(name: string, familyName: string, local: Local | undefined, lastUpdated: Date): string {
-    return `${familyName}, ${name}_${local ? local + "_" : ""}${toYYMMDD(lastUpdated)}.pptx`;
+export function onePagerFile(
+    name: string,
+    familyName: string,
+    local: Local | undefined,
+    lastUpdated: Date,
+): string {
+    return `${familyName}, ${name}_${local ? `${local}_` : ''}${toYYMMDD(lastUpdated)}.pptx`;
 }
 
 /**
@@ -86,8 +95,12 @@ export function onePagerFile(name: string, familyName: string, local: Local | un
 export function dateFromOnePagerFile(file: OnePagerFile, logger: Logger = console): Date {
     const match = file.match(/_(\d{6})\.pptx$/);
     if (!match) {
-        logger.error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
-        throw new Error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
+        logger.error(
+            `(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`,
+        );
+        throw new Error(
+            `(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`,
+        );
     }
     return fromYYMMDD(match[1], logger);
 }
@@ -112,8 +125,12 @@ export function toYYMMDD(date: Date): string {
  */
 export function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
-        logger.error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
-        throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
+        logger.error(
+            `(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`,
+        );
+        throw new Error(
+            `(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`,
+        );
     }
     const year = Number(yyMMdd.slice(0, 2));
     const month = Number(yyMMdd.slice(2, 4)) - 1; // JS months are 0-based
