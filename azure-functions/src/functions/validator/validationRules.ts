@@ -2,8 +2,6 @@ import { createHash } from 'crypto';
 import { readFile } from 'fs/promises';
 import JSZip from 'jszip';
 import { Logger, ValidationError, ValidationRule } from './DomainTypes';
-import { fetchOnePagerContent } from './fetcher';
-import { on } from 'events';
 
 // The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pptx';

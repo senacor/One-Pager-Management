@@ -1,4 +1,4 @@
-import { EmployeeID, Local, Logger, isEmployeeId, isLocal } from '../DomainTypes';
+import { EmployeeID, Local, isEmployeeId, isLocal } from '../DomainTypes';
 
 /**
  * Represents a folder name for an employee in the format "Name_FamilyName_EmployeeID".

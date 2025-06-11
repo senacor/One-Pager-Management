@@ -1,4 +1,3 @@
-import { URL } from 'node:url';
 import { LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
 import {
     combineRules,

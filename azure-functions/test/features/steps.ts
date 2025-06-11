@@ -1,7 +1,7 @@
 import { Given, Then, When, Before, After } from '@cucumber/cucumber';
 import { OnePagerValidation } from '../../src/functions/validator/OnePagerValidation';
 import path from 'path';
-import { allRules, CURRENT_TEMPLATE_PATH } from '../../src/functions/validator/validationRules';
+import { allRules } from '../../src/functions/validator/validationRules';
 import { EmployeeID, ValidationReporter } from '../../src/functions/validator/DomainTypes';
 import assert from 'assert';
 import sinon, { SinonFakeTimers } from 'sinon';
@@ -12,8 +12,6 @@ import { LocalFileEmployeeRepository } from '../../src/functions/validator/adapt
 import { InMemoryValidationReporter } from '../../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { PptxContentLanguageDetector } from '../../src/functions/validator/adapter/PptxContentLanguageDetector';
 import { extractLanguageCode } from '../../src/functions/validator/adapter/DirectoryBasedOnePager';
-
-/* eslint-disable prefer-arrow-callback */
 
 type OnePagerExemplar = {
     Name: string;

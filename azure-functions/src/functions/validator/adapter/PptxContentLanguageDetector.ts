@@ -1,5 +1,5 @@
 import PptxParser from 'node-pptx-parser';
-import { isLocal, LanguageDetector, Local, Logger } from '../DomainTypes';
+import { LanguageDetector, Local, Logger } from '../DomainTypes';
 import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';

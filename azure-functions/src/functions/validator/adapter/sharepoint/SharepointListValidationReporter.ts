@@ -27,15 +27,18 @@ type ListItemWithFields = {
     [COLUMN_VALIDATION_ERRORS]: string;
     [COLUMN_URL]: string;
 };
-function isListItemWithFields(item: any): item is ListItemWithFields {
+function isListItemWithFields(item: unknown): item is ListItemWithFields {
+    if (item === null || typeof item !== 'object') {
+        return false;
+    }
+    const record = item as { [key: string]: unknown };
     return (
-        typeof item === 'object' &&
-        COLUMN_MA_ID in item &&
-        typeof item[COLUMN_MA_ID] === 'string' &&
-        COLUMN_VALIDATION_ERRORS in item &&
-        typeof item[COLUMN_VALIDATION_ERRORS] === 'string' &&
-        COLUMN_URL in item &&
-        typeof item[COLUMN_URL] === 'string'
+        COLUMN_MA_ID in record &&
+        typeof record[COLUMN_MA_ID] === 'string' &&
+        COLUMN_VALIDATION_ERRORS in record &&
+        typeof record[COLUMN_VALIDATION_ERRORS] === 'string' &&
+        COLUMN_URL in record &&
+        typeof record[COLUMN_URL] === 'string'
     );
 }
 
