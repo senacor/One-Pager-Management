@@ -1,6 +1,7 @@
 import { ClientSecretCredential } from '@azure/identity';
 import {
     AuthenticationHandler,
+    AuthenticationProvider,
     Client,
     HTTPMessageHandler,
     Middleware,
@@ -17,6 +18,7 @@ import { SharepointListValidationReporter } from '../validator/adapter/sharepoin
 import {
     EmployeeRepository,
     Logger,
+    MSScope,
     OnePagerRepository,
     ValidationReporter,
 } from '../validator/DomainTypes';
@@ -38,7 +40,7 @@ type LocalStorageOptions = {
     VALIDATION_RESULT_DIR?: string;
 };
 
-type SharepointStorageOptions = SharepointClientOptions & {
+type SharepointStorageOptions = MSClientOptions & {
     STORAGE_SOURCE: 'sharepoint';
     SHAREPOINT_ONE_PAGER_SITE_NAME?: string;
     SHAREPOINT_ONE_PAGER_DRIVE_NAME?: string;
@@ -46,7 +48,7 @@ type SharepointStorageOptions = SharepointClientOptions & {
     SHAREPOINT_VALIDATION_RESULT_LIST_NAME?: string;
 };
 
-export type SharepointClientOptions = {
+export type MSClientOptions = {
     SHAREPOINT_TENANT_ID?: string;
     SHAREPOINT_CLIENT_ID?: string;
     SHAREPOINT_CLIENT_SECRET?: string;
@@ -56,7 +58,7 @@ export type SharepointClientOptions = {
 
 export function hasSharepointClientOptions(
     opts: Record<string, unknown>
-): opts is SharepointClientOptions {
+): opts is MSClientOptions {
     return (
         Boolean(opts.SHAREPOINT_TENANT_ID) &&
         Boolean(opts.SHAREPOINT_CLIENT_ID) &&
@@ -118,7 +120,7 @@ function getSharepointConfig(
     opts: SharepointStorageOptions,
     logger: Logger = console
 ): AppConfiguration {
-    const client = createSharepointClient(opts);
+    const client = createMSClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error('Missing SharePoint One Pager site name in environment variables!');
@@ -170,31 +172,8 @@ function getSharepointConfig(
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createSharepointClient(opts: SharepointClientOptions): Client {
-    if (
-        !opts.SHAREPOINT_TENANT_ID ||
-        !opts.SHAREPOINT_CLIENT_ID ||
-        !opts.SHAREPOINT_CLIENT_SECRET
-    ) {
-        throw new Error(
-            'Missing SharePoint authentication configuration in environment variables!'
-        );
-    }
-
-    // Use ClientSecretCredential for authentication.
-    const credential = new ClientSecretCredential(
-        opts.SHAREPOINT_TENANT_ID,
-        opts.SHAREPOINT_CLIENT_ID,
-        opts.SHAREPOINT_CLIENT_SECRET
-    );
-
-    // Define the authentication provider using TokenCredentialAuthenticationProvider.
-    // This provider will use the credential to authenticate requests to the Microsoft Graph API.
-    // It requires the scopes to be set for the Microsoft Graph API.
-    // The scope '.default' is used to request all permissions granted to the application.
-    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-        scopes: ['https://graph.microsoft.com/.default'],
-    });
+export function createMSClient(opts: MSClientOptions, scope: MSScope = 'https://graph.microsoft.com/.default'): Client {
+    const authProvider = createAuthProvider(opts, scope);
 
     // define the middleware chain
     const handlers: Middleware[] = [
@@ -217,4 +196,36 @@ export function createSharepointClient(opts: SharepointClientOptions): Client {
         debugLogging: opts.SHAREPOINT_API_LOGGING === 'true',
         middleware: handlers[0],
     });
+}
+
+export function createAuthProvider(
+    opts: MSClientOptions,
+    scope: MSScope = 'https://graph.microsoft.com/.default'
+): AuthenticationProvider {
+    if (
+        !opts.SHAREPOINT_TENANT_ID ||
+        !opts.SHAREPOINT_CLIENT_ID ||
+        !opts.SHAREPOINT_CLIENT_SECRET
+    ) {
+        throw new Error(
+            'Missing SharePoint authentication configuration in environment variables!'
+        );
+    }
+
+    // Use ClientSecretCredential for authentication.
+    const credential = new ClientSecretCredential(
+        opts.SHAREPOINT_TENANT_ID,
+        opts.SHAREPOINT_CLIENT_ID,
+        opts.SHAREPOINT_CLIENT_SECRET
+    );
+
+    // Define the authentication provider using TokenCredentialAuthenticationProvider.
+    // This provider will use the credential to authenticate requests to the Microsoft Graph API.
+    // It requires the scopes to be set for the Microsoft Graph API.
+    // The scope '.default' is used to request all permissions granted to the application.
+    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+        scopes: [scope],
+    });
+
+    return authProvider;
 }

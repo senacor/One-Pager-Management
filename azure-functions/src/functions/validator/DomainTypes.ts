@@ -108,6 +108,22 @@ export interface LanguageDetector {
     detectLanguage(content: Buffer): Promise<Local[]>;
 }
 
+
+export type MSScope = 'https://graph.microsoft.com/.default' | 'https://analysis.windows.net/powerbi/api/.default';
+
+export interface DataRepository {
+
+    getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData>;
+}
+
+export type EmployeeData = {
+    name: string;
+    email: string;
+    position: string;
+};
+
+
+
 /**
  * --------------------- Auxiliary Interfaces ---------------------
  */

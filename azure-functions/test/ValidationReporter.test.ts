@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import { tmpdir } from 'node:os';
 import path from 'path';
 import {
-    createSharepointClient,
+    createMSClient,
     hasSharepointClientOptions,
 } from '../src/functions/configuration/AppConfiguration';
 import { LocalFileValidationReporter } from '../src/functions/validator/adapter/localfile/LocalFileValidationReporter';
@@ -85,7 +85,7 @@ testFactory('InMemoryValidationReporter', async () => new InMemoryValidationRepo
 const opts = process.env;
 if (hasSharepointClientOptions(opts)) {
     testFactory('SharepointListValidationReporter', async () => {
-        const client = createSharepointClient({
+        const client = createMSClient({
             ...opts,
             SHAREPOINT_API_LOGGING: 'true',
         });
