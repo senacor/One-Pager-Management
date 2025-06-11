@@ -39,7 +39,7 @@
         "@microsoft/microsoft-graph-types": "^2.40.0",
         "@types/isomorphic-fetch": "^0.0.39",
         "@types/jest": "^29.5.14",
-        "@types/node": "^22.15.21",
+        "@types/node": "^24.0.0",
         "cucumber-console-formatter": "^1.0.0",
         "eslint": "^9.28.0",
         "eslint-config-prettier": "^10.1.5",
