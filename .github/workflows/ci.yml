@@ -34,12 +34,14 @@ jobs:
             SHAREPOINT_TENANT_ID: "52497ec2-0945-4f55-8021-79766363dd96"
             SHAREPOINT_CLIENT_SECRET: ${{ secrets.SHAREPOINT_CLIENT_SECRET }}
       - name: Jest Test Report
+        if: ${{ !cancelled() }} 
         uses: dorny/test-reporter@v2
         with:
           name: JEST Tests
           path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/reports/jest-junit.xml'
           reporter: jest-junit
       - name: Cucumber Test Report
+        if: ${{ !cancelled() }} 
         uses: dorny/test-reporter@v2
         with:
           name: Cucumber Tests
