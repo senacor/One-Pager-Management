@@ -5,7 +5,6 @@ import tseslint from "typescript-eslint";
 import unusedImports from "eslint-plugin-unused-imports";
 
 const defaultRules = {
-    "no-extra-parens": ["warn", "all"],
     "no-await-in-loop": "warn",
     "no-duplicate-imports": "warn",
     "block-scoped-var": "warn",

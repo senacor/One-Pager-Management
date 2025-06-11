@@ -2,8 +2,6 @@ import { createHash } from 'crypto';
 import { readFile } from 'fs/promises';
 import JSZip from 'jszip';
 import { Logger, ValidationError, ValidationRule } from './DomainTypes';
-import { fetchOnePagerContent } from './fetcher';
-import { on } from 'events';
 
 // The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pptx';
@@ -20,7 +18,7 @@ export const lastModifiedRule: ValidationRule = async onePager => {
 };
 
 export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
-    if(onePager.contentLanguages.length > 1) {
+    if (onePager.contentLanguages.length > 1) {
         return ['MIXED_LANGUAGE_VERSION'];
     }
 
@@ -34,10 +32,15 @@ export const contentLanguageIsIndicatedInName: ValidationRule = async onePager =
     }
 };
 
-let templateHashes: Promise<{ names: string[]; hashes: Record<string, string> }>
+let templateHashes: Promise<{
+    names: string[];
+    hashes: Record<string, string>;
+}>;
 function getTemplateHashes(logger: Logger) {
     if (!templateHashes) {
-        templateHashes = readFile(CURRENT_TEMPLATE_PATH).then(templateData => calculateThemeHash(logger, templateData));
+        templateHashes = readFile(CURRENT_TEMPLATE_PATH).then(templateData =>
+            calculateThemeHash(logger, templateData)
+        );
     }
     return templateHashes;
 }
@@ -45,35 +48,47 @@ function getTemplateHashes(logger: Logger) {
  * -------- Validation rules concerning the content of a OnePager. --------
  */
 
-export const usesCurrentTemplate = (logger: Logger = console): ValidationRule => async onePager => {
-    const templateHashes = await getTemplateHashes(logger);
-    const contentHashes = await calculateThemeHash(logger, onePager.data);
+export const usesCurrentTemplate =
+    (logger: Logger = console): ValidationRule =>
+    async onePager => {
+        const templateHashes = await getTemplateHashes(logger);
+        const contentHashes = await calculateThemeHash(logger, onePager.data);
 
-    const templateKeys = Object.keys(templateHashes.hashes);
-    const contentKeys = Object.keys(contentHashes.hashes);
+        const templateKeys = Object.keys(templateHashes.hashes);
+        const contentKeys = Object.keys(contentHashes.hashes);
 
-    // no error if theme contents are equal
-    if (
-        templateKeys.length === contentKeys.length &&
-        templateKeys.every(key => contentKeys.includes(key) && templateHashes.hashes[key] === contentHashes.hashes[key])
-    ) {
-        return [];
-    }
+        // no error if theme contents are equal
+        if (
+            templateKeys.length === contentKeys.length &&
+            templateKeys.every(
+                key =>
+                    contentKeys.includes(key) &&
+                    templateHashes.hashes[key] === contentHashes.hashes[key]
+            )
+        ) {
+            return [];
+        }
 
-    const themeCountWithSameContent = templateKeys.filter(key => contentKeys.includes(key)).length;
-    const hasSomeOriginalTemplateThemes = templateHashes.names.some(name => contentHashes.names.includes(name));
+        const themeCountWithSameContent = templateKeys.filter(key =>
+            contentKeys.includes(key)
+        ).length;
+        const hasSomeOriginalTemplateThemes = templateHashes.names.some(name =>
+            contentHashes.names.includes(name)
+        );
 
-    // if we detect at least one theme of the template we consider the current one-pager based on it
-    const error: ValidationError[] = [
-        themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes
-            ? 'USING_MODIFIED_TEMPLATE'
-            : 'USING_UNKNOWN_TEMPLATE',
-    ];
-    return error;
-};
+        // if we detect at least one theme of the template we consider the current one-pager based on it
+        const error: ValidationError[] = [
+            themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes
+                ? 'USING_MODIFIED_TEMPLATE'
+                : 'USING_UNKNOWN_TEMPLATE',
+        ];
+        return error;
+    };
 
-async function calculateThemeHash(logger: Logger, pptxContent: Buffer): Promise<{ names: string[]; hashes: Record<string, string> }> {
-
+async function calculateThemeHash(
+    logger: Logger,
+    pptxContent: Buffer
+): Promise<{ names: string[]; hashes: Record<string, string> }> {
     const zip = new JSZip();
     const pptx = await zip.loadAsync(pptxContent);
     const masterFiles = Object.keys(pptx.files)
@@ -83,13 +98,17 @@ async function calculateThemeHash(logger: Logger, pptxContent: Buffer): Promise<
     const hashes: Record<string, string> = {};
     const names: string[] = [];
 
-    logger.log(`Calculating theme hashes from PPTX content... Found ${JSON.stringify(masterFiles)} master files.`);
-    const xmlContents = await Promise.all(masterFiles.map(async f => {
-        logger.log(`Reading content of master file: ${f}`);
-        const c = await pptx.files[f].async('string');
-        logger.log(`Content of ${f} read successfully.`);
-        return c;
-    }));
+    logger.log(
+        `Calculating theme hashes from PPTX content... Found ${JSON.stringify(masterFiles)} master files.`
+    );
+    const xmlContents = await Promise.all(
+        masterFiles.map(async f => {
+            logger.log(`Reading content of master file: ${f}`);
+            const c = await pptx.files[f].async('string');
+            logger.log(`Content of ${f} read successfully.`);
+            return c;
+        })
+    );
     for (const [i, xmlContent] of xmlContents.entries()) {
         const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
         if (!match) {

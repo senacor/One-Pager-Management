@@ -1,5 +1,4 @@
 # Prettier
 node_modules/
-coverage/
 dist/
 reports/

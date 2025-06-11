@@ -1,4 +1,10 @@
-import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository } from '../../DomainTypes';
+import {
+    EmployeeID,
+    EmployeeRepository,
+    Logger,
+    OnePager,
+    OnePagerRepository,
+} from '../../DomainTypes';
 import { CURRENT_TEMPLATE_PATH } from '../../validationRules';
 
 /**
@@ -30,7 +36,7 @@ export class InMemoryOnePagerRepository implements OnePagerRepository, EmployeeR
                     fileLocation: new URL(`file:///${CURRENT_TEMPLATE_PATH}`),
                     ...d,
                 })),
-            ]),
+            ])
         );
         this.logger = logger;
     }

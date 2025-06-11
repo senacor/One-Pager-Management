@@ -45,7 +45,7 @@ export type ValidationError =
 
 export type LoadedOnePager = Omit<OnePager, 'fileLocation'> & {
     contentLanguages: Local[];
-    data: Buffer
+    data: Buffer;
 };
 
 export type ValidationRule = (onePager: LoadedOnePager) => Promise<ValidationError[]>;
@@ -86,7 +86,11 @@ export interface ValidationReporter {
      * @param onePager The one-pager document being reported on, maybe undefined if no one-pager exists.
      * @param errors The validation errors found.
      */
-    reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void>;
+    reportErrors(
+        id: EmployeeID,
+        onePager: OnePager | undefined,
+        errors: ValidationError[]
+    ): Promise<void>;
 
     /**
      * Fetches the latest validation results for the given employee ID.
@@ -96,7 +100,6 @@ export interface ValidationReporter {
 }
 
 export interface LanguageDetector {
-
     /**
      * Detects the language of the given one-pager content.
      * @param content The content of the one-pager.

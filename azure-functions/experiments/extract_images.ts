@@ -14,7 +14,7 @@ const nopLogger: Logger = {
 const mediaDir = "./media";
 
 async function main() {
-    const conf = await loadConfigFromEnv(nopLogger, {
+    const conf = loadConfigFromEnv(nopLogger, {
         STORAGE_SOURCE: "localfile",
         ONE_PAGER_DIR: "/Users/Daniel.Heinrich/Library/CloudStorage/OneDrive-SenacorTechnologiesAG/MaInfo - 01_OnePager"
     });

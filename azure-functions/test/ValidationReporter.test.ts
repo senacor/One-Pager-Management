@@ -1,7 +1,10 @@
 import { promises as fs } from 'fs';
 import { tmpdir } from 'node:os';
 import path from 'path';
-import { createSharepointClient, hasSharepointClientOptions } from '../src/functions/configuration/AppConfiguration';
+import {
+    createSharepointClient,
+    hasSharepointClientOptions,
+} from '../src/functions/configuration/AppConfiguration';
 import { LocalFileValidationReporter } from '../src/functions/validator/adapter/localfile/LocalFileValidationReporter';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter';
@@ -26,9 +29,15 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should return errors when reported', async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors('111', someOnePager, ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION']);
+            await reporter.reportErrors('111', someOnePager, [
+                'OLDER_THAN_SIX_MONTHS',
+                'MISSING_DE_VERSION',
+            ]);
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual(['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION']);
+            await expect(reporter.getResultFor('111')).resolves.toEqual([
+                'OLDER_THAN_SIX_MONTHS',
+                'MISSING_DE_VERSION',
+            ]);
         });
 
         it('should clean up errors when valid is reported', async () => {
@@ -43,7 +52,10 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should not return errors of other employee', async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors('000', someOnePager, ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION']);
+            await reporter.reportErrors('000', someOnePager, [
+                'OLDER_THAN_SIX_MONTHS',
+                'MISSING_DE_VERSION',
+            ]);
 
             await expect(reporter.getResultFor('111')).resolves.toEqual([]);
         });
@@ -73,12 +85,15 @@ testFactory('InMemoryValidationReporter', async () => new InMemoryValidationRepo
 const opts = process.env;
 if (hasSharepointClientOptions(opts)) {
     testFactory('SharepointListValidationReporter', async () => {
-        const client = await createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: 'true' });
+        const client = createSharepointClient({
+            ...opts,
+            SHAREPOINT_API_LOGGING: 'true',
+        });
 
         const reporter = await SharepointListValidationReporter.getInstance(
             client,
             'senacor.sharepoint.com:/teams/MaInfoTest',
-            'one-pager-status-automated-test-env',
+            'one-pager-status-automated-test-env'
         );
 
         await reporter.clearList();

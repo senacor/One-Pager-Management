@@ -58,7 +58,7 @@ assign `Storage Queue Data Contributor` role to contributors for queue to be abl
 
 deploy infrastructur
 ```bash
-az deployment group create --resource-group one-pager --template-file infra/main.bicep --parameters functionAppName=poc-one-pager --mode complete
+az deployment group create --resource-group one-pager --template-file infra/main.bicep --parameters functionAppName=poc-one-pager
 ```
 
 make it small 

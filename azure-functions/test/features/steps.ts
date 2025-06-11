@@ -1,7 +1,7 @@
 import { Given, Then, When, Before, After } from '@cucumber/cucumber';
 import { OnePagerValidation } from '../../src/functions/validator/OnePagerValidation';
 import path from 'path';
-import { allRules, CURRENT_TEMPLATE_PATH } from '../../src/functions/validator/validationRules';
+import { allRules } from '../../src/functions/validator/validationRules';
 import { EmployeeID, ValidationReporter } from '../../src/functions/validator/DomainTypes';
 import assert from 'assert';
 import sinon, { SinonFakeTimers } from 'sinon';
@@ -12,8 +12,6 @@ import { LocalFileEmployeeRepository } from '../../src/functions/validator/adapt
 import { InMemoryValidationReporter } from '../../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { PptxContentLanguageDetector } from '../../src/functions/validator/adapter/PptxContentLanguageDetector';
 import { extractLanguageCode } from '../../src/functions/validator/adapter/DirectoryBasedOnePager';
-
-/* eslint-disable prefer-arrow-callback */
 
 type OnePagerExemplar = {
     Name: string;
@@ -65,7 +63,9 @@ Given('today is {string}', function (this: Context, date: string) {
     });
 });
 
-Given('the following employees exist:', function (this: Context, employees: DataTable<EmployeeExemplar>) {
+Given('the following employees exist:', initEmployees);
+
+function initEmployees(this: Context, employees: DataTable<EmployeeExemplar>) {
     this.getEmployee = (name: string) => {
         const found = employees.hashes().find(e => e.Name === name);
         if (!found) {
@@ -73,13 +73,17 @@ Given('the following employees exist:', function (this: Context, employees: Data
         }
         return found;
     };
-});
+}
 
 Given('{string} has OnePager {string}', createOnePagers);
 
 Given('{string} has the following OnePagers:', createOnePagers);
 
-async function createOnePagers(this: Context, employeeName: string, data: string | DataTable<OnePagerExemplar>) {
+async function createOnePagers(
+    this: Context,
+    employeeName: string,
+    data: string | DataTable<OnePagerExemplar>
+) {
     const { Id } = this.getEmployee(employeeName);
 
     let onePagers: OnePagerExemplar[];
@@ -89,14 +93,18 @@ async function createOnePagers(this: Context, employeeName: string, data: string
         onePagers = data.hashes();
     }
 
-    await Promise.all(onePagers.map(async onePager => {
-        const language = onePager.SlideLanguage || extractLanguageCode(onePager.Name);
-        if( !language) {
-            throw new Error(`A language for the OnePager must either be defined by the use of a local in the name or by provinding the SlideLanguage property.`);
-        }
-        const file = await templatePath(language, onePager.TemplateVersion);
-        await this.repo.createOnePagerForEmployee(Id, onePager.Name, file);
-    }));
+    await Promise.all(
+        onePagers.map(async onePager => {
+            const language = onePager.SlideLanguage || extractLanguageCode(onePager.Name);
+            if (!language) {
+                throw new Error(
+                    `A language for the OnePager must either be defined by the use of a local in the name or by provinding the SlideLanguage property.`
+                );
+            }
+            const file = await templatePath(language, onePager.TemplateVersion);
+            await this.repo.createOnePagerForEmployee(Id, onePager.Name, file);
+        })
+    );
 }
 
 async function templatePath(language: string, templateVersion?: string): Promise<string> {
@@ -104,13 +112,17 @@ async function templatePath(language: string, templateVersion?: string): Promise
     try {
         await fs.access(file);
     } catch {
-        throw new Error(`No test example OnePager for language ${language} and template version ${templateVersion} found in "test/onepager"`);
+        throw new Error(
+            `No test example OnePager for language ${language} and template version ${templateVersion} found in "test/onepager"`
+        );
     }
     return file;
 }
 
 When('we validate the OnePagers of {string}', async function (this: Context, employee: string) {
-    await (this.service as OnePagerValidation).validateOnePagersOfEmployee(this.getEmployee(employee).Id);
+    await (this.service as OnePagerValidation).validateOnePagersOfEmployee(
+        this.getEmployee(employee).Id
+    );
 });
 
 Then('{string} OnePagers have no validation errors', function (this: Context, employee: string) {
@@ -121,14 +133,14 @@ Then(
     '{string} OnePagers have the validation error {string}',
     function (this: Context, employee: string, error: string) {
         return checkErrors.call(this, employee, error);
-    },
+    }
 );
 
 Then(
     '{string} OnePagers have the validation errors {string} and {string}',
     function (this: Context, employee: string, error1: string, error2: string) {
         return checkErrors.call(this, employee, error1, error2);
-    },
+    }
 );
 
 // Generalized to accept up to two error strings, but works for all three step patterns
@@ -140,6 +152,6 @@ async function checkErrors(this: Context, employee: string, ...errors: string[])
     assert.deepEqual(
         results.sort(),
         errors.sort(),
-        `Expected errors for ${Id} to be ${JSON.stringify(errors)}, but got ${JSON.stringify(results)}`,
+        `Expected errors for ${Id} to be ${JSON.stringify(errors)}, but got ${JSON.stringify(results)}`
     );
 }
