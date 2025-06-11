@@ -95,6 +95,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         const folder = this.onePagers[employeeId];
         if (!folder) {
+            this.logger.log(`No employee folder found(cached) for employee ID: ${employeeId}`);
             return [];
         }
 
@@ -102,10 +103,15 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
             return folder;
         }
 
+        this.logger.log(
+            `Fetching one-pagers meta-data for employee ID: ${employeeId} from SharePoint folder: ${folder}`
+        );
+
         // load contents of one pager folder
         const { value: folderContents } = (await this.client.api(folder).get()) as {
             value?: DriveItemWithDownloadUrl[];
         };
+
         this.onePagers[employeeId] = [];
         if (folderContents) {
             for (const driveItem of folderContents) {

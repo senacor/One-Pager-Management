@@ -45,7 +45,7 @@ export class CachingHandler implements Middleware {
         if (cacheControl) {
             if (cacheControl === 'clear-all') {
                 // used in tests
-                this.logger.log('(CachingHandler.ts: execute) clearing full http cache');
+                this.logger.log('clearing full http cache');
                 this.cache.flushAll();
             }
             maxAge = cacheControl.split(',').reduce(
@@ -68,7 +68,7 @@ export class CachingHandler implements Middleware {
             }
             const entry = this.cache.get<CacheEntry>(url);
             if (entry) {
-                this.logger.log(`using cache entry for "${url}" to ${maxAge}`);
+                this.logger.log(`using cache entry for "${url}"`);
                 context.response = new Response(entry?.body, {
                     status: 200,
                     headers: entry?.headers,
@@ -84,6 +84,7 @@ export class CachingHandler implements Middleware {
         }
 
         await this.nextMiddleware.execute(context);
+
         if (canCache && context.response?.status === 200) {
             const body = await context.response.arrayBuffer();
             this.cache.set<CacheEntry>(url, {

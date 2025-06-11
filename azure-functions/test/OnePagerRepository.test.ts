@@ -96,6 +96,7 @@ const testFactory = (name: string, factory: RepoFactory) => {
 testFactory('InMemoryOnePagerRepository', async data => new InMemoryOnePagerRepository(data));
 
 const opts = process.env;
+
 if (hasSharepointClientOptions(opts)) {
     testFactory('SharepointDriveOnePagerRepository', async data => {
         const siteIDAlias: string = 'senacor.sharepoint.com:/teams/MaInfoTest';
@@ -115,14 +116,14 @@ if (hasSharepointClientOptions(opts)) {
         const folders = (
             await client
                 .api(`/drives/${onePagerDriveId}/root/children`)
-                .select('id')
+                .select(['id'])
                 .top(100000)
                 .get()
         ).value as DriveItem[];
 
         await Promise.all(
             folders.map(element =>
-                client.api(`/drives/${onePagerDriveId}/items/${element.id}/delete`).post(null)
+                client.api(`/drives/${onePagerDriveId}/items/${element.id}`).delete()
             )
         );
 
