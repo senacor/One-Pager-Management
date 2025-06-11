@@ -1,8 +1,8 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext, output } from "@azure/functions";
-import { onepagerValidationRequests, QueueItem } from "./FileChangeQueueTrigger";
-import { loadConfigFromEnv } from "./configuration/AppConfiguration";
-import { EmployeeRepository } from "./validator/DomainTypes";
-import { printError } from "./ErrorHandling";
+import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from '@azure/functions';
+import { onepagerValidationRequests } from './FileChangeQueueTrigger';
+import { loadConfigFromEnv } from './configuration/AppConfiguration';
+import { EmployeeRepository } from './validator/DomainTypes';
+import { printError } from './ErrorHandling';
 
 /**
  * Azure Queue used to store One Pager validation requests.
@@ -19,21 +19,27 @@ const queueOutput = output.storageQueue({
  * @param context The invocation context given by Azure Functions.
  * @returns The HTTP response.
  */
-export async function ValidateAllHttpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+export async function ValidateAllHttpTrigger(
+    request: HttpRequest,
+    context: InvocationContext
+): Promise<HttpResponseInit> {
     try {
-        context.log(`(ValidateAllHttpTrigger.ts: ValidateAllHttpTrigger) Http function processed request for url "${request.url}"!`);
+        context.log(`Http function processed request for url "${request.url}"!`);
 
         const repo: EmployeeRepository = await loadConfigFromEnv(context).employees();
         const ids = await repo.getAllEmployees();
 
-        context.extraOutputs.set(queueOutput, ids.map(id => ({ employeeId: id })));
+        context.extraOutputs.set(
+            queueOutput,
+            ids.map(id => ({ employeeId: id }))
+        );
 
         return { body: `Triggered validation for ${ids.length} employees.` };
     } catch (error) {
-        context.error(`(ValidateAllHttpTrigger.ts: ValidateAllHttpTrigger) Error processing request: "${printError(error)}"!`);
+        context.error(`Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };
     }
-};
+}
 
 // Register the ValidateAllHttpTrigger function with Azure Functions to handle HTTP requests.
 app.http('ValidateAllHttpTrigger', {
@@ -41,5 +47,5 @@ app.http('ValidateAllHttpTrigger', {
     route: 'validateAll',
     authLevel: 'function',
     handler: ValidateAllHttpTrigger,
-    extraOutputs: [queueOutput]
+    extraOutputs: [queueOutput],
 });

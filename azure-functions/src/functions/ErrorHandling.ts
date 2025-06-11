@@ -4,7 +4,7 @@
  * @param value
  * @returns
  */
-function errorReplacer(key: string, value: any) {
+function errorReplacer(key: string, value: unknown) {
     if (value instanceof Error) {
         return {
             name: value.name,
@@ -20,6 +20,6 @@ function errorReplacer(key: string, value: any) {
  * @param error An object or a string.
  * @returns
  */
-export function printError(error: any): string {
-  return JSON.stringify(error, errorReplacer);
+export function printError(error: unknown): string {
+    return JSON.stringify(error, errorReplacer);
 }

@@ -1,0 +1,4 @@
+# Prettier
+node_modules/
+dist/
+reports/

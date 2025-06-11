@@ -1,12 +1,24 @@
-import { Client } from "@microsoft/microsoft-graph-client";
-import { DriveItem, Site } from "@microsoft/microsoft-graph-types";
-import { URL } from "node:url";
-import { EmployeeID, EmployeeRepository, Logger, OnePager, OnePagerRepository } from "../../DomainTypes";
-import { employeeIdFromFolder, isEmployeeFolder } from "../DirectoryBasedOnePager";
+import { Client } from '@microsoft/microsoft-graph-client';
+import { DriveItem, Site } from '@microsoft/microsoft-graph-types';
+import { URL } from 'node:url';
+import {
+    EmployeeID,
+    EmployeeRepository,
+    Logger,
+    OnePager,
+    OnePagerRepository,
+} from '../../DomainTypes';
+import {
+    employeeIdFromFolder,
+    extractLanguageCode,
+    isEmployeeFolder,
+} from '../DirectoryBasedOnePager';
 
 type SharePointFolder = string;
 type OnePagerMap = Record<EmployeeID, OnePager[] | SharePointFolder>;
-type DriveItemWithDownloadUrl = DriveItem & { "@microsoft.graph.downloadUrl"?: string };
+type DriveItemWithDownloadUrl = DriveItem & {
+    '@microsoft.graph.downloadUrl'?: string;
+};
 
 /**
  * Repository for retrieving one-pagers stored in a SharePoint Drive.
@@ -38,19 +50,31 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
      * @param logger The logger to use for logging messages (default is console).
      * @returns A promise that resolves to an instance of SharepointDriveOnePagerRepository.
      */
-    public static async getInstance(client: Client, siteIDAlias: string, listName: string, logger: Logger = console): Promise<SharepointDriveOnePagerRepository> {
-        const site = await client.api(`/sites/${siteIDAlias}`).get() as Site | undefined;
+    public static async getInstance(
+        client: Client,
+        siteIDAlias: string,
+        listName: string,
+        logger: Logger = console
+    ): Promise<SharepointDriveOnePagerRepository> {
+        const site = (await client.api(`/sites/${siteIDAlias}`).get()) as Site | undefined;
         if (!site || !site.id) {
-            logger.error(`(SharepointDriveOnePagerRepository.ts: getInstance) Cannot find site with alias "${siteIDAlias}"!`);
-            throw new Error(`(SharepointDriveOnePagerRepository.ts: getInstance) Cannot find site with alias ${siteIDAlias}!`);
+            throw new Error(`Cannot find site with alias ${siteIDAlias}!`);
         }
 
-        const onePagerDriveId: string = (await client.api(`/sites/${site.id}/drives`).get()).value.filter((drive: { "name": string }) => drive.name === listName)[0].id as string;
-        const { value: folders } = await client.api(`/drives/${onePagerDriveId}/root/children`).top(100000).get() as { value?: DriveItem[] };
+        const onePagerDriveId: string = (
+            await client.api(`/sites/${site.id}/drives`).get()
+        ).value.filter((drive: { name: string }) => drive.name === listName)[0].id as string;
+        const { value: folders } = (await client
+            .api(`/drives/${onePagerDriveId}/root/children`)
+            .top(100000)
+            .get()) as {
+            value?: DriveItem[];
+        };
 
         if (folders === undefined) {
-            logger.error(`(SharepointDriveOnePagerRepository.ts: getInstance) Could not fetch folders of SharePoint drive with ID "${onePagerDriveId}" for site "${siteIDAlias}"!`);
-            throw new Error(`(SharepointDriveOnePagerRepository.ts: getInstance) Could not fetch folders of SharePoint drive with ID "${onePagerDriveId}" for site "${siteIDAlias}"!`);
+            throw new Error(
+                `Could not fetch folders of SharePoint drive with ID "${onePagerDriveId}" for site "${siteIDAlias}"!`
+            );
         }
 
         const onePagers: OnePagerMap = {};
@@ -60,8 +84,9 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
                 continue;
             }
 
-            const employeeId: EmployeeID = employeeIdFromFolder(folderName, logger);
-            onePagers[employeeId] = `/drives/${onePagerDriveId}/root:/${folderName}:/children` as SharePointFolder;
+            const employeeId: EmployeeID = employeeIdFromFolder(folderName);
+            onePagers[employeeId] =
+                `/drives/${onePagerDriveId}/root:/${folderName}:/children` as SharePointFolder;
         }
 
         return new SharepointDriveOnePagerRepository(client, onePagers, logger);
@@ -70,6 +95,7 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         const folder = this.onePagers[employeeId];
         if (!folder) {
+            this.logger.log(`No employee folder found(cached) for employee ID: ${employeeId}`);
             return [];
         }
 
@@ -77,25 +103,36 @@ export class SharepointDriveOnePagerRepository implements OnePagerRepository, Em
             return folder;
         }
 
+        this.logger.log(
+            `Fetching one-pagers meta-data for employee ID: ${employeeId} from SharePoint folder: ${folder}`
+        );
+
         // load contents of one pager folder
-        const { value: folderContents } = await this.client.api(folder).get() as { value?: DriveItemWithDownloadUrl[] };
+        const { value: folderContents } = (await this.client.api(folder).get()) as {
+            value?: DriveItemWithDownloadUrl[];
+        };
+
         this.onePagers[employeeId] = [];
         if (folderContents) {
             for (const driveItem of folderContents) {
-
                 // check if the drive item is a valid one-pager file
                 // if the output does not have a date of last chage or is not a file, continue
-                if (!driveItem.lastModifiedDateTime ||
-                    !(driveItem.name || "").match(/^.+_\d{6}(_.+)?\.pptx$/) ||
+                if (
+                    !driveItem.lastModifiedDateTime ||
+                    !(driveItem.name || '').match(/^.+_\d{6}(_.+)?\.pptx$/) ||
                     !driveItem.file ||
-                    !driveItem["@microsoft.graph.downloadUrl"]) {
-                    this.logger.log(`Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`);
+                    !driveItem['@microsoft.graph.downloadUrl']
+                ) {
+                    this.logger.log(
+                        `Skipping non one-pager drive item: ${JSON.stringify(driveItem)}`
+                    );
                     continue;
                 }
-                let onePager: OnePager = {
+                const onePager: OnePager = {
                     lastUpdateByEmployee: new Date(driveItem.lastModifiedDateTime),
-                    fileLocation: new URL(driveItem["@microsoft.graph.downloadUrl"]),
+                    fileLocation: new URL(driveItem['@microsoft.graph.downloadUrl']),
                     webLocation: driveItem.webUrl ? new URL(driveItem.webUrl) : undefined,
+                    local: extractLanguageCode(driveItem.name || ''),
                 };
                 this.onePagers[employeeId].push(onePager);
             }

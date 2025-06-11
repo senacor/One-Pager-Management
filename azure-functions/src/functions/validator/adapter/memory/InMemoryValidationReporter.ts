@@ -1,4 +1,10 @@
-import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } from "../../DomainTypes";
+import {
+    EmployeeID,
+    Logger,
+    OnePager,
+    ValidationError,
+    ValidationReporter,
+} from '../../DomainTypes';
 
 /**
  * An in-memory implementation of the ValidationReporter interface.
@@ -7,7 +13,10 @@ import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } fro
  */
 export class InMemoryValidationReporter implements ValidationReporter {
     private readonly logger: Logger;
-    private readonly reports: Map<EmployeeID, { onePager: OnePager | undefined, errors?: ValidationError[] }> = new Map();
+    private readonly reports: Map<
+        EmployeeID,
+        { onePager: OnePager | undefined; errors?: ValidationError[] }
+    > = new Map();
 
     /**
      * Creates an instance of InMemoryValidationReporter.
@@ -22,7 +31,7 @@ export class InMemoryValidationReporter implements ValidationReporter {
      * @param id The employee ID for which the one-pager is valid.
      */
     async reportValid(id: EmployeeID): Promise<void> {
-        this.logger.log("(InMemoryValidationReporter.ts: reportValid)", id);
+        this.logger.log('(InMemoryValidationReporter.ts: reportValid)', id);
         this.reports.delete(id);
     }
 
@@ -32,8 +41,14 @@ export class InMemoryValidationReporter implements ValidationReporter {
      * @param onePager The one-pager that was validated, can be undefined if not available.
      * @param errors An array of validation errors found in the one-pager.
      */
-    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
-        this.logger.log(`(InMemoryValidationReporter.ts: reportErrors) Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`);
+    async reportErrors(
+        id: EmployeeID,
+        onePager: OnePager | undefined,
+        errors: ValidationError[]
+    ): Promise<void> {
+        this.logger.log(
+            `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`
+        );
         this.reports.set(id, { onePager, errors });
     }
 
@@ -43,7 +58,7 @@ export class InMemoryValidationReporter implements ValidationReporter {
      * @returns A promise that resolves to an array of validation errors for the specified employee.
      */
     async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
-        this.logger.log(`(InMemoryValidationReporter.ts: getResultFor) Getting results for employee with id "${id}"!`);
+        this.logger.log(`Getting results for employee with id "${id}"!`);
         return this.reports.get(id)?.errors || [];
     }
 }
