@@ -16,7 +16,10 @@ export class PptxContentLanguageDetector implements LanguageDetector {
     async detectLanguage(content: Buffer): Promise<Local[]> {
         // Write buffer to a temporary file
         const tmpDir = os.tmpdir();
-        const tmpFile = path.join(tmpDir, `pptx-${Date.now()}-${Math.random().toString(36).slice(2)}.pptx`);
+        const tmpFile = path.join(
+            tmpDir,
+            `pptx-${Date.now()}-${Math.random().toString(36).slice(2)}.pptx`
+        );
         await fs.writeFile(tmpFile, content);
 
         try {
@@ -37,11 +40,13 @@ export class PptxContentLanguageDetector implements LanguageDetector {
                                 return 'EN';
                             }
                             default: {
-                                this.logger.warn(`Detected language ${lang} on slide ${i + 1} is not a valid Local.`);
+                                this.logger.warn(
+                                    `Detected language ${lang} on slide ${i + 1} is not a valid Local.`
+                                );
                                 return [];
                             }
                         }
-                    }),
+                    })
                 )
             )
                 .flat()

@@ -53,7 +53,7 @@ export class CachingHandler implements Middleware {
                     const parts = v.trim().split('=');
                     return parts[0] === 'max-age' ? parseInt(parts[1]) : ttl;
                 },
-                undefined as undefined | number,
+                undefined as undefined | number
             );
         }
 
@@ -63,12 +63,12 @@ export class CachingHandler implements Middleware {
 
         if (canCache) {
             if (maxAge) {
-                this.logger.log(`(CachingHandler.ts: execute) resetting ttls of cache entry "${url}" to ${maxAge}`);
+                this.logger.log(`resetting ttls of cache entry "${url}" to ${maxAge}`);
                 this.cache.ttl(url, maxAge); // a ttl of 0 has the meaning of infinity for node-cache
             }
             const entry = this.cache.get<CacheEntry>(url);
             if (entry) {
-                this.logger.log(`(CachingHandler.ts: execute) using cache entry for "${url}" to ${maxAge}`);
+                this.logger.log(`using cache entry for "${url}" to ${maxAge}`);
                 context.response = new Response(entry?.body, {
                     status: 200,
                     headers: entry?.headers,
@@ -79,14 +79,17 @@ export class CachingHandler implements Middleware {
 
         if (!this.nextMiddleware) {
             throw new Error(
-                '(CachingHandler.ts: execute) CachingHandler expects a child middleware, it can not provide a response on it own!',
+                'CachingHandler expects a child middleware, it can not provide a response on it own!'
             );
         }
 
         await this.nextMiddleware.execute(context);
         if (canCache && context.response?.status === 200) {
             const body = await context.response.arrayBuffer();
-            this.cache.set<CacheEntry>(url, { body, headers: context.response.headers });
+            this.cache.set<CacheEntry>(url, {
+                body,
+                headers: context.response.headers,
+            });
             context.response = new Response(body, {
                 status: context.response?.status,
                 headers: context.response?.headers,

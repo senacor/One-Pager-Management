@@ -1,7 +1,13 @@
 import { Client } from '@microsoft/microsoft-graph-client';
 import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
 import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
-import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } from '../../DomainTypes';
+import {
+    EmployeeID,
+    Logger,
+    OnePager,
+    ValidationError,
+    ValidationReporter,
+} from '../../DomainTypes';
 
 /**
  * The name of the SharePoint list field that stores the employee ID.
@@ -16,7 +22,11 @@ const COLUMN_VALIDATION_ERRORS: string = 'Festgestellte_Fehler';
  */
 const COLUMN_URL: string = 'Location';
 
-type ListItemWithFields = { [COLUMN_MA_ID]: string; [COLUMN_VALIDATION_ERRORS]: string; [COLUMN_URL]: string };
+type ListItemWithFields = {
+    [COLUMN_MA_ID]: string;
+    [COLUMN_VALIDATION_ERRORS]: string;
+    [COLUMN_URL]: string;
+};
 function isListItemWithFields(item: any): item is ListItemWithFields {
     return (
         typeof item === 'object' &&
@@ -67,37 +77,24 @@ export class SharepointListValidationReporter implements ValidationReporter {
         client: Client,
         siteAlias: string,
         listDisplayName: string,
-        logger: Logger = console,
+        logger: Logger = console
     ): Promise<SharepointListValidationReporter> {
         const maInfoSite = (await client.api(`/sites/${siteAlias}`).get()) as Site | undefined;
         if (!maInfoSite || !maInfoSite.id) {
-            logger.error(
-                `(SharepointListValidationReporter.ts: getInstance) Cannot find site with alias "${siteAlias}" !`,
-            );
-            throw new Error(
-                `(SharepointListValidationReporter.ts: getInstance) Cannot find site with alias "${siteAlias}" !`,
-            );
+            throw new Error(`Cannot find site with alias "${siteAlias}" !`);
         }
 
         const { value: lists } = (await client.api(`/sites/${maInfoSite.id}/lists`).get()) as {
             value?: List[];
         };
         if (!lists) {
-            logger.error(
-                `(SharepointListValidationReporter.ts: getInstance) Cannot fetch lists for site with alias "${siteAlias}" !`,
-            );
-            throw new Error(
-                `(SharepointListValidationReporter.ts: getInstance) Cannot fetch lists for site with alias "${siteAlias}" !`,
-            );
+            throw new Error(`Cannot fetch lists for site with alias "${siteAlias}" !`);
         }
 
         const [{ id: listId }] = lists.filter(list => list.displayName === listDisplayName);
         if (!listId) {
-            logger.error(
-                `(SharepointListValidationReporter.ts: getInstance) Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`,
-            );
             throw new Error(
-                `(SharepointListValidationReporter.ts: getInstance) Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`,
+                `Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`
             );
         }
         return new SharepointListValidationReporter(client, listId, maInfoSite.id, logger);
@@ -111,10 +108,10 @@ export class SharepointListValidationReporter implements ValidationReporter {
         const itemId = await this.getItemIdOfEmployee(id);
 
         if (itemId !== undefined) {
-            this.logger.log(
-                `(SharepointListValidationReporter.ts: reportValid) Reporting valid one-pager for employee with ID "${id}"!`,
-            );
-            await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`).delete();
+            this.logger.log(`Reporting valid one-pager for employee with ID "${id}"!`);
+            await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`)
+                .delete();
         }
     }
 
@@ -124,18 +121,20 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @param onePager The one-pager that was validated, can be undefined if not available.
      * @param errors An array of validation errors found in the one-pager.
      */
-    async reportErrors(id: EmployeeID, onePager: OnePager | undefined, errors: ValidationError[]): Promise<void> {
+    async reportErrors(
+        id: EmployeeID,
+        onePager: OnePager | undefined,
+        errors: ValidationError[]
+    ): Promise<void> {
         const itemId = await this.getItemIdOfEmployee(id);
 
         this.logger.log(
-            `(SharepointListValidationReporter.ts: reportErrors) Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`,
+            `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`
         );
 
         const onePagerUrl = onePager?.webLocation ? onePager.webLocation.toString() : '';
         if (itemId === undefined) {
-            this.logger.log(
-                `(SharepointListValidationReporter.ts: reportErrors) Creating a new list entry for employee with ID "${id}"!`,
-            );
+            this.logger.log(`Creating a new list entry for employee with ID "${id}"!`);
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
                 fields: {
                     [COLUMN_MA_ID]: id,
@@ -144,13 +143,13 @@ export class SharepointListValidationReporter implements ValidationReporter {
                 },
             });
         } else {
-            this.logger.log(
-                `(SharepointListValidationReporter.ts: reportErrors) Updating existing list entry for employee with ID "${id}"!`,
-            );
-            await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`).patch({
-                [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
-                [COLUMN_URL]: onePagerUrl,
-            });
+            this.logger.log(`Updating existing list entry for employee with ID "${id}"!`);
+            await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
+                .patch({
+                    [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
+                    [COLUMN_URL]: onePagerUrl,
+                });
         }
     }
 
@@ -160,9 +159,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @returns An array of validation errors for the specified employee.
      */
     async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
-        this.logger.log(
-            `(SharepointListValidationReporter.ts: getResultFor) Getting results for employee with id "${id}"!`,
-        );
+        this.logger.log(`Getting results for employee with id "${id}"!`);
 
         const itemId = await this.getItemIdOfEmployee(id);
 
@@ -178,12 +175,12 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
         if (item.fields === null || !isListItemWithFields(item.fields)) {
             this.logger.error(
-                `(SharepointListValidationReporter.ts: getResultFor) Item with ID "${itemId}" does not have the expected fields structure!`,
+                `Item with ID "${itemId}" does not have the expected fields structure!`
             );
             return [];
         }
 
-        let itemFields: ListItemWithFields = item.fields;
+        const itemFields: ListItemWithFields = item.fields;
 
         return itemFields[COLUMN_VALIDATION_ERRORS].split('\n') as ValidationError[];
     }
@@ -194,9 +191,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @returns The ID of the list entry corresponding to the employee, or undefined if not found.
      */
     private async getItemIdOfEmployee(id: EmployeeID): Promise<string | undefined> {
-        this.logger.log(
-            `(SharepointListValidationReporter.ts: getItemIdOfEmployee) Getting item ID for employee with ID "${id}"!`,
-        );
+        this.logger.log(`Getting item ID for employee with ID "${id}"!`);
 
         const { value: entries } = (await this.client
             .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
@@ -212,7 +207,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      */
     async clearList(): Promise<void> {
         this.logger.log(
-            `(SharepointListValidationReporter.ts: clearList) Clearing SharePoint list with ID "${this.listId}" on site "${this.siteId}"!`,
+            `Clearing SharePoint list with ID "${this.listId}" on site "${this.siteId}"!`
         );
 
         const { value: items } = (await this.client
@@ -223,8 +218,10 @@ export class SharepointListValidationReporter implements ValidationReporter {
         if (items) {
             await Promise.all(
                 items.map(item =>
-                    this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`).delete(),
-                ),
+                    this.client
+                        .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
+                        .delete()
+                )
             );
         }
     }

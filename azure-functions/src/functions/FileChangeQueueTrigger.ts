@@ -15,13 +15,20 @@ export const onepagerValidationRequests = 'onepager-validation-requests';
  * @param queueItem The QueueItem containing the employee ID to process.
  * @param context The Azure Functions invocation context.
  */
-export async function FileChangeQueueTrigger(queueItem: unknown, context: InvocationContext): Promise<void> {
-    context.log(`--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`);
+export async function FileChangeQueueTrigger(
+    queueItem: unknown,
+    context: InvocationContext
+): Promise<void> {
+    context.log(
+        `--------- Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`
+    );
     try {
         const item = queueItem as QueueItem;
 
         if (!isEmployeeId(item.employeeId)) {
-            context.error(`Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`);
+            context.error(
+                `Invalid queue item "${JSON.stringify(queueItem)}" does not contain a valid employee id!`
+            );
             return;
         }
 
@@ -37,17 +44,17 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
             await config.reporter(),
             new PptxContentLanguageDetector(context),
             validationRules.allRules(context),
-            context,
+            context
         );
         await validator.validateOnePagersOfEmployee(item.employeeId);
     } catch (error) {
         context.error(
-            `(FileChangeQueueTrigger.ts: FileChangeQueueTrigger) Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`,
+            `Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`
         );
         throw error;
     } finally {
         context.log(
-            `--------- END of Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`,
+            `--------- END of Trigger FileChangeQueueTrigger for queue item ${JSON.stringify(queueItem)} ---------`
         );
     }
 }

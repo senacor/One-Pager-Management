@@ -8,7 +8,10 @@ import { HardenedFetch } from 'hardened-fetch';
  * @param onePager The OnePager to fetch.
  * @returns A promise that resolves to the content of the OnePager file as a Buffer.
  */
-export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocation: URL }): Promise<Buffer> {
+export async function fetchOnePagerContent(
+    logger: Logger,
+    onePager: { fileLocation: URL }
+): Promise<Buffer> {
     if (onePager.fileLocation.protocol === 'file:') {
         let filePath = onePager.fileLocation.pathname;
         filePath = decodeURIComponent(filePath);
@@ -31,11 +34,13 @@ export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocat
         const response = await client.fetch(url);
         if (response.status !== 200) {
             throw new Error(
-                `Failed to fetch "${url}"! It returned with status "${response.status}": "${await response.text()}"!`,
+                `Failed to fetch "${url}"! It returned with status "${response.status}": "${await response.text()}"!`
             );
         }
         const buffer = Buffer.from(await response.arrayBuffer());
-        logger.log(`Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`);
+        logger.log(
+            `Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`
+        );
         return buffer;
     }
 }

@@ -43,7 +43,11 @@ export function employeeIdFromFolder(folder: EmployeeFolder): EmployeeID {
  * @param employeeId The employee ID of the employee.
  * @returns The folder name in the format "Name_FamilyName_EmployeeID".
  */
-export function folderNameFromEmployee(name: string, familyName: string, employeeId: EmployeeID): EmployeeFolder {
+export function folderNameFromEmployee(
+    name: string,
+    familyName: string,
+    employeeId: EmployeeID
+): EmployeeFolder {
     return `${name}_${familyName}_${employeeId}`;
 }
 
@@ -72,7 +76,12 @@ export function isOnePagerFile(fileName: unknown): fileName is OnePagerFile {
  * @param lastUpdated The date when the one-pager was last updated.
  * @returns The one-pager file name in the format "FamilyName, Name_DE_YYMMDD.pptx".
  */
-export function onePagerFile(name: string, familyName: string, local: Local | undefined, lastUpdated: Date): string {
+export function onePagerFile(
+    name: string,
+    familyName: string,
+    local: Local | undefined,
+    lastUpdated: Date
+): string {
     return `${familyName}, ${name}_${local ? `${local}_` : ''}${toYYMMDD(lastUpdated)}.pptx`;
 }
 
@@ -83,13 +92,12 @@ export function onePagerFile(name: string, familyName: string, local: Local | un
  * @returns The date extracted from the file name in the format "YYMMDD".
  * @throws Error if the file name does not match the expected format.
  */
-export function dateFromOnePagerFile(file: OnePagerFile, logger: Logger = console): Date {
+export function dateFromOnePagerFile(file: OnePagerFile): Date {
     const match = file.match(/_(\d{6})\.pptx$/);
     if (!match) {
-        logger.error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
-        throw new Error(`(DirectoryBasedOnePager.ts: dateFromOnePagerFile) Invalid one-pager file name: "${file}"!`);
+        throw new Error(`Invalid one-pager file name: "${file}"!`);
     }
-    return fromYYMMDD(match[1], logger);
+    return fromYYMMDD(match[1]);
 }
 
 /**
@@ -110,10 +118,9 @@ export function toYYMMDD(date: Date): string {
  * @returns A Date object representing the date.
  * @throws Error if the input string is not in the correct format.
  */
-export function fromYYMMDD(yyMMdd: string, logger: Logger = console): Date {
+export function fromYYMMDD(yyMMdd: string): Date {
     if (!/^\d{6}$/.test(yyMMdd)) {
-        logger.error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
-        throw new Error(`(DirectoryBasedOnePager.ts: fromYYMMDD) Invalid yyMMdd date string: "${yyMMdd}"!`);
+        throw new Error(`Invalid yyMMdd date string: "${yyMMdd}"!`);
     }
     const year = Number(yyMMdd.slice(0, 2));
     const month = Number(yyMMdd.slice(2, 4)) - 1; // JS months are 0-based

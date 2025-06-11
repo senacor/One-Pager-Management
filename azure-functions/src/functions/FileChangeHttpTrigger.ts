@@ -22,7 +22,7 @@ const queueOutput = output.storageQueue({
  */
 export async function FileChangeHttpTrigger(
     request: HttpRequest,
-    context: InvocationContext,
+    context: InvocationContext
 ): Promise<HttpResponseInit> {
     context.log(`--------- Trigger FileChangeHttpTrigger ---------`);
     try {
@@ -32,7 +32,10 @@ export async function FileChangeHttpTrigger(
         const id = request.params.employeeid;
         if (!isEmployeeId(id)) {
             context.log(`Invalid employee id: "${id}"!`);
-            return { status: 400, body: `Invalid request! "${id}" is no valid employee id.` };
+            return {
+                status: 400,
+                body: `Invalid request! "${id}" is no valid employee id.`,
+            };
         }
 
         // Load the list of employees from the configuration

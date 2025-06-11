@@ -24,9 +24,13 @@ describe('OnePagerValidation', () => {
 
     it('should not report errors for unknown employee', async () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async () => [
-            'USING_UNKNOWN_TEMPLATE',
-        ]);
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            async () => ['USING_UNKNOWN_TEMPLATE']
+        );
 
         await validation.validateOnePagersOfEmployee('000');
 
@@ -36,13 +40,20 @@ describe('OnePagerValidation', () => {
     it('should report errors for employee without one-pager', async () => {
         const id = '111';
         const repo = new InMemoryOnePagerRepository({ [id]: [] });
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async op =>
-            op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : [],
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            async op => (op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : [])
         );
 
         await validation.validateOnePagersOfEmployee(id);
 
-        await expect(await reporter.getResultFor(id)).toEqual(['MISSING_DE_VERSION', 'MISSING_EN_VERSION']);
+        await expect(await reporter.getResultFor(id)).toEqual([
+            'MISSING_DE_VERSION',
+            'MISSING_EN_VERSION',
+        ]);
     });
 
     it('should report errors for employee with invalid one-pager', async () => {
@@ -53,8 +64,12 @@ describe('OnePagerValidation', () => {
                 { lastUpdateByEmployee: new Date(), local: 'EN' },
             ],
         });
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async op =>
-            op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : [],
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            async op => (op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : [])
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -73,7 +88,13 @@ describe('OnePagerValidation', () => {
         let callCounter = 0;
         const statefulValidator = async () =>
             callCounter++ === 0 ? (['OLDER_THAN_SIX_MONTHS'] as ValidationError[]) : [];
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), statefulValidator);
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            statefulValidator
+        );
 
         await validation.validateOnePagersOfEmployee(id);
         await validation.validateOnePagersOfEmployee(id);
@@ -91,8 +112,15 @@ describe('OnePagerValidation', () => {
                 { lastUpdateByEmployee: new Date('2005-01-01'), local: 'EN' },
             ],
         });
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async op =>
-            !op || op.lastUpdateByEmployee < new Date('2010-01-01') ? ['OLDER_THAN_SIX_MONTHS'] : [],
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            async op =>
+                !op || op.lastUpdateByEmployee < new Date('2010-01-01')
+                    ? ['OLDER_THAN_SIX_MONTHS']
+                    : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -102,7 +130,13 @@ describe('OnePagerValidation', () => {
 
     describe('selectNewestOnePagers', () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async () => []);
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            async () => []
+        );
 
         it('should return empty array for no one-pagers', () => {
             const result = validation.selectNewestOnePagers([]);
@@ -207,7 +241,12 @@ describe('OnePagerValidation', () => {
                 fileLocation: new URL('file:///withoutLangNewer.pptx'),
             };
 
-            const result = validation.selectNewestOnePagers([de, en, withoutLang, withoutLangNewer]);
+            const result = validation.selectNewestOnePagers([
+                de,
+                en,
+                withoutLang,
+                withoutLangNewer,
+            ]);
 
             assertSelection(result, [de, en, withoutLang, withoutLangNewer]);
         });
@@ -234,7 +273,12 @@ describe('OnePagerValidation', () => {
                 fileLocation: new URL('file:///withoutLangNewer.pptx'),
             };
 
-            const result = validation.selectNewestOnePagers([de, en, withoutLang, withoutLangNewer]);
+            const result = validation.selectNewestOnePagers([
+                de,
+                en,
+                withoutLang,
+                withoutLangNewer,
+            ]);
 
             assertSelection(result, [de, en, withoutLangNewer]);
         });
@@ -261,7 +305,12 @@ describe('OnePagerValidation', () => {
                 fileLocation: new URL('file:///withoutLangNewer.pptx'),
             };
 
-            const result = validation.selectNewestOnePagers([de, en, withoutLang, withoutLangNewer]);
+            const result = validation.selectNewestOnePagers([
+                de,
+                en,
+                withoutLang,
+                withoutLangNewer,
+            ]);
 
             assertSelection(result, [de, en]);
         });
@@ -275,7 +324,13 @@ describe('OnePagerValidation', () => {
 
     describe('validateRequiredVersions', () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async () => []);
+        const validation = new OnePagerValidation(
+            repo,
+            repo,
+            reporter,
+            new TestLanguageDetector(),
+            async () => []
+        );
 
         it('should report both languages missing if none exist', () => {
             const result = validation.validateRequiredVersions([]);
@@ -288,8 +343,18 @@ describe('OnePagerValidation', () => {
 
         it('should report nothing missing if versions for each language exist', () => {
             const result = validation.validateRequiredVersions([
-                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
-                { local: 'EN', contentLanguages: ['EN'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                {
+                    local: 'DE',
+                    contentLanguages: ['DE'],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
+                {
+                    local: 'EN',
+                    contentLanguages: ['EN'],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
             ]);
 
             expect(result.map(r => r.errors)).toEqual([]);
@@ -297,8 +362,18 @@ describe('OnePagerValidation', () => {
 
         it('should report nothing missing if versions for each language exist (indicated language takes precedence)', () => {
             const result = validation.validateRequiredVersions([
-                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
-                { local: 'EN', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                {
+                    local: 'DE',
+                    contentLanguages: ['DE'],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
+                {
+                    local: 'EN',
+                    contentLanguages: ['DE'],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
             ]);
 
             expect(result.map(r => r.errors)).toEqual([]);
@@ -306,8 +381,18 @@ describe('OnePagerValidation', () => {
 
         it('should report nothing missing if versions for each language exist (content language is taken into account)', () => {
             const result = validation.validateRequiredVersions([
-                { local: 'DE', contentLanguages: ['DE'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
-                { local: undefined, contentLanguages: ['EN'], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                {
+                    local: 'DE',
+                    contentLanguages: ['DE'],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
+                {
+                    local: undefined,
+                    contentLanguages: ['EN'],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
             ]);
 
             expect(result.map(r => r.errors)).toEqual([]);
@@ -318,7 +403,12 @@ describe('OnePagerValidation', () => {
             { lang: 'DE' as Local, error: 'MISSING_EN_VERSION' },
         ])('should report missing DE version', ({ lang, error }) => {
             const result = validation.validateRequiredVersions([
-                { local: lang, contentLanguages: [lang], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
+                {
+                    local: lang,
+                    contentLanguages: [lang],
+                    lastUpdateByEmployee: new Date(),
+                    data: Buffer.from(''),
+                },
             ]);
 
             expect(result).toEqual([{ onePager: undefined, errors: [error] }]);
