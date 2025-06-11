@@ -66,7 +66,7 @@ type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOpt
  * @param overrides In case you want to override the environment variables, you can pass an object with the desired options.
  * @returns The AppConfiguration object that provides access to the repositories and reporter.
  */
-export async function loadConfigFromEnv(logger: Logger = console, overrides?: Options): Promise<AppConfiguration> {
+export function loadConfigFromEnv(logger: Logger = console, overrides?: Options): AppConfiguration {
     // defaults to memory
     const opts: Options = overrides ? { ...process.env, ...overrides } : { STORAGE_SOURCE: 'memory', ...process.env };
 
@@ -94,7 +94,7 @@ export async function loadConfigFromEnv(logger: Logger = console, overrides?: Op
         }
         case 'sharepoint': {
             logger.log('Using SharePoint storage!');
-            return await getSharepointConfig(opts, logger);
+            return getSharepointConfig(opts, logger);
         }
     }
 }
@@ -105,8 +105,8 @@ export async function loadConfigFromEnv(logger: Logger = console, overrides?: Op
  * @param logger The logger to use for logging errors (default is console).
  * @returns An AppConfiguration object that provides access to the SharePoint repositories and reporter.
  */
-async function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = console): Promise<AppConfiguration> {
-    const client = await createSharepointClient(opts);
+function getSharepointConfig(opts: SharepointStorageOptions, logger: Logger = console): AppConfiguration {
+    const client = createSharepointClient(opts);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error('Missing SharePoint One Pager site name in environment variables!');
@@ -152,7 +152,7 @@ async function getSharepointConfig(opts: SharepointStorageOptions, logger: Logge
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export async function createSharepointClient(opts: SharepointClientOptions): Promise<Client> {
+export function createSharepointClient(opts: SharepointClientOptions): Client {
     if (!opts.SHAREPOINT_TENANT_ID || !opts.SHAREPOINT_CLIENT_ID || !opts.SHAREPOINT_CLIENT_SECRET) {
         throw new Error('Missing SharePoint authentication configuration in environment variables!');
     }
@@ -171,10 +171,6 @@ export async function createSharepointClient(opts: SharepointClientOptions): Pro
     const authProvider = new TokenCredentialAuthenticationProvider(credential, {
         scopes: ['https://graph.microsoft.com/.default'],
     });
-    // Scope for PowerBI: 'https://analysis.windows.net/powerbi/api/.default'
-
-    // Output access token
-    // console.log(await authProvider.getAccessToken());
 
     // define the middleware chain
     const handlers: Middleware[] = [

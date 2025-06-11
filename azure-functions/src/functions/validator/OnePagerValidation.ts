@@ -67,17 +67,24 @@ export class OnePagerValidation {
 
         const loadedCandidates = (await Promise.all(candidates.map(c => this.loadOnePager(c)))).flat();
 
-        const selectedCandidates = Object.values(loadedCandidates.reduce((acc, current) => {
-            const langs = [current.local || current.contentLanguages].flat();
-            for (const lang of langs) {
-                if (acc[lang] === undefined || acc[lang].lastUpdateByEmployee < current.lastUpdateByEmployee) {
-                    acc[lang] = current;
-                }
-            }
-            return acc;
-        }, {} as Record<Local, LoadedOnePager>)).filter(uniq);
+        const selectedCandidates = Object.values(
+            loadedCandidates.reduce(
+                (acc, current) => {
+                    const langs = [current.local || current.contentLanguages].flat();
+                    for (const lang of langs) {
+                        if (acc[lang] === undefined || acc[lang].lastUpdateByEmployee < current.lastUpdateByEmployee) {
+                            acc[lang] = current;
+                        }
+                    }
+                    return acc;
+                },
+                {} as Record<Local, LoadedOnePager>,
+            ),
+        ).filter(uniq);
 
-        this.logger.log(`Selected one-pagers for validation based on language and last update: ${selectedCandidates.map(op => `${op.local || op.contentLanguages.join('+')} (${op.webLocation})`).join(', ')}`);
+        this.logger.log(
+            `Selected one-pagers for validation based on language and last update: ${selectedCandidates.map(op => `${op.local || op.contentLanguages.join('+')} (${op.webLocation})`).join(', ')}`,
+        );
 
         const validationResults = await Promise.all(
             selectedCandidates.map(async op => ({
@@ -107,10 +114,12 @@ export class OnePagerValidation {
             ];
         } else if (candidates.length === 1 && candidates[0].contentLanguages.length === 1) {
             const missingLang = (candidates[0].local || candidates[0].contentLanguages[0]) === 'DE' ? 'EN' : 'DE';
-            return [{
-                onePager: undefined,
-                errors: [`MISSING_${missingLang}_VERSION`] as ValidationError[],
-            }];
+            return [
+                {
+                    onePager: undefined,
+                    errors: [`MISSING_${missingLang}_VERSION`] as ValidationError[],
+                },
+            ];
         } else {
             return [];
         }
@@ -147,13 +156,12 @@ export class OnePagerValidation {
         const extraDe = without.filter(op => op.lastUpdateByEmployee > (DE?.lastUpdateByEmployee || new Date(0)));
         const extraEn = without.filter(op => op.lastUpdateByEmployee > (EN?.lastUpdateByEmployee || new Date(0)));
 
-
         const select = Math.sign(extraDe.length) + Math.sign(extraEn.length);
 
         const extra = extraDe
             .concat(extraEn)
             .filter(uniq)
-            .sort((a, b) => a.lastUpdateByEmployee > b.lastUpdateByEmployee ? -1 : 1)
+            .sort((a, b) => (a.lastUpdateByEmployee > b.lastUpdateByEmployee ? -1 : 1))
             .slice(0, select);
 
         return Object.values(candidates).concat(extra);
@@ -166,11 +174,11 @@ export class OnePagerValidation {
     private async loadOnePager(onePager: OnePager): Promise<LoadedOnePager> {
         this.logger.log(`Loading one-pager from ${onePager.fileLocation}`);
         const data = await fetchOnePagerContent(this.logger, onePager);
-        const contentLanguages = (await this.detector.detectLanguage(data));
+        const contentLanguages = await this.detector.detectLanguage(data);
         return {
             ...onePager,
             data,
-            contentLanguages
+            contentLanguages,
         };
     }
 }

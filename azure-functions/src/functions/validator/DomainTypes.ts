@@ -45,7 +45,7 @@ export type ValidationError =
 
 export type LoadedOnePager = Omit<OnePager, 'fileLocation'> & {
     contentLanguages: Local[];
-    data: Buffer
+    data: Buffer;
 };
 
 export type ValidationRule = (onePager: LoadedOnePager) => Promise<ValidationError[]>;
@@ -96,7 +96,6 @@ export interface ValidationReporter {
 }
 
 export interface LanguageDetector {
-
     /**
      * Detects the language of the given one-pager content.
      * @param content The content of the one-pager.

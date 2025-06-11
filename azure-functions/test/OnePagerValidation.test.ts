@@ -1,4 +1,10 @@
-import { LanguageDetector, Local, OnePager, ValidationError, ValidationReporter } from '../src/functions/validator/DomainTypes';
+import {
+    LanguageDetector,
+    Local,
+    OnePager,
+    ValidationError,
+    ValidationReporter,
+} from '../src/functions/validator/DomainTypes';
 import { OnePagerValidation } from '../src/functions/validator/OnePagerValidation';
 import { InMemoryOnePagerRepository } from '../src/functions/validator/adapter/memory/InMemoryOnePagerRepository';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
@@ -18,7 +24,9 @@ describe('OnePagerValidation', () => {
 
     it('should not report errors for unknown employee', async () => {
         const repo = new InMemoryOnePagerRepository({});
-        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async () => ['USING_UNKNOWN_TEMPLATE']);
+        const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async () => [
+            'USING_UNKNOWN_TEMPLATE',
+        ]);
 
         await validation.validateOnePagersOfEmployee('000');
 
@@ -42,8 +50,8 @@ describe('OnePagerValidation', () => {
         const repo = new InMemoryOnePagerRepository({
             [id]: [
                 { lastUpdateByEmployee: new Date(), local: 'DE' },
-                { lastUpdateByEmployee: new Date(), local: 'EN' }
-            ]
+                { lastUpdateByEmployee: new Date(), local: 'EN' },
+            ],
         });
         const validation = new OnePagerValidation(repo, repo, reporter, new TestLanguageDetector(), async op =>
             op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : [],
@@ -59,7 +67,7 @@ describe('OnePagerValidation', () => {
         const repo = new InMemoryOnePagerRepository({
             [id]: [
                 { lastUpdateByEmployee: new Date(), local: 'DE' },
-                { lastUpdateByEmployee: new Date(), local: 'EN' }
+                { lastUpdateByEmployee: new Date(), local: 'EN' },
             ],
         });
         let callCounter = 0;
@@ -102,14 +110,26 @@ describe('OnePagerValidation', () => {
         });
 
         it('should one-pager if one exists', () => {
-            const onePager: OnePager = { local: 'DE', lastUpdateByEmployee: new Date(), fileLocation: new URL('file:///example.pptx') };
+            const onePager: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date(),
+                fileLocation: new URL('file:///example.pptx'),
+            };
             const result = validation.selectNewestOnePagers([onePager]);
             assertSelection(result, [onePager]);
         });
 
         it('should select the newest one-pager when two exist', () => {
-            const older: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2000-01-01'), fileLocation: new URL('file:///older.pptx') };
-            const newer: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///newer.pptx') };
+            const older: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2000-01-01'),
+                fileLocation: new URL('file:///older.pptx'),
+            };
+            const newer: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///newer.pptx'),
+            };
 
             const result = validation.selectNewestOnePagers([older, newer]);
 
@@ -117,10 +137,26 @@ describe('OnePagerValidation', () => {
         });
 
         it('should select newest one-pagers per language', () => {
-            const deOlder: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2000-01-01'), fileLocation: new URL('file:///deOlder.pptx') };
-            const deNewer: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///deNewer.pptx') };
-            const enOlder: OnePager = { local: 'EN', lastUpdateByEmployee: new Date('2000-01-01'), fileLocation: new URL('file:///enOlder.pptx') };
-            const enNewer: OnePager = { local: 'EN', lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///enNewer.pptx') };
+            const deOlder: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2000-01-01'),
+                fileLocation: new URL('file:///deOlder.pptx'),
+            };
+            const deNewer: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///deNewer.pptx'),
+            };
+            const enOlder: OnePager = {
+                local: 'EN',
+                lastUpdateByEmployee: new Date('2000-01-01'),
+                fileLocation: new URL('file:///enOlder.pptx'),
+            };
+            const enNewer: OnePager = {
+                local: 'EN',
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///enNewer.pptx'),
+            };
 
             const result = validation.selectNewestOnePagers([deOlder, deNewer, enOlder, enNewer]);
 
@@ -128,9 +164,21 @@ describe('OnePagerValidation', () => {
         });
 
         it('should select two newest without language if none with language', () => {
-            const older: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2000-01-01'), fileLocation: new URL('file:///older.pptx') };
-            const newer: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///newer.pptx') };
-            const evenNewer: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2026-01-01'), fileLocation: new URL('file:///evenNewer.pptx') };
+            const older: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2000-01-01'),
+                fileLocation: new URL('file:///older.pptx'),
+            };
+            const newer: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///newer.pptx'),
+            };
+            const evenNewer: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2026-01-01'),
+                fileLocation: new URL('file:///evenNewer.pptx'),
+            };
 
             const result = validation.selectNewestOnePagers([older, newer, evenNewer]);
 
@@ -138,10 +186,26 @@ describe('OnePagerValidation', () => {
         });
 
         it('should select without languages if newer than with language', () => {
-            const de: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2023-01-01'), fileLocation: new URL('file:///de.pptx') };
-            const withoutLang: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2024-01-01'), fileLocation: new URL('file:///withoutLang.pptx') };
-            const en: OnePager = { local: 'EN', lastUpdateByEmployee: new Date('2023-01-01'), fileLocation: new URL('file:///en.pptx') };
-            const withoutLangNewer: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2024-02-01'), fileLocation: new URL('file:///withoutLangNewer.pptx') };
+            const de: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2023-01-01'),
+                fileLocation: new URL('file:///de.pptx'),
+            };
+            const withoutLang: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2024-01-01'),
+                fileLocation: new URL('file:///withoutLang.pptx'),
+            };
+            const en: OnePager = {
+                local: 'EN',
+                lastUpdateByEmployee: new Date('2023-01-01'),
+                fileLocation: new URL('file:///en.pptx'),
+            };
+            const withoutLangNewer: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2024-02-01'),
+                fileLocation: new URL('file:///withoutLangNewer.pptx'),
+            };
 
             const result = validation.selectNewestOnePagers([de, en, withoutLang, withoutLangNewer]);
 
@@ -149,10 +213,26 @@ describe('OnePagerValidation', () => {
         });
 
         it('should select one without language if newer than only one with language', () => {
-            const de: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2023-01-01'), fileLocation: new URL('file:///de.pptx') };
-            const withoutLang: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2024-01-01'), fileLocation: new URL('file:///withoutLang.pptx') };
-            const en: OnePager = { local: 'EN', lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///en.pptx') };
-            const withoutLangNewer: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2024-02-01'), fileLocation: new URL('file:///withoutLangNewer.pptx') };
+            const de: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2023-01-01'),
+                fileLocation: new URL('file:///de.pptx'),
+            };
+            const withoutLang: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2024-01-01'),
+                fileLocation: new URL('file:///withoutLang.pptx'),
+            };
+            const en: OnePager = {
+                local: 'EN',
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///en.pptx'),
+            };
+            const withoutLangNewer: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2024-02-01'),
+                fileLocation: new URL('file:///withoutLangNewer.pptx'),
+            };
 
             const result = validation.selectNewestOnePagers([de, en, withoutLang, withoutLangNewer]);
 
@@ -160,10 +240,26 @@ describe('OnePagerValidation', () => {
         });
 
         it('should select no without language if older than with language', () => {
-            const de: OnePager = { local: 'DE', lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///de.pptx') };
-            const withoutLang: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2024-01-01'), fileLocation: new URL('file:///withoutLang.pptx') };
-            const en: OnePager = { local: 'EN', lastUpdateByEmployee: new Date('2025-01-01'), fileLocation: new URL('file:///en.pptx') };
-            const withoutLangNewer: OnePager = { local: undefined, lastUpdateByEmployee: new Date('2024-02-01'), fileLocation: new URL('file:///withoutLangNewer.pptx') };
+            const de: OnePager = {
+                local: 'DE',
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///de.pptx'),
+            };
+            const withoutLang: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2024-01-01'),
+                fileLocation: new URL('file:///withoutLang.pptx'),
+            };
+            const en: OnePager = {
+                local: 'EN',
+                lastUpdateByEmployee: new Date('2025-01-01'),
+                fileLocation: new URL('file:///en.pptx'),
+            };
+            const withoutLangNewer: OnePager = {
+                local: undefined,
+                lastUpdateByEmployee: new Date('2024-02-01'),
+                fileLocation: new URL('file:///withoutLangNewer.pptx'),
+            };
 
             const result = validation.selectNewestOnePagers([de, en, withoutLang, withoutLangNewer]);
 
@@ -225,9 +321,7 @@ describe('OnePagerValidation', () => {
                 { local: lang, contentLanguages: [lang], lastUpdateByEmployee: new Date(), data: Buffer.from('') },
             ]);
 
-            expect(result).toEqual([
-                { onePager: undefined, errors: [error] },
-            ]);
+            expect(result).toEqual([{ onePager: undefined, errors: [error] }]);
         });
     });
 });

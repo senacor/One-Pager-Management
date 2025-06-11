@@ -39,17 +39,13 @@ describe('validationRules', () => {
 
         it.each(onePagerWithOldTemplates)('should identify onepager using old template as invalid: %s', async file => {
             exampleOnePager.data = readFileSync(file);
-            await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual([
-                'USING_UNKNOWN_TEMPLATE',
-            ]);
+            await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual(['USING_UNKNOWN_TEMPLATE']);
         });
 
         const files = readdirSync('examples/non-exact-template').filter(file => file.endsWith('.pptx'));
         it.each(files)('should identify non-exact template usage in %s', async file => {
             exampleOnePager.data = readFileSync(`examples/non-exact-template/${file}`);
-            await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual([
-                'USING_MODIFIED_TEMPLATE',
-            ]);
+            await expect(usesCurrentTemplate()(exampleOnePager)).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
         });
     });
 

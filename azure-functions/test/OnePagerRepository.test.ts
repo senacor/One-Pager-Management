@@ -92,7 +92,7 @@ if (hasSharepointClientOptions(opts)) {
         const siteIDAlias: string = 'senacor.sharepoint.com:/teams/MaInfoTest';
         const listName: string = 'OnePagerAutomatedTestEnv';
 
-        const client = await createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: 'true' });
+        const client = createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: 'true' });
 
         const siteID: string = (await client.api(`/sites/${siteIDAlias}`).select('id').get()).id as string;
         const onePagerDriveId: string = (

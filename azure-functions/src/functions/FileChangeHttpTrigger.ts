@@ -36,7 +36,7 @@ export async function FileChangeHttpTrigger(
         }
 
         // Load the list of employees from the configuration
-        const employees = await (await loadConfigFromEnv(context)).employees();
+        const employees = await loadConfigFromEnv(context).employees();
         if (!(await employees.getAllEmployees()).includes(id)) {
             context.log(`Employee not found: "${id}"!`);
             return { status: 404, body: `Employee not found: "${id}"` };
@@ -49,9 +49,7 @@ export async function FileChangeHttpTrigger(
         context.log(`Queue item created for employee id: "${id}"!`);
         return { body: `Received change notification for: "${id}"` };
     } catch (error) {
-        context.error(
-            `Error processing request: "${printError(error)}"!`,
-        );
+        context.error(`Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };
     } finally {
         context.log(`--------- END of Trigger FileChangeHttpTrigger ---------`);

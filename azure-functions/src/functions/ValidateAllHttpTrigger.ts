@@ -28,7 +28,7 @@ export async function ValidateAllHttpTrigger(
             `(ValidateAllHttpTrigger.ts: ValidateAllHttpTrigger) Http function processed request for url "${request.url}"!`,
         );
 
-        const repo: EmployeeRepository = await (await loadConfigFromEnv(context)).employees();
+        const repo: EmployeeRepository = await loadConfigFromEnv(context).employees();
         const ids = await repo.getAllEmployees();
 
         context.extraOutputs.set(

@@ -28,7 +28,7 @@ export async function FileChangeQueueTrigger(queueItem: unknown, context: Invoca
         context.log(`Processing valid queue item ${JSON.stringify(queueItem)}`);
 
         // Establish a connection to the repository containing one-pagers and our report output list.
-        const config = await loadConfigFromEnv(context);
+        const config = loadConfigFromEnv(context);
 
         // Validate the one-pagers of the employee specified in the queue item.
         const validator = new OnePagerValidation(

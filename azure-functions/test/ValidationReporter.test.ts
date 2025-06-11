@@ -28,7 +28,10 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             await reporter.reportErrors('111', someOnePager, ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION']);
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual(['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION']);
+            await expect(reporter.getResultFor('111')).resolves.toEqual([
+                'OLDER_THAN_SIX_MONTHS',
+                'MISSING_DE_VERSION',
+            ]);
         });
 
         it('should clean up errors when valid is reported', async () => {
@@ -73,7 +76,7 @@ testFactory('InMemoryValidationReporter', async () => new InMemoryValidationRepo
 const opts = process.env;
 if (hasSharepointClientOptions(opts)) {
     testFactory('SharepointListValidationReporter', async () => {
-        const client = await createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: 'true' });
+        const client = createSharepointClient({ ...opts, SHAREPOINT_API_LOGGING: 'true' });
 
         const reporter = await SharepointListValidationReporter.getInstance(
             client,

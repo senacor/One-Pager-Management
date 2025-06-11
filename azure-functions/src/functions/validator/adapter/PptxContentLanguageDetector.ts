@@ -1,10 +1,10 @@
-import PptxParser from "node-pptx-parser";
-import { isLocal, LanguageDetector, Local, Logger } from "../DomainTypes";
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
-import { franc } from "franc-min";
-import { uniq } from "../OnePagerValidation";
+import PptxParser from 'node-pptx-parser';
+import { isLocal, LanguageDetector, Local, Logger } from '../DomainTypes';
+import fs from 'fs/promises';
+import os from 'os';
+import path from 'path';
+import { franc } from 'franc-min';
+import { uniq } from '../OnePagerValidation';
 
 export class PptxContentLanguageDetector implements LanguageDetector {
     private readonly logger: Logger;
@@ -22,27 +22,33 @@ export class PptxContentLanguageDetector implements LanguageDetector {
         try {
             const slides = await new PptxParser(tmpFile).extractText();
 
-            return (await Promise.all(slides.map(async (slide, i) => {
-                const francResp = await franc(slide.text.join("\n"));
-                const lang = francResp.toLocaleUpperCase();
-                switch (lang) {
-                    case "DEU": {
-                        this.logger.log(`Detected language DE on slide ${i + 1}`);
-                        return "DE";
-                    }
-                    case "ENG": {
-                        this.logger.log(`Detected language EN on slide ${i + 1}`);
-                        return "EN";
-                    }
-                    default: {
-                        this.logger.warn(`Detected language ${lang} on slide ${i + 1} is not a valid Local.`);
-                        return [];
-                    }
-                }
-            }))).flat().filter(uniq);
+            return (
+                await Promise.all(
+                    slides.map(async (slide, i) => {
+                        const francResp = await franc(slide.text.join('\n'));
+                        const lang = francResp.toLocaleUpperCase();
+                        switch (lang) {
+                            case 'DEU': {
+                                this.logger.log(`Detected language DE on slide ${i + 1}`);
+                                return 'DE';
+                            }
+                            case 'ENG': {
+                                this.logger.log(`Detected language EN on slide ${i + 1}`);
+                                return 'EN';
+                            }
+                            default: {
+                                this.logger.warn(`Detected language ${lang} on slide ${i + 1} is not a valid Local.`);
+                                return [];
+                            }
+                        }
+                    }),
+                )
+            )
+                .flat()
+                .filter(uniq);
         } finally {
             // Clean up the temporary file
-            await fs.unlink(tmpFile).catch(() => { });
+            await fs.unlink(tmpFile).catch(() => {});
         }
     }
 }

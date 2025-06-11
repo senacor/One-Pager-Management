@@ -35,9 +35,7 @@ export async function fetchOnePagerContent(logger: Logger, onePager: { fileLocat
             );
         }
         const buffer = Buffer.from(await response.arrayBuffer());
-        logger.log(
-            `Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`,
-        );
+        logger.log(`Successfully fetched file with status ${response.status}, size: ${buffer.length} bytes!`);
         return buffer;
     }
 }

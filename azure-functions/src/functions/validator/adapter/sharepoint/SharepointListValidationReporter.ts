@@ -1,36 +1,32 @@
-import { Client } from "@microsoft/microsoft-graph-client";
-import { List, ListItem, Site } from "@microsoft/microsoft-graph-types";
-import { FORCE_REFRESH } from "../../../configuration/CachingHandler";
-import {
-    EmployeeID,
-    Logger,
-    OnePager,
-    ValidationError,
-    ValidationReporter,
-} from '../../DomainTypes';
-
+import { Client } from '@microsoft/microsoft-graph-client';
+import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
+import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
+import { EmployeeID, Logger, OnePager, ValidationError, ValidationReporter } from '../../DomainTypes';
 
 /**
  * The name of the SharePoint list field that stores the employee ID.
  */
-const COLUMN_MA_ID:string = "MitarbeiterID";
+const COLUMN_MA_ID: string = 'MitarbeiterID';
 /**
  * The name of the SharePoint list field that stores the validation errors.
  */
-const COLUMN_VALIDATION_ERRORS: string = "Festgestellte_Fehler";
+const COLUMN_VALIDATION_ERRORS: string = 'Festgestellte_Fehler';
 /**
  * The name of the SharePoint list field that stores the URL of the one-pager.
  */
-const COLUMN_URL: string = "Location";
+const COLUMN_URL: string = 'Location';
 
-
-
-type ListItemWithFields = {[COLUMN_MA_ID]: string, [COLUMN_VALIDATION_ERRORS]: string, [COLUMN_URL]: string};
+type ListItemWithFields = { [COLUMN_MA_ID]: string; [COLUMN_VALIDATION_ERRORS]: string; [COLUMN_URL]: string };
 function isListItemWithFields(item: any): item is ListItemWithFields {
-    return typeof item === 'object' &&
-        COLUMN_MA_ID in item && typeof item[COLUMN_MA_ID] === 'string' &&
-        COLUMN_VALIDATION_ERRORS in item && typeof item[COLUMN_VALIDATION_ERRORS] === 'string' &&
-        COLUMN_URL in item && typeof item[COLUMN_URL] === 'string';
+    return (
+        typeof item === 'object' &&
+        COLUMN_MA_ID in item &&
+        typeof item[COLUMN_MA_ID] === 'string' &&
+        COLUMN_VALIDATION_ERRORS in item &&
+        typeof item[COLUMN_VALIDATION_ERRORS] === 'string' &&
+        COLUMN_URL in item &&
+        typeof item[COLUMN_URL] === 'string'
+    );
 }
 
 /**
@@ -42,8 +38,6 @@ export class SharepointListValidationReporter implements ValidationReporter {
     private readonly client: Client;
     private readonly siteId: string;
     private readonly logger: Logger;
-
-
 
     /**
      * Creates an instance of SharepointListValidationReporter.
@@ -147,18 +141,16 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [COLUMN_MA_ID]: id,
                     [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
                     [COLUMN_URL]: onePagerUrl,
-                }
+                },
             });
         } else {
             this.logger.log(
                 `(SharepointListValidationReporter.ts: reportErrors) Updating existing list entry for employee with ID "${id}"!`,
             );
-            await this.client
-                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
-                .patch({
-                    [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
-                    [COLUMN_URL]: onePagerUrl,
-                });
+            await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`).patch({
+                [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
+                [COLUMN_URL]: onePagerUrl,
+            });
         }
     }
 
@@ -185,14 +177,15 @@ export class SharepointListValidationReporter implements ValidationReporter {
             .get()) as ListItem;
 
         if (item.fields === null || !isListItemWithFields(item.fields)) {
-            this.logger.error(`(SharepointListValidationReporter.ts: getResultFor) Item with ID "${itemId}" does not have the expected fields structure!`);
+            this.logger.error(
+                `(SharepointListValidationReporter.ts: getResultFor) Item with ID "${itemId}" does not have the expected fields structure!`,
+            );
             return [];
         }
 
-        let itemFields: ListItemWithFields  = item.fields;
+        let itemFields: ListItemWithFields = item.fields;
 
         return itemFields[COLUMN_VALIDATION_ERRORS].split('\n') as ValidationError[];
-
     }
 
     /**

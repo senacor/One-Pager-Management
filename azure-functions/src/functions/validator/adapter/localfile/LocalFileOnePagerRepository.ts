@@ -79,18 +79,16 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         templatePath: string = CURRENT_TEMPLATE_PATH,
     ): Promise<void> {
         const employeeDir = await this.fakeEmployeeDir(employeeId);
-        await Promise.all(onePagerDates.map(d => {
-            const file = onePagerFile('Max', 'Mustermann', d.local, d.lastUpdateByEmployee);
-            return this.createOnePagerForEmployee(employeeId, file, templatePath);
-        }));
+        await Promise.all(
+            onePagerDates.map(d => {
+                const file = onePagerFile('Max', 'Mustermann', d.local, d.lastUpdateByEmployee);
+                return this.createOnePagerForEmployee(employeeId, file, templatePath);
+            }),
+        );
         this.logger.log(`Saved ${onePagerDates.length} one-pagers for employee "${employeeId}" in "${employeeDir}"!`);
     }
 
-    async createOnePagerForEmployee(
-        employeeId: EmployeeID,
-        fileName: string,
-        templatePath: string,
-    ): Promise<void> {
+    async createOnePagerForEmployee(employeeId: EmployeeID, fileName: string, templatePath: string): Promise<void> {
         const employeeDir = await this.fakeEmployeeDir(employeeId);
         const file = path.join(employeeDir, fileName);
         await fs.copyFile(templatePath, file);

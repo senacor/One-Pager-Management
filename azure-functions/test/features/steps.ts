@@ -50,7 +50,7 @@ Before(async function (this: Context) {
         new LocalFileEmployeeRepository(tmp),
         this.reporter,
         new PptxContentLanguageDetector(),
-        allRules()
+        allRules(),
     );
 });
 
@@ -89,14 +89,18 @@ async function createOnePagers(this: Context, employeeName: string, data: string
         onePagers = data.hashes();
     }
 
-    await Promise.all(onePagers.map(async onePager => {
-        const language = onePager.SlideLanguage || extractLanguageCode(onePager.Name);
-        if( !language) {
-            throw new Error(`A language for the OnePager must either be defined by the use of a local in the name or by provinding the SlideLanguage property.`);
-        }
-        const file = await templatePath(language, onePager.TemplateVersion);
-        await this.repo.createOnePagerForEmployee(Id, onePager.Name, file);
-    }));
+    await Promise.all(
+        onePagers.map(async onePager => {
+            const language = onePager.SlideLanguage || extractLanguageCode(onePager.Name);
+            if (!language) {
+                throw new Error(
+                    `A language for the OnePager must either be defined by the use of a local in the name or by provinding the SlideLanguage property.`,
+                );
+            }
+            const file = await templatePath(language, onePager.TemplateVersion);
+            await this.repo.createOnePagerForEmployee(Id, onePager.Name, file);
+        }),
+    );
 }
 
 async function templatePath(language: string, templateVersion?: string): Promise<string> {
@@ -104,7 +108,9 @@ async function templatePath(language: string, templateVersion?: string): Promise
     try {
         await fs.access(file);
     } catch {
-        throw new Error(`No test example OnePager for language ${language} and template version ${templateVersion} found in "test/onepager"`);
+        throw new Error(
+            `No test example OnePager for language ${language} and template version ${templateVersion} found in "test/onepager"`,
+        );
     }
     return file;
 }
