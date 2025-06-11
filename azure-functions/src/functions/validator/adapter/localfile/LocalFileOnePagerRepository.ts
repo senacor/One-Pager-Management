@@ -50,7 +50,7 @@ export class LocalFileOnePagerRepository implements OnePagerRepository {
         );
 
         return pptxFiles.map(file => {
-            const lastUpdateByEmployee = dateFromOnePagerFile(file, this.logger);
+            const lastUpdateByEmployee = dateFromOnePagerFile(file);
             const urlPath = path.resolve(
                 employeeDir,
                 file.split('/').map(encodeURIComponent).join('/')
