@@ -11,6 +11,7 @@ const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),
     contentLanguages: ['DE'],
     data: readFileSync(CURRENT_TEMPLATE_PATH),
+    webLocation: new URL('https://example.com/onepager.pptx'),
 };
 
 describe('validationRules', () => {

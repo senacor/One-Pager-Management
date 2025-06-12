@@ -11,7 +11,6 @@ import {
     ValidationReporter,
     ValidationRule,
 } from './DomainTypes';
-import { fetchOnePagerContent } from './fetcher';
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -190,13 +189,9 @@ export class OnePagerValidation {
         return Object.values(candidates).concat(extra);
     }
 
-    private min<T>(a: T, b: T): T {
-        return a < b ? a : b;
-    }
-
     private async loadOnePager(onePager: OnePager): Promise<LoadedOnePager> {
-        this.logger.log(`Loading one-pager from ${onePager.fileLocation}`);
-        const data = await fetchOnePagerContent(this.logger, onePager);
+        this.logger.log(`Loading one-pager from ${onePager.webLocation}`);
+        const data = await onePager.data();
         const contentLanguages = await this.detector.detectLanguage(data);
         return {
             ...onePager,

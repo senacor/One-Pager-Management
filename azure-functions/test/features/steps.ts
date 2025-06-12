@@ -1,17 +1,24 @@
 import { Given, Then, When, Before, After } from '@cucumber/cucumber';
 import { OnePagerValidation } from '../../src/functions/validator/OnePagerValidation';
-import path from 'path';
 import { allRules } from '../../src/functions/validator/validationRules';
-import { EmployeeID, ValidationReporter } from '../../src/functions/validator/DomainTypes';
+import {
+    EmployeeID,
+    EmployeeRepository,
+    OnePagerRepository,
+    ValidationReporter,
+} from '../../src/functions/validator/DomainTypes';
 import assert from 'assert';
 import sinon, { SinonFakeTimers } from 'sinon';
-import { LocalFileOnePagerRepository } from '../../src/functions/validator/adapter/localfile/LocalFileOnePagerRepository';
 import { promises as fs } from 'fs';
-import { tmpdir } from 'node:os';
-import { LocalFileEmployeeRepository } from '../../src/functions/validator/adapter/localfile/LocalFileEmployeeRepository';
 import { InMemoryValidationReporter } from '../../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { PptxContentLanguageDetector } from '../../src/functions/validator/adapter/PptxContentLanguageDetector';
-import { extractLanguageCode } from '../../src/functions/validator/adapter/DirectoryBasedOnePager';
+import {
+    extractLanguageCode,
+    FolderBasedOnePagers,
+} from '../../src/functions/validator/FolderBasedOnePagers';
+import { OnePagerExemplars } from '../OnePagerExemplars';
+import { MemoryFileSystem } from '../../src/functions/validator/adapter/memory/MemoryFileSystem';
+import { FileSystemStorageExplorer } from '../../src/functions/validator/adapter/FileSystemStorageExplorer';
 
 type OnePagerExemplar = {
     Name: string;
@@ -28,7 +35,8 @@ type EmployeeExemplar = {
 type Context = {
     clock: SinonFakeTimers;
     reporter: ValidationReporter;
-    repo: LocalFileOnePagerRepository;
+    repo: OnePagerRepository & EmployeeRepository;
+    exemplars: OnePagerExemplars;
     service: OnePagerValidation;
     getEmployee: (name: string) => EmployeeExemplar;
 };
@@ -38,14 +46,13 @@ type DataTable<T> = {
 };
 
 Before(async function (this: Context) {
-    const tmp = await fs.mkdtemp(path.join(tmpdir(), 'validation-reports-'));
-    console.log(`Using temporary directory: ${tmp}`);
-
     this.reporter = new InMemoryValidationReporter();
-    this.repo = new LocalFileOnePagerRepository(tmp);
+    const explorer = new FileSystemStorageExplorer('/', new MemoryFileSystem());
+    this.repo = new FolderBasedOnePagers(explorer);
+    this.exemplars = new OnePagerExemplars(explorer);
     this.service = new OnePagerValidation(
         this.repo,
-        new LocalFileEmployeeRepository(tmp),
+        this.repo,
         this.reporter,
         new PptxContentLanguageDetector(),
         allRules()
@@ -102,7 +109,7 @@ async function createOnePagers(
                 );
             }
             const file = await templatePath(language, onePager.TemplateVersion);
-            await this.repo.createOnePagerForEmployee(Id, onePager.Name, file);
+            await this.exemplars.createOnePagerForEmployee(Id, onePager.Name, file);
         })
     );
 }
