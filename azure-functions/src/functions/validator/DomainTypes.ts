@@ -40,6 +40,7 @@ export type ValidationError =
     | 'MISSING_LANGUAGE_INDICATOR_IN_NAME' // one-pager is missing a language indicator in the file name
     | 'MISSING_DE_VERSION' // employee has no one-pager in German
     | 'MISSING_EN_VERSION' // employee has no one-pager in English
+    | 'MISSING_PHOTO' // one-pager has no photo of the employee
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 

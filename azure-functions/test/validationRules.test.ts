@@ -1,11 +1,7 @@
 import { LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
-import {
-    combineRules,
-    CURRENT_TEMPLATE_PATH,
-    lastModifiedRule,
-    usesCurrentTemplate,
-} from '../src/functions/validator/validationRules';
 import { readdirSync, readFileSync } from 'node:fs';
+import { combineRules, CURRENT_TEMPLATE_PATH, lastModifiedRule } from '../src/functions/validator/rules';
+import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
 
 const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),

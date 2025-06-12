@@ -1,6 +1,5 @@
 import { Given, Then, When, Before, After } from '@cucumber/cucumber';
 import { OnePagerValidation } from '../../src/functions/validator/OnePagerValidation';
-import { allRules } from '../../src/functions/validator/validationRules';
 import {
     EmployeeID,
     EmployeeRepository,
@@ -19,6 +18,7 @@ import {
 import { OnePagerExemplars } from '../OnePagerExemplars';
 import { MemoryFileSystem } from '../../src/functions/validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../../src/functions/validator/adapter/FileSystemStorageExplorer';
+import { allRules } from '../../src/functions/validator/rules';
 
 type OnePagerExemplar = {
     Name: string;
