@@ -32,7 +32,7 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
         const pptx = await zip.loadAsync(onePager.data);
 
         const slideRels = Object.keys(pptx.files)
-            .filter(file => file.match(/ppt\/slides\/_rels\/.+.xml.rels$/))
+            .filter(file => file.match(/ppt\/slides\/_rels\/.+\.xml\.rels$/))
             .sort();
         const relImages = (
             await Promise.all(
@@ -93,6 +93,6 @@ async function getImageRels(data: Buffer): Promise<string[]> {
     const parser = new Parser();
     const xml: XmlRels = await parser.parseStringPromise(data);
     return xml.Relationships.Relationship.map(rel => rel.$.Target)
-        .filter(target => target.match(/..\/media\/[^\/]+$/))
+        .filter(target => target.match(/\.\.\/media\/[^/]+$/))
         .map(target => target.slice('../media/'.length));
 }
