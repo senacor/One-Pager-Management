@@ -3,6 +3,7 @@ import { printError } from './ErrorHandling';
 import { QueueItem, onepagerValidationRequests } from './FileChangeQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { isEmployeeId } from './validator/DomainTypes';
+import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 
 /**
  * Azure Queue used to store One Pager validation requests.
@@ -39,8 +40,11 @@ export async function FileChangeHttpTrigger(
         }
 
         // Load the list of employees from the configuration
-        const employees = await loadConfigFromEnv(context).employees();
-        if (!(await employees.getAllEmployees()).includes(id)) {
+        const onePagers = new FolderBasedOnePagers(
+            await loadConfigFromEnv(context).explorer(),
+            context
+        );
+        if (!(await onePagers.getAllEmployees()).includes(id)) {
             context.log(`Employee not found: "${id}"!`);
             return { status: 404, body: `Employee not found: "${id}"` };
         }

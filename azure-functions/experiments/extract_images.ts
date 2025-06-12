@@ -1,8 +1,8 @@
 import JSZip from "jszip";
 import { loadConfigFromEnv } from "../src/functions/configuration/AppConfiguration";
 import { Logger, OnePager } from "../src/functions/validator/DomainTypes";
-import { fetchOnePagerContent } from "../src/functions/validator/fetcher";
 import { mkdirSync, writeFileSync } from "fs";
+import { FolderBasedOnePagers } from "../src/functions/validator/FolderBasedOnePagers";
 
 const nopLogger: Logger = {
     log: () => { },
@@ -19,9 +19,9 @@ async function main() {
         ONE_PAGER_DIR: "/Users/Daniel.Heinrich/Library/CloudStorage/OneDrive-SenacorTechnologiesAG/MaInfo - 01_OnePager"
     });
 
-    const employees = await (await conf.employees()).getAllEmployees();
+    const repo = new FolderBasedOnePagers(await conf.explorer());
+    const employees = await repo.getAllEmployees();
 
-    const repo = await conf.onePagers();
 
     mkdirSync(mediaDir);
 
@@ -30,8 +30,8 @@ async function main() {
             return curr.lastUpdateByEmployee > (acc?.lastUpdateByEmployee || new Date(0)) ? curr : acc;
         }, undefined as OnePager | undefined);
 
-        if (newest?.fileLocation) {
-            const pptxContent = await fetchOnePagerContent(nopLogger, newest);
+        if (newest) {
+            const pptxContent = await newest.data();
             const zip = new JSZip();
             const pptx = await zip.loadAsync(pptxContent);
 

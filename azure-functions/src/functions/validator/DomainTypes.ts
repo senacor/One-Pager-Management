@@ -26,8 +26,8 @@ export function isLocal(txt: unknown): txt is Local {
 export type OnePager = {
     lastUpdateByEmployee: Date;
     local?: Local;
-    webLocation?: URL;
-    fileLocation: URL;
+    data: () => Promise<Buffer>;
+    webLocation: URL;
 };
 
 /**
@@ -43,7 +43,7 @@ export type ValidationError =
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
-export type LoadedOnePager = Omit<OnePager, 'fileLocation'> & {
+export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
     contentLanguages: Local[];
     data: Buffer;
 };
@@ -106,6 +106,43 @@ export interface LanguageDetector {
      * @returns The detected language, or undefined if no language could be detected.
      */
     detectLanguage(content: Buffer): Promise<Local[]>;
+}
+
+export type StorageFile = {
+    name: string;
+    lastModified: Date;
+    data: () => Promise<Buffer>;
+    url?: URL;
+};
+
+export interface StorageExplorer {
+    /**
+     * Creates a file in the specified folder with the given content.
+     * @param folder The folder where the file should be created.
+     * @param name The name of the file to be created.
+     * @param content The content of the file as a Buffer.
+     *
+     * @throws Error if the folder does not exist.
+     */
+    createFile(folder: string, name: string, content: Buffer): Promise<void>;
+
+    /**
+     * Indempotently creates a folder with the given name.
+     * If the folder already exists, it does nothing.
+     * @param folder The name of the folder to be created.
+     */
+    createFolder(folder: string): Promise<void>;
+
+    listFolders(): Promise<string[]>;
+
+    /**
+     * Lists all files in the specified folder.
+     * No error is thrown if the folder does not exist.
+     *
+     * @param folder The folder from which to list files.
+     * @returns A promise that resolves to an array of StorageFile objects representing the files in the specified folder.
+     */
+    listFiles(folder: string): Promise<StorageFile[]>;
 }
 
 /**

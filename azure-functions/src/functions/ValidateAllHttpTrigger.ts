@@ -1,8 +1,8 @@
 import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from '@azure/functions';
 import { onepagerValidationRequests } from './FileChangeQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { EmployeeRepository } from './validator/DomainTypes';
 import { printError } from './ErrorHandling';
+import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 
 /**
  * Azure Queue used to store One Pager validation requests.
@@ -26,8 +26,11 @@ export async function ValidateAllHttpTrigger(
     try {
         context.log(`Http function processed request for url "${request.url}"!`);
 
-        const repo: EmployeeRepository = await loadConfigFromEnv(context).employees();
-        const ids = await repo.getAllEmployees();
+        const onePagers = new FolderBasedOnePagers(
+            await loadConfigFromEnv(context).explorer(),
+            context
+        );
+        const ids = await onePagers.getAllEmployees();
 
         context.extraOutputs.set(
             queueOutput,
