@@ -1,6 +1,6 @@
-import { Logger, ValidationRule } from "../DomainTypes";
-import { hasPhoto } from "./photo";
-import { usesCurrentTemplate } from "./template";
+import { Logger, ValidationRule } from '../DomainTypes';
+import { hasPhoto } from './photo';
+import { usesCurrentTemplate } from './template';
 
 // The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pptx';

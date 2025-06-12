@@ -1,8 +1,8 @@
-import { readFile } from "fs/promises";
-import { CURRENT_TEMPLATE_PATH } from ".";
-import { Logger, ValidationError, ValidationRule } from "../DomainTypes";
-import JSZip from "jszip";
-import { createHash } from "crypto";
+import { readFile } from 'fs/promises';
+import { CURRENT_TEMPLATE_PATH } from '.';
+import { Logger, ValidationError, ValidationRule } from '../DomainTypes';
+import JSZip from 'jszip';
+import { createHash } from 'crypto';
 
 let templateHashes: Promise<{
     names: string[];
@@ -19,40 +19,40 @@ function getTemplateHashes(logger: Logger) {
 
 export const usesCurrentTemplate =
     (logger: Logger = console): ValidationRule =>
-        async onePager => {
-            const templateHashes = await getTemplateHashes(logger);
-            const contentHashes = await calculateThemeHash(logger, onePager.data);
+    async onePager => {
+        const templateHashes = await getTemplateHashes(logger);
+        const contentHashes = await calculateThemeHash(logger, onePager.data);
 
-            const templateKeys = Object.keys(templateHashes.hashes);
-            const contentKeys = Object.keys(contentHashes.hashes);
+        const templateKeys = Object.keys(templateHashes.hashes);
+        const contentKeys = Object.keys(contentHashes.hashes);
 
-            // no error if theme contents are equal
-            if (
-                templateKeys.length === contentKeys.length &&
-                templateKeys.every(
-                    key =>
-                        contentKeys.includes(key) &&
-                        templateHashes.hashes[key] === contentHashes.hashes[key]
-                )
-            ) {
-                return [];
-            }
+        // no error if theme contents are equal
+        if (
+            templateKeys.length === contentKeys.length &&
+            templateKeys.every(
+                key =>
+                    contentKeys.includes(key) &&
+                    templateHashes.hashes[key] === contentHashes.hashes[key]
+            )
+        ) {
+            return [];
+        }
 
-            const themeCountWithSameContent = templateKeys.filter(key =>
-                contentKeys.includes(key)
-            ).length;
-            const hasSomeOriginalTemplateThemes = templateHashes.names.some(name =>
-                contentHashes.names.includes(name)
-            );
+        const themeCountWithSameContent = templateKeys.filter(key =>
+            contentKeys.includes(key)
+        ).length;
+        const hasSomeOriginalTemplateThemes = templateHashes.names.some(name =>
+            contentHashes.names.includes(name)
+        );
 
-            // if we detect at least one theme of the template we consider the current one-pager based on it
-            const error: ValidationError[] = [
-                themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes
-                    ? 'USING_MODIFIED_TEMPLATE'
-                    : 'USING_UNKNOWN_TEMPLATE',
-            ];
-            return error;
-        };
+        // if we detect at least one theme of the template we consider the current one-pager based on it
+        const error: ValidationError[] = [
+            themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes
+                ? 'USING_MODIFIED_TEMPLATE'
+                : 'USING_UNKNOWN_TEMPLATE',
+        ];
+        return error;
+    };
 
 async function calculateThemeHash(
     logger: Logger,
