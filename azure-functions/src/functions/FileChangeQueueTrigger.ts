@@ -2,10 +2,10 @@ import { InvocationContext, app } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { isEmployeeId } from './validator/DomainTypes';
 import { OnePagerValidation } from './validator/OnePagerValidation';
-import * as validationRules from './validator/validationRules';
 import { printError } from './ErrorHandling';
 import { PptxContentLanguageDetector } from './validator/adapter/PptxContentLanguageDetector';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
+import { allRules } from './validator/rules';
 
 export type QueueItem = { employeeId: string };
 
@@ -46,7 +46,7 @@ export async function FileChangeQueueTrigger(
             onePagers,
             await config.reporter(),
             new PptxContentLanguageDetector(context),
-            validationRules.allRules(context),
+            allRules(context),
             context
         );
         await validator.validateOnePagersOfEmployee(item.employeeId);

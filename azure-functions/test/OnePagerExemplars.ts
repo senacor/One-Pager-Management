@@ -4,11 +4,11 @@ import {
     EmployeeFolder,
     FolderBasedOnePagers,
 } from '../src/functions/validator/FolderBasedOnePagers';
-import { CURRENT_TEMPLATE_PATH } from '../src/functions/validator/validationRules';
 import { MemoryFileSystem } from '../src/functions/validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../src/functions/validator/adapter/FileSystemStorageExplorer';
 import { fs as memfs } from 'memfs';
 import { toTreeSync } from 'memfs/lib/print';
+import { CURRENT_TEMPLATE_PATH } from '../src/functions/validator/rules';
 
 export async function initInMemoryOnePagers(
     data: Record<EmployeeID, { lastUpdateByEmployee: Date; local?: Local }[]>
