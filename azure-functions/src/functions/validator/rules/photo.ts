@@ -2,27 +2,27 @@ import { Parser } from 'xml2js';
 import { Logger, ValidationRule } from '../DomainTypes';
 import JSZip from 'jszip';
 import { uniq } from '../OnePagerValidation';
-
-// import nodejs bindings to native tensorflow,
-// not required, but will speed up things drastically (python required)
-import '@tensorflow/tfjs-node';
-
-// implements nodejs wrappers for HTMLCanvasElement, HTMLImageElement, ImageData
+import * as faceDetection from '@tensorflow-models/face-detection';
 import * as canvas from 'canvas';
+import { tensor3d, Tensor3D } from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-cpu';
 
-import * as faceapi from '@vladmandic/face-api';
+const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
 
-// patch nodejs environment, we need to provide an implementation of
-// HTMLCanvasElement and HTMLImageElement, additionally an implementation
-// of ImageData is required, in case you want to use the MTCNN
-const { Canvas, Image, ImageData } = canvas;
-faceapi.env.monkeyPatch({
-    Canvas: Canvas as never,
-    Image: Image as never,
-    ImageData: ImageData as never,
-});
+export const detectorConfig = {
+    runtime: 'tfjs' as const,
+    maxFaces: 1
+};
 
-const model = faceapi.nets.tinyFaceDetector.loadFromDisk('./models');
+let _detector: Promise<faceDetection.FaceDetector> | undefined;
+const detector = async () => {
+    if (!_detector) {
+        _detector = faceDetection.createDetector(model, detectorConfig);
+
+    }
+    return await _detector;
+};
+
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
@@ -54,16 +54,17 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
 
         const usedMedia = uniqImages.map(img => pptx.files[`ppt/media/${img}`]);
 
+        const detect = await detector();
+
         const withFaces = (
             await Promise.all(
                 usedMedia.map(async img => {
                     try {
-                        const input = await canvas.loadImage(await img.async('nodebuffer'));
-                        const detections = await faceapi.detectAllFaces(
-                            input as never,
-                            new faceapi.TinyFaceDetectorOptions()
-                        );
-                        if (detections.length > 0) {
+                        const input = await imageToTensor3D(await img.async('nodebuffer'));
+
+                        const faces = await detect.estimateFaces(input);
+
+                        if (faces.length > 0) {
                             return img;
                         }
                     } catch (err) {
@@ -75,6 +76,22 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
 
         return withFaces.length === 0 ? ['MISSING_PHOTO'] : [];
     };
+}
+
+async function imageToTensor3D(imageData: Buffer): Promise<Tensor3D> {
+    const img = await canvas.loadImage(imageData);
+    const canvasEl = canvas.createCanvas(img.width, img.height);
+    const ctx = canvasEl.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const { data, width, height } = ctx.getImageData(0, 0, img.width, img.height);
+    // data is [R,G,B,A,...], shape [height, width, 4]
+    // Remove alpha channel:
+    const rgb = [];
+    for (let i = 0; i < data.length; i += 4) {
+        rgb.push(data[i], data[i + 1], data[i + 2]);
+    }
+    const tensor = tensor3d(rgb, [height, width, 3], 'int32');
+    return tensor;
 }
 
 type XmlRels = {

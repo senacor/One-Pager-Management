@@ -63,6 +63,7 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: npm ci
       - run: npm run build
+      - run: npm prune --production
       - uses: JarvusInnovations/background-action@v1
         name: Bootstrap System Under Test (SUT)
         with:
@@ -75,7 +76,7 @@ jobs:
             STORAGE_SOURCE=localfile \
             ONE_PAGER_DIR=.storage/onepagers \
             VALIDATION_RESULT_DIR=.storage \
-             npx azure-functions-core-tools start &
+            npx azure-functions-core-tools start &
           wait-for: 5m
           wait-on: |
             http://localhost:7071

@@ -89,7 +89,10 @@ describe('validationRules', () => {
 
             const errors = hasPhoto()(onePagerWithoutPhoto);
 
-            await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
+            await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO'])).catch(err => {
+                console.error(`Error during hasPhoto validation: ${JSON.stringify(err, null, 2)}`);
+                throw err;
+            });
         });
 
         it('should report no error if photo is found', async () => {
