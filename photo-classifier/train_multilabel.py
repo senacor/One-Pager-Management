@@ -16,17 +16,14 @@ from sklearn.model_selection import train_test_split
 from preprocess import intelligent_center_crop
 from live_plot_callback import LivePlotCallback
 from sklearn.metrics import classification_report
-from tensorflow.keras import mixed_precision
 from tensorflow.keras.models import load_model
 import argparse
-
-mixed_precision.set_global_policy('mixed_float16')
 
 IMG_DIR = 'datasets/multi-label/augmented'
 CSV_PATH = 'datasets/multi-label/labels_augmented.csv'
 IMG_SIZE = 224
 BATCH_SIZE = 256
-EPOCHS = 50
+EPOCHS = 60
 
 # Load CSV
 labels_df = pd.read_csv(CSV_PATH)
