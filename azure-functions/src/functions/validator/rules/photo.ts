@@ -1,68 +1,17 @@
-import { Parser } from 'xml2js';
-import { Logger, ValidationRule } from '../DomainTypes';
-import JSZip from 'jszip';
-import { uniq } from '../OnePagerValidation';
-import * as faceDetection from '@tensorflow-models/face-detection';
-import * as canvas from 'canvas';
-import { tensor3d, Tensor3D } from '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-cpu';
-
-const model = faceDetection.SupportedModels.MediaPipeFaceDetector;
-
-export const detectorConfig = {
-    runtime: 'tfjs' as const,
-    maxFaces: 1
-};
-
-let _detector: Promise<faceDetection.FaceDetector> | undefined;
-const detector = async () => {
-    if (!_detector) {
-        _detector = faceDetection.createDetector(model, detectorConfig);
-
-    }
-    return await _detector;
-};
-
+import { LoadedOnePager, Logger, ValidationRule } from '../DomainTypes';
+import { detectFaces, labelImage, PhotoLabels } from './ai';
+import { Pptx } from './Pptx';
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
-        await model;
-
-        const zip = new JSZip();
-        const pptx = await zip.loadAsync(onePager.data);
-
-        const slideRels = Object.keys(pptx.files)
-            .filter(file => file.match(/ppt\/slides\/_rels\/.+\.xml\.rels$/))
-            .sort();
-        const relImages = (
-            await Promise.all(
-                slideRels.map(async relFile => {
-                    const relContent = await pptx.files[relFile].async('nodebuffer');
-                    return await getImageRels(relContent);
-                })
-            )
-        )
-            .flat()
-            .filter(
-                rel =>
-                    !['.emf', '.wmf', '.svg', '.wdp', '.tiff', '.tif'].some(ext =>
-                        rel.endsWith(ext)
-                    )
-            );
-
-        const uniqImages = relImages.filter(uniq);
-
-        const usedMedia = uniqImages.map(img => pptx.files[`ppt/media/${img}`]);
-
-        const detect = await detector();
+        const pptx = await Pptx.load(onePager.data);
+        const usedImages = await pptx.getUsedImages();
 
         const withFaces = (
             await Promise.all(
-                usedMedia.map(async img => {
+                usedImages.map(async img => {
                     try {
-                        const input = await imageToTensor3D(await img.async('nodebuffer'));
-
-                        const faces = await detect.estimateFaces(input);
+                        const faces = await detectFaces(await img.data());
 
                         if (faces.length > 0) {
                             return img;
@@ -78,38 +27,56 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
     };
 }
 
-async function imageToTensor3D(imageData: Buffer): Promise<Tensor3D> {
-    const img = await canvas.loadImage(imageData);
-    const canvasEl = canvas.createCanvas(img.width, img.height);
-    const ctx = canvasEl.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const { data, width, height } = ctx.getImageData(0, 0, img.width, img.height);
-    // data is [R,G,B,A,...], shape [height, width, 4]
-    // Remove alpha channel:
-    const rgb = [];
-    for (let i = 0; i < data.length; i += 4) {
-        rgb.push(data[i], data[i + 1], data[i + 2]);
-    }
-    const tensor = tensor3d(rgb, [height, width, 3], 'int32');
-    return tensor;
+export function hasQualityPhoto(logger: Logger = console): ValidationRule {
+    return async onePager => {
+        const labels = await qualityOf(onePager);
+        const scores = labels.map(scorePhotoLabels);
+        if (scores.every(score => score > 0.2)) {
+            const avg = scores.reduce((a, b) => a + b) / scores.length;
+            logger.log(`One-pager ${onePager.webLocation.toString()} has ${scores.length} photos with an average quality of ${avg}:`);
+            return [];
+        }
+        logger.log(`One-pager ${onePager.webLocation.toString()} has low quality photos: ${JSON.stringify(scores)}`);
+        return ['LOW_QUALITY_PHOTO'];
+    };
 }
 
-type XmlRels = {
-    Relationships: {
-        Relationship: {
-            $: {
-                Id: string;
-                Type: string;
-                Target: string;
-            };
-        }[];
-    };
-};
+export async function qualityOf(onePager: LoadedOnePager) {
+    const pptx = await Pptx.load(onePager.data);
+    const usedImages = await pptx.getUsedImages();
 
-async function getImageRels(data: Buffer): Promise<string[]> {
-    const parser = new Parser();
-    const xml: XmlRels = await parser.parseStringPromise(data);
-    return xml.Relationships.Relationship.map(rel => rel.$.Target)
-        .filter(target => target.match(/\.\.\/media\/[^/]+$/))
-        .map(target => target.slice('../media/'.length));
+    const labels = await Promise.all(
+        usedImages.map(async img => labelImage(await img.data()))
+    );
+
+    return labels;
+}
+
+export function scorePhotoLabels(labels: PhotoLabels): number {
+    const weightedSum = Object
+        .entries(labels)
+        .map(([key, value]) => {
+            const gained = gain(value, GAIN_K);
+            const weight = LABEL_WEIGHTS[key as keyof PhotoLabels];
+            return gained * weight;
+        })
+        .reduce((a, b) => a + b);
+
+    const totalWeight = Object.values(LABEL_WEIGHTS).reduce((a, b) => a + b);
+    return weightedSum / totalWeight;
+}
+
+const LABEL_WEIGHTS: PhotoLabels = {
+    brightBackground: 2.0,
+    neutralBackground: 1.0,
+    whiteShirt: 1.0,
+    highQuality: 3.0,
+    businessAttire: 3.0
+};
+const GAIN_K = 3.0;
+
+function gain(x: number, k: number): number {
+    const v = x < 0.5 ? x : 1.0 - x;
+    const a = 0.5 * Math.pow(2.0 * v, k);
+    return x < 0.5 ? a : 1.0 - a;
 }
