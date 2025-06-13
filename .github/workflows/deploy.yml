@@ -75,7 +75,7 @@ jobs:
       - run: |
           pushd "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
           npm ci
-          npm run build --if-present
+          npm run build
           npm prune --production
           popd
       - name: 'Run Azure Functions Action'
