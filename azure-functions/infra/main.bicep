@@ -48,6 +48,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
         { name: 'FUNCTIONS_WORKER_RUNTIME', value: 'node' }
         { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: '~22' }
+        { name: 'WEBSITE_RUN_FROM_PACKAGE', value: '1' }
         { name: 'STORAGE_SOURCE', value: 'sharepoint' }
         { name: 'SHAREPOINT_ONE_PAGER_SITE_NAME', value: sharepointOnePagerSiteName }
         { name: 'SHAREPOINT_VALIDATION_SITE_NAME', value: sharepointResultSiteName }
