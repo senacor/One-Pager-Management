@@ -1,9 +1,9 @@
 import * as tf from '@tensorflow/tfjs';
-import * as canvas from 'canvas';
 import * as faceDetection from '@tensorflow-models/face-detection';
 
 import '@tensorflow/tfjs-backend-cpu';
 import path from 'path';
+import decode from 'image-decode';
 
 const faceModel = faceDetection.SupportedModels.MediaPipeFaceDetector;
 
@@ -32,7 +32,7 @@ const detector = async () => {
 
 export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face[]> {
     await faceModel;
-    const input = await imageToTensor3D(imageData, copyToCanvas);
+    const input = await imageToTensor3D(imageData);
     return (await detector()).estimateFaces(input);
 }
 
@@ -59,11 +59,8 @@ export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
     };
 }
 
-async function imageToTensor3D(imageData: Buffer, toCanvas: (data: canvas.Image) => canvas.Canvas): Promise<tf.Tensor3D> {
-    const img = await canvas.loadImage(imageData);
-    const processedCanvas = toCanvas(img);
-    const ctx = processedCanvas.getContext('2d');
-    const { data, width, height } = ctx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
+async function imageToTensor3D(imageData: Buffer, transform: (img: decode.DecodedImage) => decode.DecodedImage = i => i): Promise<tf.Tensor3D> {
+    const { data, width, height } = transform(decode(imageData));
     // data is [R,G,B,A,...], shape [height, width, 4]
     // Remove alpha channel:
     const rgb = [];
@@ -74,27 +71,79 @@ async function imageToTensor3D(imageData: Buffer, toCanvas: (data: canvas.Image)
     return tensor;
 }
 
-function copyToCanvas(img: canvas.Image): canvas.Canvas {
-    const canvasEl = canvas.createCanvas(img.width, img.height);
-    const ctx = canvasEl.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    return canvasEl;
+function boxDownscaleRGBA(src: Uint8ClampedArray, srcW: number, srcH: number, dstW: number, dstH: number): Uint8ClampedArray {
+    const dst = new Uint8ClampedArray(dstW * dstH * 4);
+    const xRatio = srcW / dstW;
+    const yRatio = srcH / dstH;
+    for (let dy = 0; dy < dstH; dy++) {
+        for (let dx = 0; dx < dstW; dx++) {
+            const sx0 = dx * xRatio;
+            const sx1 = (dx + 1) * xRatio;
+            const sy0 = dy * yRatio;
+            const sy1 = (dy + 1) * yRatio;
+            let r = 0, g = 0, b = 0, a = 0, count = 0;
+            for (let sy = Math.floor(sy0); sy < Math.ceil(sy1); sy++) {
+                for (let sx = Math.floor(sx0); sx < Math.ceil(sx1); sx++) {
+                    if (sx >= 0 && sx < srcW && sy >= 0 && sy < srcH) {
+                        const idx = (sy * srcW + sx) * 4;
+                        r += src[idx];
+                        g += src[idx + 1];
+                        b += src[idx + 2];
+                        a += src[idx + 3];
+                        count++;
+                    }
+                }
+            }
+            const didx = (dy * dstW + dx) * 4;
+            dst[didx] = Math.round(r / count);
+            dst[didx + 1] = Math.round(g / count);
+            dst[didx + 2] = Math.round(b / count);
+            dst[didx + 3] = Math.round(a / count);
+        }
+    }
+    return dst;
 }
 
-function intelligentCenterCropAndResize(img: canvas.Image, targetSize = 224): canvas.Canvas {
+function intelligentCenterCropAndResize(img: decode.DecodedImage, targetSize = 224): decode.DecodedImage {
+    const { data, width, height } = img;
     // Center crop to square
-    const minDim = Math.min(img.width, img.height);
-    const left = Math.floor((img.width - minDim) / 2);
-    const top = Math.floor((img.height - minDim) / 2);
+    const minDim = Math.min(width, height);
+    const left = Math.floor((width - minDim) / 2);
+    const top = Math.floor((height - minDim) / 2);
 
-    // Crop
-    const cropCanvas = canvas.createCanvas(minDim, minDim);
-    const cropCtx = cropCanvas.getContext('2d');
-    cropCtx.drawImage(img, left * -1, top * -1);
+    // Crop to square (RGBA)
+    let current = new Uint8ClampedArray(minDim * minDim * 4);
+    for (let y = 0; y < minDim; y++) {
+        for (let x = 0; x < minDim; x++) {
+            const srcIdx = ((y + top) * width + (x + left)) * 4;
+            const dstIdx = (y * minDim + x) * 4;
+            current[dstIdx] = data[srcIdx];       // R
+            current[dstIdx + 1] = data[srcIdx + 1]; // G
+            current[dstIdx + 2] = data[srcIdx + 2]; // B
+            current[dstIdx + 3] = data[srcIdx + 3]; // A
+        }
+    }
 
-    // Resize
-    const resizeCanvas = canvas.createCanvas(targetSize, targetSize);
-    const resizeCtx = resizeCanvas.getContext('2d');
-    resizeCtx.drawImage(cropCanvas, 0, 0, targetSize, targetSize);
-    return resizeCanvas;
+
+    let currentW = minDim;
+    let currentH = minDim;
+    // Iteratively downscale by factor of 2 using box filter until close to target size
+    while (currentW > targetSize * 2 && currentH > targetSize * 2) {
+        const nextW = Math.max(targetSize, Math.floor(currentW / 2));
+        const nextH = Math.max(targetSize, Math.floor(currentH / 2));
+        current = boxDownscaleRGBA(current, currentW, currentH, nextW, nextH);
+        currentW = nextW;
+        currentH = nextH;
+    }
+    // Final resize to target size (if not exact)
+    if (currentW !== targetSize || currentH !== targetSize) {
+        current = boxDownscaleRGBA(current, currentW, currentH, targetSize, targetSize);
+        currentW = targetSize;
+        currentH = targetSize;
+    }
+    return {
+        data: current,
+        width: currentW,
+        height: currentH
+    };
 }

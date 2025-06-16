@@ -30,6 +30,7 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
 export function hasQualityPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
         const labels = await qualityOf(onePager);
+        console.log(`Labels for one-pager ${onePager.webLocation.toString()}: ${JSON.stringify(labels)}`);
         const scores = labels.map(scorePhotoLabels);
         if (scores.every(score => score > 0.2)) {
             const avg = scores.reduce((a, b) => a + b) / scores.length;
