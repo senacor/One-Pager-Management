@@ -58,12 +58,11 @@ export async function hasLowQuality(img: PptxImage): Promise<boolean> {
 }
 
 function scorePhotoLabels(labels: PhotoLabels): number {
-    const weighted = Object.entries(labels)
-        .map(([key, value]) => {
-            const gained = gain(value, GAIN_K);
-            const weight = LABEL_WEIGHTS[key as keyof PhotoLabels];
-            return gained * weight;
-        });
+    const weighted = Object.entries(labels).map(([key, value]) => {
+        const gained = gain(value, GAIN_K);
+        const weight = LABEL_WEIGHTS[key as keyof PhotoLabels];
+        return gained * weight;
+    });
     const weightedSum = weighted.reduce((a, b) => a + b);
 
     const totalWeight = Object.values(LABEL_WEIGHTS).reduce((a, b) => a + b);

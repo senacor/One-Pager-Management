@@ -29,12 +29,12 @@
         "@tensorflow/tfjs-node": "^4.22.0",
         "franc-min": "^6.2.0",
         "hardened-fetch": "^1.2.3",
-        "image-decode": "^1.2.2",
         "isomorphic-fetch": "^3.0.0",
         "jszip": "^3.10.1",
         "memfs": "^4.17.2",
         "node-cache": "^5.1.2",
         "node-pptx-parser": "^1.0.1",
+        "sharp": "^0.34.2",
         "ts-node": "^10.9.2",
         "xml2js": "^0.6.2"
     },
