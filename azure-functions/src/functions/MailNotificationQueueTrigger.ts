@@ -44,7 +44,7 @@ export async function MailNotificationQueueTrigger(
         // Establish a connection to the repository containing one-pagers and our report output list.
         const config = loadConfigFromEnv(context);
 
-        let mailAdapter: MailAdapter | undefined = config.mailAdapter();
+        const mailAdapter: MailAdapter | undefined = config.mailAdapter();
         if (!mailAdapter) {
             throw new Error('A MailAdapter can only be used in combination with SharePoint!');
         }
