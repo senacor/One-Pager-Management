@@ -2,6 +2,7 @@ import {
     EmployeeID,
     Logger,
     MailAdapter,
+    ValidationError,
     ValidationReporter,
 } from './DomainTypes';
 
@@ -30,15 +31,20 @@ export class EMailNotification {
     }
 
     async notifyEmployee(employeeId: EmployeeID) : Promise<void> {
-        // TODO: Template formulieren
-        const eMailTemplate = `
-            Dies ist das E-Mail-Template
-        `;
 
-        let subject = 'Please update your One-Pagers!';
+
+        const subject = 'Please update your One-Pagers!';
 
         // TODO: get email of employee
-        let emailAdress = '';
+        const emailAdress = '';
+
+        const validationErrorArr: ValidationError[] = await this.reporter.getResultFor(employeeId);
+
+        // TODO: Template formulieren
+        const eMailTemplate = `
+            Your errors are the following:
+            - ${validationErrorArr.join('\n- ')}
+        `;
 
         await this.mailAdapter.sendMail([emailAdress], subject, eMailTemplate);
     }

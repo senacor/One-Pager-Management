@@ -55,7 +55,7 @@ export async function MailNotificationAllHttpTrigger(
 // Register the HTTP trigger with Azure Functions
 app.http('MailNotificationAllHttpTrigger', {
     methods: ['POST'],
-    route: 'validateAll',
+    route: 'sendValidationMails',
     authLevel: 'function',
     handler: MailNotificationAllHttpTrigger,
     extraOutputs: [queueOutput],
