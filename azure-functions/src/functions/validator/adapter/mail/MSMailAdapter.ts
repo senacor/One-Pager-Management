@@ -1,7 +1,5 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { Logger, MailAdapter, EmailAddress, isEmailAddress } from "../../DomainTypes";
-import { SharepointClientOptions } from "../../../configuration/AppConfiguration";
-
 
 export class MSMailAdapter implements MailAdapter {
     private readonly client: Client | undefined;
