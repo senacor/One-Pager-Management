@@ -1,65 +1,76 @@
-import * as tf from '@tensorflow/tfjs';
+import * as tf from '@tensorflow/tfjs-node';
+import '@tensorflow/tfjs-backend-cpu';
+
 import * as faceDetection from '@tensorflow-models/face-detection';
 
-import '@tensorflow/tfjs-backend-cpu';
-import path from 'path';
 import decode from 'image-decode';
 
-const faceModel = faceDetection.SupportedModels.MediaPipeFaceDetector;
 
-const qualityModelPath = path.join(__dirname, '../models/photo-quality/model.json');
+const qualityModelPath = './models/photo-quality/model.json';
 let qualityModelPromise: Promise<tf.LayersModel> | undefined;
 function getQualityModel() {
     if (!qualityModelPromise) {
-        qualityModelPromise = tf.loadLayersModel(`file://${qualityModelPath}`);
+        // Use tf.io.fileSystem for local files in Node.js (not tf.io.file)
+        qualityModelPromise = tf.loadLayersModel(tf.io.fileSystem(qualityModelPath));
     }
     return qualityModelPromise;
 }
 
 export const detectorConfig = {
     runtime: 'tfjs' as const,
-    maxFaces: 1
+    maxFaces: 1,
 };
 
 let _detector: Promise<faceDetection.FaceDetector> | undefined;
 const detector = async () => {
     if (!_detector) {
+        const faceModel = faceDetection.SupportedModels.MediaPipeFaceDetector;
         _detector = faceDetection.createDetector(faceModel, detectorConfig);
-
     }
     return await _detector;
 };
 
 export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face[]> {
-    await faceModel;
+    await tf.setBackend('cpu'); // tensorflow backend is missing some image operations
+    await tf.ready();
     const input = await imageToTensor3D(imageData);
     return (await detector()).estimateFaces(input);
 }
 
 export interface PhotoLabels {
-    brightBackground: number,
-    neutralBackground: number,
-    whiteShirt: number,
-    highQuality: number,
-    businessAttire: number
+    brightBackground: number;
+    neutralBackground: number;
+    whiteShirt: number;
+    highQuality: number;
+    businessAttire: number;
 }
 
 export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
-    const input = await imageToTensor3D(imageData, intelligentCenterCropAndResize);
+    await tf.setBackend('tensorflow'); // tensorflow is faster then cpu backend
+    await tf.ready();
+    const input = (await imageToTensor3D(imageData, intelligentCenterCropAndResize)).toFloat().div(tf.scalar(255.0));
     const batched = input.expandDims(0); // Add batch dimension: [1, height, width, 3]
     const model = await getQualityModel();
-    const prediction = model.predict(batched) as tf.Tensor;
-    const [brightBackground, neutralBackground, whiteShirt, highQuality, businessAttire] = await prediction.array() as number[];
+
+    const [prediction] = (await (model.predict(batched) as tf.Tensor).array()) as number[][]; // because its batched we have an extra dimension
+    if (prediction.length !== 5) {
+        throw new Error(`Unexpected prediction length: ${prediction.length}. Expected 5.`);
+    }
+    const [brightBackground, neutralBackground, whiteShirt, highQuality, businessAttire] =
+        prediction;
     return {
         brightBackground,
         neutralBackground,
         whiteShirt,
         highQuality,
-        businessAttire
+        businessAttire,
     };
 }
 
-async function imageToTensor3D(imageData: Buffer, transform: (img: decode.DecodedImage) => decode.DecodedImage = i => i): Promise<tf.Tensor3D> {
+async function imageToTensor3D(
+    imageData: Buffer,
+    transform: (img: decode.DecodedImage) => decode.DecodedImage = i => i
+): Promise<tf.Tensor3D> {
     const { data, width, height } = transform(decode(imageData));
     // data is [R,G,B,A,...], shape [height, width, 4]
     // Remove alpha channel:
@@ -67,11 +78,16 @@ async function imageToTensor3D(imageData: Buffer, transform: (img: decode.Decode
     for (let i = 0; i < data.length; i += 4) {
         rgb.push(data[i], data[i + 1], data[i + 2]);
     }
-    const tensor = tf.tensor3d(rgb, [height, width, 3], 'int32');
-    return tensor;
+    return tf.tensor3d(rgb, [height, width, 3], 'int32');
 }
 
-function boxDownscaleRGBA(src: Uint8ClampedArray, srcW: number, srcH: number, dstW: number, dstH: number): Uint8ClampedArray {
+function boxDownscaleRGBA(
+    src: Uint8ClampedArray,
+    srcW: number,
+    srcH: number,
+    dstW: number,
+    dstH: number
+): Uint8ClampedArray {
     const dst = new Uint8ClampedArray(dstW * dstH * 4);
     const xRatio = srcW / dstW;
     const yRatio = srcH / dstH;
@@ -81,7 +97,11 @@ function boxDownscaleRGBA(src: Uint8ClampedArray, srcW: number, srcH: number, ds
             const sx1 = (dx + 1) * xRatio;
             const sy0 = dy * yRatio;
             const sy1 = (dy + 1) * yRatio;
-            let r = 0, g = 0, b = 0, a = 0, count = 0;
+            let r = 0,
+                g = 0,
+                b = 0,
+                a = 0,
+                count = 0;
             for (let sy = Math.floor(sy0); sy < Math.ceil(sy1); sy++) {
                 for (let sx = Math.floor(sx0); sx < Math.ceil(sx1); sx++) {
                     if (sx >= 0 && sx < srcW && sy >= 0 && sy < srcH) {
@@ -104,7 +124,10 @@ function boxDownscaleRGBA(src: Uint8ClampedArray, srcW: number, srcH: number, ds
     return dst;
 }
 
-function intelligentCenterCropAndResize(img: decode.DecodedImage, targetSize = 224): decode.DecodedImage {
+function intelligentCenterCropAndResize(
+    img: decode.DecodedImage,
+    targetSize = 224
+): decode.DecodedImage {
     const { data, width, height } = img;
     // Center crop to square
     const minDim = Math.min(width, height);
@@ -117,13 +140,12 @@ function intelligentCenterCropAndResize(img: decode.DecodedImage, targetSize = 2
         for (let x = 0; x < minDim; x++) {
             const srcIdx = ((y + top) * width + (x + left)) * 4;
             const dstIdx = (y * minDim + x) * 4;
-            current[dstIdx] = data[srcIdx];       // R
+            current[dstIdx] = data[srcIdx]; // R
             current[dstIdx + 1] = data[srcIdx + 1]; // G
             current[dstIdx + 2] = data[srcIdx + 2]; // B
             current[dstIdx + 3] = data[srcIdx + 3]; // A
         }
     }
-
 
     let currentW = minDim;
     let currentH = minDim;
@@ -144,6 +166,6 @@ function intelligentCenterCropAndResize(img: decode.DecodedImage, targetSize = 2
     return {
         data: current,
         width: currentW,
-        height: currentH
+        height: currentH,
     };
 }

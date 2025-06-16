@@ -1,6 +1,6 @@
-import { LoadedOnePager, Logger, ValidationRule } from '../DomainTypes';
+import { Logger, ValidationRule } from '../DomainTypes';
 import { detectFaces, labelImage, PhotoLabels } from './ai';
-import { Pptx } from './Pptx';
+import { Pptx, PptxImage } from './Pptx';
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
@@ -27,44 +27,48 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
     };
 }
 
+export const QUALITY_THRESHOLD = 0.2;
+
 export function hasQualityPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
-        const labels = await qualityOf(onePager);
-        console.log(`Labels for one-pager ${onePager.webLocation.toString()}: ${JSON.stringify(labels)}`);
-        const scores = labels.map(scorePhotoLabels);
-        if (scores.every(score => score > 0.2)) {
-            const avg = scores.reduce((a, b) => a + b) / scores.length;
-            logger.log(`One-pager ${onePager.webLocation.toString()} has ${scores.length} photos with an average quality of ${avg}:`);
+        const pptx = await Pptx.load(onePager.data);
+        const usedImages = await pptx.getUsedImages();
+
+        const scored = await Promise.all(
+            usedImages.map(async img => ((await hasLowQuality(img)) ? [img] : []))
+        );
+
+        const lowQualityPhotos = scored.flat();
+        if (lowQualityPhotos.length === 0) {
+            logger.log(`One-pager ${onePager.webLocation.toString()} has no low quality photos.`);
             return [];
         }
-        logger.log(`One-pager ${onePager.webLocation.toString()} has low quality photos: ${JSON.stringify(scores)}`);
+
+        logger.warn(
+            `One-pager ${onePager.webLocation.toString()} has ${lowQualityPhotos.length} low quality photos!`
+        );
         return ['LOW_QUALITY_PHOTO'];
     };
 }
 
-export async function qualityOf(onePager: LoadedOnePager) {
-    const pptx = await Pptx.load(onePager.data);
-    const usedImages = await pptx.getUsedImages();
-
-    const labels = await Promise.all(
-        usedImages.map(async img => labelImage(await img.data()))
-    );
-
-    return labels;
+export async function hasLowQuality(img: PptxImage): Promise<boolean> {
+    const labels = await labelImage(await img.data());
+    const score = scorePhotoLabels(labels);
+    return score < QUALITY_THRESHOLD;
 }
 
-export function scorePhotoLabels(labels: PhotoLabels): number {
-    const weightedSum = Object
-        .entries(labels)
+function scorePhotoLabels(labels: PhotoLabels): number {
+    const weighted = Object.entries(labels)
         .map(([key, value]) => {
             const gained = gain(value, GAIN_K);
             const weight = LABEL_WEIGHTS[key as keyof PhotoLabels];
             return gained * weight;
-        })
-        .reduce((a, b) => a + b);
+        });
+    const weightedSum = weighted.reduce((a, b) => a + b);
 
     const totalWeight = Object.values(LABEL_WEIGHTS).reduce((a, b) => a + b);
-    return weightedSum / totalWeight;
+    const score = weightedSum / totalWeight;
+    return score;
 }
 
 const LABEL_WEIGHTS: PhotoLabels = {
@@ -72,7 +76,7 @@ const LABEL_WEIGHTS: PhotoLabels = {
     neutralBackground: 1.0,
     whiteShirt: 1.0,
     highQuality: 3.0,
-    businessAttire: 3.0
+    businessAttire: 3.0,
 };
 const GAIN_K = 3.0;
 

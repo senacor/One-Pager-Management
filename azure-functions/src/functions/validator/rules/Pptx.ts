@@ -57,7 +57,7 @@ export class Pptx {
 
         return usedMedia.map(img => ({
             name: img.name,
-            data: () => img.async('nodebuffer')
+            data: () => img.async('nodebuffer'),
         }));
     }
 

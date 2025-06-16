@@ -67,14 +67,9 @@ async function calculateThemeHash(
     const hashes: Record<string, string> = {};
     const names: string[] = [];
 
-    logger.log(
-        `Calculating theme hashes from PPTX content... Found ${JSON.stringify(masterFiles)} master files.`
-    );
     const xmlContents = await Promise.all(
         masterFiles.map(async f => {
-            logger.log(`Reading content of master file: ${f}`);
             const c = await pptx.files[f].async('string');
-            logger.log(`Content of ${f} read successfully.`);
             return c;
         })
     );
