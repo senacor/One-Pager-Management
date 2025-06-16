@@ -50,7 +50,7 @@ export async function MailNotificationQueueTrigger(
         }
 
         const mailNotificationHandler = new EMailNotification(mailAdapter, await config.reporter(), context);
-        let queueSaveFunction: QueueSaveFunction = (item) => { return context.extraOutputs.set(queueOutput, item);};
+        const queueSaveFunction: QueueSaveFunction = (item) => { return context.extraOutputs.set(queueOutput, item);};
 
         await mailNotificationHandler.notifyEmployee(item.employeeId, queueSaveFunction);
 
