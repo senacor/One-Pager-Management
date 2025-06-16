@@ -49,7 +49,7 @@ export async function MailNotificationQueueTrigger(
             throw new Error('A MailAdapter can only be used in combination with SharePoint!');
         }
 
-        let mailNotificationHandler = new EMailNotification(mailAdapter, await config.reporter(), context);
+        const mailNotificationHandler = new EMailNotification(mailAdapter, await config.reporter(), context);
         let queueSaveFunction: QueueSaveFunction = (item) => { return context.extraOutputs.set(queueOutput, item);};
 
         await mailNotificationHandler.notifyEmployee(item.employeeId, queueSaveFunction);
