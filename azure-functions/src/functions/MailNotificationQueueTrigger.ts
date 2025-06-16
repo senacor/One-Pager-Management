@@ -1,12 +1,21 @@
-import { InvocationContext, app } from '@azure/functions';
+import { InvocationContext, app, output } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { isEmployeeId, MailAdapter } from './validator/DomainTypes';
 import { printError } from './ErrorHandling';
-import { EMailNotification } from './validator/EMailNotification';
+import { EMailNotification, QueueSaveFunction } from './validator/EMailNotification';
 
 export type QueueItem = { employeeId: string };
 
+// queue that contains all requests for employees that shall receive a notification
 export const onepagerMailRequests = 'onepager-mail-requests';
+
+// This queue contains entries for each send mail (dev-queue to log send mails)
+export const onepagerMailOutputQueue = 'onepager-mail-outputs';
+
+const queueOutput = output.storageQueue({
+    queueName: onepagerMailOutputQueue,
+    connection: '',
+});
 
 /**
  * This function is triggered by items added to the Azure Storage Queue.
@@ -41,7 +50,9 @@ export async function MailNotificationQueueTrigger(
         }
 
         let mailNotificationHandler = new EMailNotification(mailAdapter, await config.reporter(), context);
-        await mailNotificationHandler.notifyEmployee(item.employeeId);
+        let queueSaveFunction: QueueSaveFunction = (item) => { return context.extraOutputs.set(queueOutput, item);};
+
+        await mailNotificationHandler.notifyEmployee(item.employeeId, queueSaveFunction);
 
     } catch (error) {
         context.error(
@@ -60,4 +71,5 @@ app.storageQueue('MailNotificationQueueTrigger', {
     queueName: onepagerMailRequests,
     connection: '',
     handler: MailNotificationQueueTrigger,
+    extraOutputs: [queueOutput]
 });

@@ -6,6 +6,8 @@ import {
     ValidationReporter,
 } from './DomainTypes';
 
+export type QueueSaveFunction = (item: any) => void;
+
 /**
  * Validates one-pagers of employees based on a given validation rule.
  */
@@ -30,13 +32,13 @@ export class EMailNotification {
         this.mailAdapter = mailAdapter
     }
 
-    async notifyEmployee(employeeId: EmployeeID) : Promise<void> {
+    async notifyEmployee(employeeId: EmployeeID, saveItemToQueue: QueueSaveFunction) : Promise<void> {
 
 
         const subject = 'Please update your One-Pagers!';
 
         // TODO: get email of employee
-        const emailAdress = '';
+        const emailAddress = '';
 
         const validationErrorArr: ValidationError[] = await this.reporter.getResultFor(employeeId);
 
@@ -46,6 +48,12 @@ export class EMailNotification {
             - ${validationErrorArr.join('\n- ')}
         `;
 
-        await this.mailAdapter.sendMail([emailAdress], subject, eMailTemplate);
+        saveItemToQueue({
+            email: emailAddress,
+            subject: subject,
+            content: eMailTemplate
+        });
+
+        await this.mailAdapter.sendMail([emailAddress], subject, eMailTemplate);
     }
 }

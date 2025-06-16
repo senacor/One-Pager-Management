@@ -1,5 +1,6 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { Logger, MailAdapter, EmailAddress, isEmailAddress } from "../../DomainTypes";
+import { createSharepointClient, SharepointClientOptions } from "../../../configuration/AppConfiguration";
 
 
 export class MSMailAdapter implements MailAdapter {
@@ -28,7 +29,7 @@ export class MSMailAdapter implements MailAdapter {
             message: {
                 subject: subject,
                 body: {
-                    contentType: 'Text',
+                    contentType: 'HTML', // e.g. Text or HTML
                     content: body
                 },
                 toRecipients: to.map(email => {
@@ -56,18 +57,18 @@ export class MSMailAdapter implements MailAdapter {
 
 
 
-// (async function () {
+(async function () {
 
-//     const client = await createSharepointClient({
-//         SHAREPOINT_TENANT_ID: process.env.SHAREPOINT_TENANT_ID,
-//         SHAREPOINT_CLIENT_ID: process.env.SHAREPOINT_CLIENT_ID,
-//         SHAREPOINT_CLIENT_SECRET: process.env.SHAREPOINT_CLIENT_SECRET,
-//         SHAREPOINT_API_LOGGING: 'true',
-//         SHAREPOINT_API_CACHING: 'false'
-//     } as SharepointClientOptions);
+    const client = await createSharepointClient({
+        SHAREPOINT_TENANT_ID: process.env.SHAREPOINT_TENANT_ID,
+        SHAREPOINT_CLIENT_ID: process.env.SHAREPOINT_CLIENT_ID,
+        SHAREPOINT_CLIENT_SECRET: process.env.SHAREPOINT_CLIENT_SECRET,
+        SHAREPOINT_API_LOGGING: 'true',
+        SHAREPOINT_API_CACHING: 'false'
+    } as SharepointClientOptions);
 
-//     const mailSender = new MailNotificationHandler(client, console);
-//     await mailSender.sendMail(['artjom.konschin@senacor.com'], 'Test Subject', 'This is a test email body.');
+    const mailSender = new MSMailAdapter(client, console);
+    await mailSender.sendMail(['artjom.konschin@senacor.com'], 'Test Subject', 'This is a <b>test</b> email body.');
 
 
-// })();
+})();
