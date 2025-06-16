@@ -5,14 +5,12 @@ This script sets up and trains a ResNet50-based classifier using the preprocesse
 """
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
 import matplotlib.pyplot as plt
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, Callback
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.models import load_model
 from preprocess import get_data_generators
 from live_plot_callback import LivePlotCallback

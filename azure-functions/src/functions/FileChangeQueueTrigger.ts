@@ -63,6 +63,7 @@ export async function FileChangeQueueTrigger(
 }
 
 // Register the FileChangeQueueTrigger function with Azure Functions to work on queue items.
+
 app.storageQueue('FileChangeQueueTrigger', {
     queueName: onepagerValidationRequests,
     connection: '',

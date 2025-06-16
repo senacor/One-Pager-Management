@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v4
         with:
@@ -55,6 +57,8 @@ jobs:
         working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v4
         with:
@@ -97,6 +101,7 @@ jobs:
             fi
 
   check-infra:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

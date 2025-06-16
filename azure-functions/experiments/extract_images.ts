@@ -1,116 +1,103 @@
-import JSZip from "jszip";
-import { loadConfigFromEnv } from "../src/functions/configuration/AppConfiguration";
-import { Logger, OnePager } from "../src/functions/validator/DomainTypes";
-import { mkdirSync, writeFileSync } from "fs";
-import { FolderBasedOnePagers } from "../src/functions/validator/FolderBasedOnePagers";
-import { Parser } from "xml2js";
-import { uniq } from "../src/functions/validator/OnePagerValidation";
+// import JSZip from "jszip";
+// import { loadConfigFromEnv } from "../src/functions/configuration/AppConfiguration";
+// import { Logger, OnePager } from "../src/functions/validator/DomainTypes";
+// import { mkdirSync, writeFileSync } from "fs";
+// import { FolderBasedOnePagers } from "../src/functions/validator/FolderBasedOnePagers";
+// import { Parser } from "xml2js";
+// import { uniq } from "../src/functions/validator/OnePagerValidation";
 
-// import nodejs bindings to native tensorflow,
-// not required, but will speed up things drastically (python required)
-import '@tensorflow/tfjs-node';
+// import * as canvas from 'canvas';
 
-// implements nodejs wrappers for HTMLCanvasElement, HTMLImageElement, ImageData
-import * as canvas from 'canvas';
+// const nopLogger: Logger = {
+//     log: () => { },
+//     warn: () => { },
+//     error: () => { },
+//     debug: () => { }
+// }
 
-import * as faceapi from '@vladmandic/face-api';
+// const mediaDir = "./media";
 
-// patch nodejs environment, we need to provide an implementation of
-// HTMLCanvasElement and HTMLImageElement, additionally an implementation
-// of ImageData is required, in case you want to use the MTCNN
-const { Canvas, Image, ImageData } = canvas
-faceapi.env.monkeyPatch({ Canvas: Canvas as never, Image: Image as never, ImageData: ImageData as never });
+// async function main() {
+//     const conf = loadConfigFromEnv(nopLogger, {
+//         STORAGE_SOURCE: "localfile",
+//         ONE_PAGER_DIR: "/Users/Daniel.Heinrich/Library/CloudStorage/OneDrive-SenacorTechnologiesAG/MaInfo - 01_OnePager"
+//     });
 
-const nopLogger: Logger = {
-    log: () => { },
-    warn: () => { },
-    error: () => { },
-    debug: () => { }
-}
+//     const repo = new FolderBasedOnePagers(await conf.explorer());
+//     const employees = await repo.getAllEmployees();
 
-const mediaDir = "./media";
+//     await faceapi.nets.tinyFaceDetector.loadFromDisk('./models')
 
-async function main() {
-    const conf = loadConfigFromEnv(nopLogger, {
-        STORAGE_SOURCE: "localfile",
-        ONE_PAGER_DIR: "/Users/Daniel.Heinrich/Library/CloudStorage/OneDrive-SenacorTechnologiesAG/MaInfo - 01_OnePager"
-    });
+//     mkdirSync(mediaDir, { recursive: true });
 
-    const repo = new FolderBasedOnePagers(await conf.explorer());
-    const employees = await repo.getAllEmployees();
+//     for (const employee of employees) {
+//         const newest = (await repo.getAllOnePagersOfEmployee(employee)).reduce((acc, curr) => {
+//             return curr.lastUpdateByEmployee > (acc?.lastUpdateByEmployee || new Date(0)) ? curr : acc;
+//         }, undefined as OnePager | undefined);
 
-    await faceapi.nets.tinyFaceDetector.loadFromDisk('./models')
+//         if (newest) {
+//             const pptxContent = await newest.data();
+//             const zip = new JSZip();
+//             const pptx = await zip.loadAsync(pptxContent);
 
-    mkdirSync(mediaDir, { recursive: true });
+//             const slideRels = Object.keys(pptx.files).filter(file => file.match(/ppt\/slides\/_rels\/.+.xml.rels$/)).sort();
+//             const relImages = (await Promise.all(slideRels.map(async relFile => {
+//                 const relContent = await pptx.files[relFile].async("nodebuffer");
+//                 return await getImageRels(relContent);
+//             }))).flat().filter(rel => !['.emf', '.wmf', '.svg', '.wdp', '.tiff', '.tif'].some(ext => rel.endsWith(ext)));
 
-    for (const employee of employees) {
-        const newest = (await repo.getAllOnePagersOfEmployee(employee)).reduce((acc, curr) => {
-            return curr.lastUpdateByEmployee > (acc?.lastUpdateByEmployee || new Date(0)) ? curr : acc;
-        }, undefined as OnePager | undefined);
+//             const uniqImages = relImages.filter(uniq)
 
-        if (newest) {
-            const pptxContent = await newest.data();
-            const zip = new JSZip();
-            const pptx = await zip.loadAsync(pptxContent);
+//             const usedMedia = uniqImages.map(img => pptx.files[`ppt/media/${img}`]);
 
-            const slideRels = Object.keys(pptx.files).filter(file => file.match(/ppt\/slides\/_rels\/.+.xml.rels$/)).sort();
-            const relImages = (await Promise.all(slideRels.map(async relFile => {
-                const relContent = await pptx.files[relFile].async("nodebuffer");
-                return await getImageRels(relContent);
-            }))).flat().filter(rel => !['.emf', '.wmf', '.svg', '.wdp', '.tiff', '.tif'].some(ext => rel.endsWith(ext)));
+//             const withFaces = []
+//             for (const img of usedMedia) {
+//                 //wdp
+//                 try {
+//                     const input = await canvas.loadImage(await img.async("nodebuffer"));
+//                     const detections = await faceapi.detectAllFaces(input as never, new faceapi.TinyFaceDetectorOptions())
+//                     if (detections.length > 0) {
+//                         withFaces.push(img);
+//                     };
+//                 } catch (err) {
+//                     console.error(`Error processing image ${img.name}:`, err);
+//                     return;
+//                 }
+//             }
+//             console.log(`Found ${withFaces.length} images with faces for employee ${employee}:`);
 
-            const uniqImages = relImages.filter(uniq)
+//             for (const file of withFaces) {
+//                 const content = await file.async("nodebuffer");
+//                 const filename = `${mediaDir}/${employee}_${file.name.split('/').pop()}`;
+//                 console.log(`Writing media file: ${filename}`);
+//                 writeFileSync(filename, content);
+//             }
+//         }
+//     }
 
-            const usedMedia = uniqImages.map(img => pptx.files[`ppt/media/${img}`]);
+// }
 
-            const withFaces = []
-            for (const img of usedMedia) {
-                //wdp
-                try {
-                    const input = await canvas.loadImage(await img.async("nodebuffer"));
-                    const detections = await faceapi.detectAllFaces(input as never, new faceapi.TinyFaceDetectorOptions())
-                    if (detections.length > 0) {
-                        withFaces.push(img);
-                    };
-                } catch (err) {
-                    console.error(`Error processing image ${img.name}:`, err);
-                    return;
-                }
-            }
-            console.log(`Found ${withFaces.length} images with faces for employee ${employee}:`);
+// type XmlRels = {
+//     Relationships: {
+//         Relationship: {
+//             $: {
+//                 Id: string;
+//                 Type: string;
+//                 Target: string;
+//             }
+//         }[]
+//     }
+// }
 
-            for (const file of withFaces) {
-                const content = await file.async("nodebuffer");
-                const filename = `${mediaDir}/${employee}_${file.name.split('/').pop()}`;
-                console.log(`Writing media file: ${filename}`);
-                writeFileSync(filename, content);
-            }
-        }
-    }
+// async function getImageRels(data: Buffer): Promise<string[]> {
+//     const parser = new Parser();
+//     const xml: XmlRels = await parser.parseStringPromise(data);
+//     return xml.Relationships.Relationship.map(rel => rel.$.Target).filter(target => target.match(/..\/media\/[^\/]+$/)).map(target => target.slice('../media/'.length));
+// }
 
-}
-
-type XmlRels = {
-    Relationships: {
-        Relationship: {
-            $: {
-                Id: string;
-                Type: string;
-                Target: string;
-            }
-        }[]
-    }
-}
-
-async function getImageRels(data: Buffer): Promise<string[]> {
-    const parser = new Parser();
-    const xml: XmlRels = await parser.parseStringPromise(data);
-    return xml.Relationships.Relationship.map(rel => rel.$.Target).filter(target => target.match(/..\/media\/[^\/]+$/)).map(target => target.slice('../media/'.length));
-}
-
-main().catch(err => {
-    console.error("Error:", err);
-    process.exit(1);
-}).then(() => {
-    console.log("Success");
-});
+// main().catch(err => {
+//     console.error("Error:", err);
+//     process.exit(1);
+// }).then(() => {
+//     console.log("Success");
+// });

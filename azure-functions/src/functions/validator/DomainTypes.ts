@@ -41,6 +41,7 @@ export type ValidationError =
     | 'MISSING_DE_VERSION' // employee has no one-pager in German
     | 'MISSING_EN_VERSION' // employee has no one-pager in English
     | 'MISSING_PHOTO' // one-pager has no photo of the employee
+    | 'LOW_QUALITY_PHOTO' // one-pager has a photo of the employee, but it is of low quality
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
