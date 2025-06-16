@@ -60,6 +60,8 @@ jobs:
     needs: apply-infra-definitions
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: 'Log in to Azure with AZ CLI'
         uses: azure/login@v2
         with:
