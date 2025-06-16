@@ -6,7 +6,7 @@ import {
     ValidationReporter,
 } from './DomainTypes';
 
-export type QueueSaveFunction = (item: any) => void;
+export type QueueSaveFunction = (item: object) => void;
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
