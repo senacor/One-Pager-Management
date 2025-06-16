@@ -16,12 +16,14 @@ os.environ['TF_ENABLE_MLIR_GRAPH_DUMP'] = '0'
 import tensorflow as tf
 import argparse
 
+import tensorflowjs as tfjs
+
 parser = argparse.ArgumentParser(description="Quantize a Keras model to TFLite format.")
 parser.add_argument('--model', type=str, required=True, help='Path to the Keras model file (.keras or .h5)')
 args = parser.parse_args()
 
 model_path = args.model
-output_path = os.path.splitext(model_path)[0] + '.tflite'
+output_path = os.path.splitext(model_path)[0]
 
 print(f"TensorFlow version: {tf.__version__}, Keras version: {tf.keras.__version__}")
 
@@ -36,12 +38,9 @@ try:
             except Exception:
                 pass
     print("Converting to quantized TFLite format ...", flush=True)
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    tflite_model = converter.convert()
-    print(f"Saving quantized model to {output_path} ...", flush=True)
-    with open(output_path, 'wb') as f:
-        f.write(tflite_model)
+
+    tfjs.converters.save_keras_model(model, output_path)
+
     print(f"Quantized model saved to {output_path}", flush=True)
 except Exception as e:
     print(f"Error during quantization: {e}", flush=True)

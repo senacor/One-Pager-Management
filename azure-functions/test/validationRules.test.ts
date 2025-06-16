@@ -1,8 +1,8 @@
 import { LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
-import { readdirSync, readFileSync } from 'node:fs';
+import { promises, readdirSync, readFileSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
-import { hasPhoto } from '../src/functions/validator/rules/photo';
+import { hasLowQuality, hasPhoto } from '../src/functions/validator/rules/photo';
 
 const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),
@@ -89,10 +89,7 @@ describe('validationRules', () => {
 
             const errors = hasPhoto()(onePagerWithoutPhoto);
 
-            await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO'])).catch(err => {
-                console.error(`Error during hasPhoto validation: ${JSON.stringify(err, null, 2)}`);
-                throw err;
-            });
+            await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
         });
 
         it('should report no error if photo is found', async () => {
@@ -101,6 +98,30 @@ describe('validationRules', () => {
             const errors = hasPhoto()(onePagerWithPhoto);
 
             await expect(errors).resolves.toEqual([]);
+        });
+    });
+
+    describe('hasQualityPhoto', () => {
+        it('should report an error if photo does not fit our criteria', async () => {
+            const badPhoto = {
+                name: 'bad.jpg',
+                data: () => promises.readFile('test/photos/bad.jpg'),
+            };
+
+            const isLow = hasLowQuality(badPhoto);
+
+            await expect(isLow).resolves.toEqual(true);
+        });
+
+        it('should report no error if photo is good', async () => {
+            const goodPhoto = {
+                name: 'good.jpg',
+                data: () => promises.readFile('test/photos/good.jpg'),
+            };
+
+            const isLow = hasLowQuality(goodPhoto);
+
+            await expect(isLow).resolves.toEqual(false);
         });
     });
 

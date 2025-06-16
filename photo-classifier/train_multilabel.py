@@ -85,7 +85,8 @@ if args.resume and os.path.exists(checkpoint_path):
     # Retrieve base_model from loaded model
     base_model = model.get_layer('resnet50')
 else:
-    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(IMG_SIZE, IMG_SIZE, 3), name='resnet50')
+    input_tensor = Input(shape=(IMG_SIZE, IMG_SIZE, 3), name='input_layer')
+    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3), input_tensor=input_tensor, name='resnet50')
     base_model.trainable = False
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
