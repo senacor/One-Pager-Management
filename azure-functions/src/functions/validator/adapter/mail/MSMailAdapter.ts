@@ -56,19 +56,3 @@ export class MSMailAdapter implements MailAdapter {
 }
 
 
-
-// (async function () {
-
-//     const client = await createSharepointClient({
-//         SHAREPOINT_TENANT_ID: process.env.SHAREPOINT_TENANT_ID,
-//         SHAREPOINT_CLIENT_ID: process.env.SHAREPOINT_CLIENT_ID,
-//         SHAREPOINT_CLIENT_SECRET: process.env.SHAREPOINT_CLIENT_SECRET,
-//         SHAREPOINT_API_LOGGING: 'true',
-//         SHAREPOINT_API_CACHING: 'false'
-//     } as SharepointClientOptions);
-
-//     const mailSender = new MSMailAdapter(client, console);
-//     await mailSender.sendMail(['artjom.konschin@senacor.com'], 'Test Subject', 'This is a <b>test</b> email body.');
-
-
-// })();
