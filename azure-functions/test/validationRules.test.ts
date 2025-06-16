@@ -2,7 +2,7 @@ import { LoadedOnePager, ValidationError } from '../src/functions/validator/Doma
 import { promises, readdirSync, readFileSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
-import { hasLowQuality, hasPhoto, hasQualityPhoto } from '../src/functions/validator/rules/photo';
+import { hasLowQuality, hasPhoto } from '../src/functions/validator/rules/photo';
 
 const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),
