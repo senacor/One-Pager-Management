@@ -7,25 +7,19 @@ import {
     RetryHandler,
 } from '@microsoft/microsoft-graph-client';
 import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/lib/src/authentication/azureTokenCredentials/TokenCredentialAuthenticationProvider';
-import { LocalFileEmployeeRepository } from '../validator/adapter/localfile/LocalFileEmployeeRepository';
-import { LocalFileOnePagerRepository } from '../validator/adapter/localfile/LocalFileOnePagerRepository';
 import { LocalFileValidationReporter } from '../validator/adapter/localfile/LocalFileValidationReporter';
-import { InMemoryOnePagerRepository } from '../validator/adapter/memory/InMemoryOnePagerRepository';
 import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
-import { SharepointDriveOnePagerRepository } from '../validator/adapter/sharepoint/SharepointDriveOnePagerRepository';
 import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
-import {
-    EmployeeRepository,
-    Logger,
-    OnePagerRepository,
-    ValidationReporter,
-} from '../validator/DomainTypes';
+import { Logger, StorageExplorer, ValidationReporter } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
+import { promises as fs } from 'fs';
+import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/SharepointStorageExplorer';
+import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
+import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
 import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
 
 export type AppConfiguration = {
-    onePagers: () => Promise<OnePagerRepository>;
-    employees: () => Promise<EmployeeRepository>;
+    explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
     mailAdapter: () => MSMailAdapter | undefined; // optional mail adapter for sharepoint storage
 };
@@ -84,10 +78,9 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
     switch (opts.STORAGE_SOURCE) {
         case 'memory': {
             logger.log('Using in-memory storage!');
-            const repo = new InMemoryOnePagerRepository({});
             return {
-                onePagers: async () => repo,
-                employees: async () => repo,
+                explorer: async () =>
+                    new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
                 mailAdapter: () => undefined
             };
@@ -98,9 +91,9 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             logger.log(
                 `Using local file storage for one-pagers at ${onePagerDir} and validation results at ${resultDir}!`
             );
+
             return {
-                onePagers: async () => new LocalFileOnePagerRepository(onePagerDir, logger),
-                employees: async () => new LocalFileEmployeeRepository(onePagerDir, logger),
+                explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
                 mailAdapter: () => undefined
             };
@@ -141,22 +134,14 @@ function getSharepointConfig(
         `Storing validation results on SharePoint list with site: "${validationSiteName}", name: "${validationResultListName}"!`
     );
 
-    let promise: Promise<SharepointDriveOnePagerRepository>;
-    const repo = () => {
-        if (!promise) {
-            promise = SharepointDriveOnePagerRepository.getInstance(
+    return {
+        explorer: () =>
+            SharepointStorageExplorer.getInstance(
                 client,
                 onePagerSiteName,
                 onePagerDriveName,
                 logger
-            );
-        }
-        return promise;
-    };
-
-    return {
-        employees: repo,
-        onePagers: repo,
+            ),
         reporter: () =>
             SharepointListValidationReporter.getInstance(
                 client,

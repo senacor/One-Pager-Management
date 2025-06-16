@@ -1,6 +1,13 @@
 name: Deploy
 
 on:
+  workflow_dispatch: 
+    inputs:
+      update-infra:
+        description: 'Update infrastructure definitions'
+        required: false
+        default: 'false'
+
   push:
     branches:
       - main
@@ -25,14 +32,14 @@ jobs:
           filters: |
             infra:
               - 'azure-functions/infra/**'
-      - if: steps.changes.outputs.infra == 'true'
+      - if: ${{ steps.changes.outputs.infra == 'true' && github.event.inputs.update-infra != 'false' }}
         name: 'Log in to Azure with AZ CLI'
         uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - if: steps.changes.outputs.infra == 'true'
+      - if: ${{ steps.changes.outputs.infra == 'true' && github.event.inputs.update-infra != 'false' }}
         name: apply infrastructure
         uses: azure/cli@v2
         with:
@@ -44,7 +51,7 @@ jobs:
               --parameters sharepointClientSecret=${{ secrets.SHAREPOINT_CLIENT_SECRET }} \
 
   deploy-functions:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     concurrency:
         group: 'AzureInfra'
     permissions:
@@ -68,7 +75,7 @@ jobs:
       - run: |
           pushd "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
           npm ci
-          npm run build --if-present
+          npm run build
           npm prune --production
           popd
       - name: 'Run Azure Functions Action'
