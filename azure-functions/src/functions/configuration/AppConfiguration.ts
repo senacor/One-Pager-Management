@@ -21,11 +21,13 @@ import {
     ValidationReporter,
 } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
+import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
 
 export type AppConfiguration = {
     onePagers: () => Promise<OnePagerRepository>;
     employees: () => Promise<EmployeeRepository>;
     reporter: () => Promise<ValidationReporter>;
+    mailAdapter: () => MSMailAdapter | undefined; // optional mail adapter for sharepoint storage
 };
 
 type MemoryStorageOptions = {
@@ -87,6 +89,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 onePagers: async () => repo,
                 employees: async () => repo,
                 reporter: async () => new InMemoryValidationReporter(logger),
+                mailAdapter: () => undefined
             };
         }
         case 'localfile': {
@@ -99,6 +102,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 onePagers: async () => new LocalFileOnePagerRepository(onePagerDir, logger),
                 employees: async () => new LocalFileEmployeeRepository(onePagerDir, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
+                mailAdapter: () => undefined
             };
         }
         case 'sharepoint': {
@@ -160,6 +164,11 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
+        mailAdapter: () =>
+            new MSMailAdapter(
+                client,
+                logger
+            ) // optional mail adapter for SharePoint storage
     };
 }
 
