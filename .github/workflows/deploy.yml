@@ -51,7 +51,7 @@ jobs:
               --parameters sharepointClientSecret=${{ secrets.SHAREPOINT_CLIENT_SECRET }} \
 
   deploy-functions:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     concurrency:
         group: 'AzureInfra'
     permissions:
