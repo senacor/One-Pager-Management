@@ -115,7 +115,7 @@ async function createOnePagers(
 }
 
 async function templatePath(language: string, templateVersion?: string): Promise<string> {
-    const file = `test/onepager/example-${templateVersion || '2024'}-${language}.pptx`;
+    const file = `test/ressources/onepager/example-${templateVersion || '2024'}-${language}.pptx`;
     try {
         await fs.access(file);
     } catch {

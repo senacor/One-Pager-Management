@@ -1,12 +1,13 @@
 import {
     EmployeeID,
     Logger,
-    MailAdapter,
+    MailPort,
     ValidationError,
     ValidationReporter,
 } from './DomainTypes';
 
 export type QueueSaveFunction = (item: object) => void;
+
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -14,16 +15,16 @@ export type QueueSaveFunction = (item: object) => void;
 export class EMailNotification {
     private readonly logger: Logger;
     private readonly reporter: ValidationReporter;
-    private readonly mailAdapter: MailAdapter;
+    private readonly mailAdapter: MailPort;
 
     /**
      * Creates an instance of EMailNotification.
-     * @param mailAdapter The MailAdapter used for sending mails.
+     * @param mailAdapter The MailPort used for sending mails.
      * @param reporter The reporter where validation results are stored.
      * @param logger The logger to use for logging messages (default is console).
      */
     constructor(
-        mailAdapter: MailAdapter,
+        mailAdapter: MailPort,
         reporter: ValidationReporter,
         logger: Logger = console
     ) {
@@ -32,8 +33,7 @@ export class EMailNotification {
         this.mailAdapter = mailAdapter
     }
 
-    async notifyEmployee(employeeId: EmployeeID, saveItemToQueue: QueueSaveFunction) : Promise<void> {
-
+    async notifyEmployee(employeeId: EmployeeID) : Promise<void> {
 
         const subject = 'Please update your One-Pagers!';
 
@@ -48,12 +48,6 @@ export class EMailNotification {
             - ${validationErrorArr.join('\n- ')}
         `;
 
-        saveItemToQueue({
-            email: emailAddress,
-            subject: subject,
-            content: eMailTemplate
-        });
-
-        await this.mailAdapter.sendMail([emailAddress], subject, eMailTemplate);
+        await this.mailAdapter.sendMail(emailAddress, subject, eMailTemplate);
     }
 }

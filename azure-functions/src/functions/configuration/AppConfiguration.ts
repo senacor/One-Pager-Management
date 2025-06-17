@@ -10,18 +10,19 @@ import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-grap
 import { LocalFileValidationReporter } from '../validator/adapter/localfile/LocalFileValidationReporter';
 import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
-import { Logger, StorageExplorer, ValidationReporter } from '../validator/DomainTypes';
+import { Logger, MailPort, StorageExplorer, ValidationReporter } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 import { promises as fs } from 'fs';
 import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/SharepointStorageExplorer';
 import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
 import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
+import { InMemoryMailAdapter } from '../validator/adapter/memory/InMemoryMailAdapter';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
-    mailAdapter: () => MSMailAdapter | undefined; // optional mail adapter for sharepoint storage
+    mailAdapter: () => MailPort | undefined; // optional mail adapter for sharepoint storage
 };
 
 type MemoryStorageOptions = {
@@ -82,7 +83,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 explorer: async () =>
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
-                mailAdapter: () => undefined
+                mailAdapter: () => new InMemoryMailAdapter()
             };
         }
         case 'localfile': {
@@ -150,10 +151,11 @@ function getSharepointConfig(
                 logger
             ),
         mailAdapter: () =>
-            new MSMailAdapter(
-                client,
-                logger
-            ) // optional mail adapter for SharePoint storage
+            new InMemoryMailAdapter()
+            // new MSMailAdapter(
+            //     client,
+            //     logger
+            // ) // optional mail adapter for SharePoint storage
     };
 }
 

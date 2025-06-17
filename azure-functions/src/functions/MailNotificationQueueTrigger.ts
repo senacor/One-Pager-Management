@@ -1,15 +1,16 @@
 import { InvocationContext, app, output } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { isEmployeeId, MailAdapter } from './validator/DomainTypes';
+import { isEmployeeId, MailPort } from './validator/DomainTypes';
 import { printError } from './ErrorHandling';
 import { EMailNotification, QueueSaveFunction } from './validator/EMailNotification';
+import { InMemoryMailAdapter } from './validator/adapter/memory/InMemoryMailAdapter';
 
 export type QueueItem = { employeeId: string };
 
 // queue that contains all requests for employees that shall receive a notification
 export const onepagerMailRequests = 'onepager-mail-requests';
 
-// This queue contains entries for each send mail (dev-queue to log send mails)
+// This queue contains entries for each send mail (dev/debug-queue to log send mails)
 export const onepagerMailOutputQueue = 'onepager-mail-outputs';
 
 const queueOutput = output.storageQueue({
@@ -44,15 +45,20 @@ export async function MailNotificationQueueTrigger(
         // Establish a connection to the repository containing one-pagers and our report output list.
         const config = loadConfigFromEnv(context);
 
-        const mailAdapter: MailAdapter | undefined = config.mailAdapter();
+        const mailAdapter: MailPort | undefined = config.mailAdapter();
         if (!mailAdapter) {
-            throw new Error('A MailAdapter can only be used in combination with SharePoint!');
+            throw new Error('A MailPort can only be used in combination with SharePoint!');
         }
 
         const mailNotificationHandler = new EMailNotification(mailAdapter, await config.reporter(), context);
-        const queueSaveFunction: QueueSaveFunction = (item) => { return context.extraOutputs.set(queueOutput, item);};
 
-        await mailNotificationHandler.notifyEmployee(item.employeeId, queueSaveFunction);
+        await mailNotificationHandler.notifyEmployee(item.employeeId);
+
+        if (mailAdapter instanceof InMemoryMailAdapter) {
+            context.extraOutputs.set(queueOutput, mailAdapter.mails);
+        }
+
+
 
     } catch (error) {
         context.error(
