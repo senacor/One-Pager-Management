@@ -9,6 +9,7 @@
         "clean": "rimraf dist",
         "prestart": "npm run clean && npm run build",
         "start": "func start",
+        "ci:x86": "npm ci --target_arch=ia32 --target_platform=win32",
         "test": "jest --silent && npm run cucumber",
         "cucumber-check": "cucumber-js test/features/**/*.feature --dry-run  --require test/features/**/*.ts --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\" --format summary --format progress --format progress-bar",
         "cucumber": "cucumber-js test/features/**/*.feature --require test/features/**/*.ts --require-module ts-node/register --format-options \"{\\\"snippetInterface\\\": \\\"async-await\\\"}\"  --format html:reports/report.html --format summary --format @cucumber/pretty-formatter --format cucumber-console-formatter --format junit:reports/cucumber-report.xml",

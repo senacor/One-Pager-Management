@@ -76,7 +76,7 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: |
           pushd "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          npm ci
+          npm run ci:x86
           npm run build
           npm prune --production
           popd
