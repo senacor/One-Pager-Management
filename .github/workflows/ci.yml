@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: npm ci
       - run: npm run build
+      - run: npm run cucumber:check
       - run: npm test
         env:
             SHAREPOINT_CLIENT_ID: "1621d264-a7bb-40b6-bfef-9b2839cb7eec"
