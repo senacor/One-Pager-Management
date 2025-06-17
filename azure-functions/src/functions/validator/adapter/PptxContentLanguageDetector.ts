@@ -20,9 +20,9 @@ export class PptxContentLanguageDetector implements LanguageDetector {
             tmpDir,
             `pptx-${Date.now()}-${Math.random().toString(36).slice(2)}.pptx`
         );
-        await fs.writeFile(tmpFile, content);
 
         try {
+            await fs.writeFile(tmpFile, content);
             const slides = await new PptxParser(tmpFile).extractText();
 
             return (
@@ -53,7 +53,7 @@ export class PptxContentLanguageDetector implements LanguageDetector {
                 .filter(uniq);
         } finally {
             // Clean up the temporary file
-            await fs.unlink(tmpFile).catch(() => {});
+            await fs.rm(tmpFile).catch(() => {});
         }
     }
 }
