@@ -45,7 +45,7 @@
         "@eslint/js": "^9.29.0",
         "@microsoft/microsoft-graph-types": "^2.40.0",
         "@types/isomorphic-fetch": "^0.0.39",
-        "@types/jest": "^29.5.14",
+        "@types/jest": "^30.0.0",
         "@types/node": "^22.15.21",
         "@types/sinon": "^17.0.4",
         "@types/xml2js": "^0.4.14",
