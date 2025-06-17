@@ -26,7 +26,7 @@
         "@tensorflow-models/face-detection": "^1.0.3",
         "@tensorflow/tfjs-converter": "^4.22.0",
         "@tensorflow/tfjs-core": "^4.22.0",
-        "@tensorflow/tfjs-node": "^4.22.0",
+        "@tensorflow/tfjs": "^4.22.0",
         "franc-min": "^6.2.0",
         "hardened-fetch": "^1.2.3",
         "isomorphic-fetch": "^3.0.0",
