@@ -1,10 +1,10 @@
 name: reviewdog with es lint and tsc
+
 on: [pull_request]
+
 env:
   NODE_VERSION: '22.x'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure-functions'
-
-
 
 jobs:
   eslint-reviewdog:
@@ -14,24 +14,22 @@ jobs:
       run:
         working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
     permissions:
-        contents: read
-        pull-requests: write
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v2
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v4
         with:
-            node-version: ${{ env.NODE_VERSION }}
-            cache: 'npm'
-            cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - name: Node install
         run: npm ci
-     # this is already included in the package.json
-     # - name: Install eslint
-     #   run: npm install --save-dev eslint @eslint/js typescript typescript-eslint
       - uses: reviewdog/action-eslint@v1 # v1.33.2
         with:
-            reporter: github-pr-review
-            eslint_flags: "src/"
-            workdir: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-            filter_mode: diff_context
+          reporter: github-pr-review
+          eslint_flags: "src/"
+          workdir: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          filter_mode: diff_context
+            

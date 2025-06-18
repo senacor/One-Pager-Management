@@ -14,7 +14,7 @@ type ReporterFactory = () => Promise<ValidationReporter>;
 
 const someOnePager: OnePager = {
     lastUpdateByEmployee: new Date(),
-    fileLocation: new URL('https://example.com/onepager'),
+    data: async () => Buffer.from('This is a test one-pager.'),
     webLocation: new URL('https://example.com/onepager/web'),
 };
 

@@ -2,9 +2,10 @@ import { InvocationContext, app } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { isEmployeeId } from './validator/DomainTypes';
 import { OnePagerValidation } from './validator/OnePagerValidation';
-import * as validationRules from './validator/validationRules';
 import { printError } from './ErrorHandling';
 import { PptxContentLanguageDetector } from './validator/adapter/PptxContentLanguageDetector';
+import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
+import { allRules } from './validator/rules';
 
 export type QueueItem = { employeeId: string };
 
@@ -37,13 +38,15 @@ export async function FileChangeQueueTrigger(
         // Establish a connection to the repository containing one-pagers and our report output list.
         const config = loadConfigFromEnv(context);
 
+        const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
+
         // Validate the one-pagers of the employee specified in the queue item.
         const validator = new OnePagerValidation(
-            await config.onePagers(),
-            await config.employees(),
+            onePagers,
+            onePagers,
             await config.reporter(),
             new PptxContentLanguageDetector(context),
-            validationRules.allRules(context),
+            allRules(context),
             context
         );
         await validator.validateOnePagersOfEmployee(item.employeeId);
@@ -60,6 +63,7 @@ export async function FileChangeQueueTrigger(
 }
 
 // Register the FileChangeQueueTrigger function with Azure Functions to work on queue items.
+
 app.storageQueue('FileChangeQueueTrigger', {
     queueName: onepagerValidationRequests,
     connection: '',

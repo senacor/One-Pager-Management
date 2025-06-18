@@ -16,17 +16,14 @@ from sklearn.model_selection import train_test_split
 from preprocess import intelligent_center_crop
 from live_plot_callback import LivePlotCallback
 from sklearn.metrics import classification_report
-from tensorflow.keras import mixed_precision
 from tensorflow.keras.models import load_model
 import argparse
-
-mixed_precision.set_global_policy('mixed_float16')
 
 IMG_DIR = 'datasets/multi-label/augmented'
 CSV_PATH = 'datasets/multi-label/labels_augmented.csv'
 IMG_SIZE = 224
 BATCH_SIZE = 256
-EPOCHS = 50
+EPOCHS = 60
 
 # Load CSV
 labels_df = pd.read_csv(CSV_PATH)
@@ -88,7 +85,8 @@ if args.resume and os.path.exists(checkpoint_path):
     # Retrieve base_model from loaded model
     base_model = model.get_layer('resnet50')
 else:
-    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(IMG_SIZE, IMG_SIZE, 3), name='resnet50')
+    input_tensor = Input(shape=(IMG_SIZE, IMG_SIZE, 3), name='input_layer')
+    base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3), input_tensor=input_tensor, name='resnet50')
     base_model.trainable = False
     x = base_model.output
     x = GlobalAveragePooling2D()(x)

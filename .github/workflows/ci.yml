@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v4
         with:
@@ -28,6 +30,7 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: npm ci
       - run: npm run build
+      - run: npm run cucumber:check
       - run: npm test
         env:
             SHAREPOINT_CLIENT_ID: "1621d264-a7bb-40b6-bfef-9b2839cb7eec"
@@ -55,6 +58,8 @@ jobs:
         working-directory: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v4
         with:
@@ -63,6 +68,7 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: npm ci
       - run: npm run build
+      - run: npm prune --production
       - uses: JarvusInnovations/background-action@v1
         name: Bootstrap System Under Test (SUT)
         with:
@@ -75,7 +81,7 @@ jobs:
             STORAGE_SOURCE=localfile \
             ONE_PAGER_DIR=.storage/onepagers \
             VALIDATION_RESULT_DIR=.storage \
-             npx azure-functions-core-tools start &
+            npx azure-functions-core-tools start &
           wait-for: 5m
           wait-on: |
             http://localhost:7071
@@ -96,6 +102,7 @@ jobs:
             fi
 
   check-infra:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
