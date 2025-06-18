@@ -38,7 +38,7 @@ export class EMailNotification {
     }
 
     async loadEMailTemplate(): Promise<MailTemplate> {
-        const templateString = fs.readFileSync(`../../../${config.mailTemplatePath}`, { encoding: 'utf8', flag: 'r' });
+        const templateString = fs.readFileSync(`${config.mailTemplatePath}`, { encoding: 'utf8', flag: 'r' });
         // readFile can cause an error. But it should be fine to not catch it because we would not add any new information to the error
 
         const template = JSON.parse(templateString);
@@ -56,7 +56,7 @@ export class EMailNotification {
 
 
         const templateData = {
-            errors: validationErrorArr.join(' ')
+            errors: validationErrorArr.join(' ') + "!"
         };
 
         const mailContent = render(mailTemplate.content, templateData);
@@ -64,8 +64,9 @@ export class EMailNotification {
         // TODO: get email of employee
         const emailAddress = '';
 
+        this.logger.log(mailTemplate.subject, mailContent);
 
 
-        await this.mailAdapter.sendMail(emailAddress, mailTemplate.subject, mailTemplate.content);
+        await this.mailAdapter.sendMail(emailAddress, mailTemplate.subject, mailContent);
     }
 }
