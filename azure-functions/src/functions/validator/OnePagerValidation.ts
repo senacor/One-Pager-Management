@@ -1,4 +1,5 @@
 import {
+    EmployeeData,
     EmployeeDataRepository,
     EmployeeID,
     EmployeeRepository,
@@ -62,7 +63,7 @@ export class OnePagerValidation {
             return;
         }
 
-        await this.employeeAdapter.getDataForEmployee(id);
+        let employeeData: EmployeeData = await this.employeeAdapter.getDataForEmployee(id);
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
         this.logger.log(
@@ -101,7 +102,7 @@ export class OnePagerValidation {
         const validationResults = await Promise.all(
             selectedCandidates.map(async op => ({
                 onePager: op,
-                errors: await this.validationRule(op),
+                errors: await this.validationRule(op, employeeData),
             }))
         );
 

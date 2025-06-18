@@ -10,6 +10,19 @@ const exampleOnePager: LoadedOnePager = {
     data: readFileSync('test/onepager/example-2024-DE.pptx'),
     webLocation: new URL('https://example.com/onepager.pptx'),
 };
+const employeeData =  {
+    name: "",
+    email: "", //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    entry_date: "",
+    office: "",
+    date_of_employment_change: "",
+    position_current: "",
+    resource_type_current: "",
+    staffing_pool_current: "",
+    position_future: "",
+    resource_type_future: "",
+    staffing_pool_future: ""
+};
 
 describe('validationRules', () => {
     describe('lastModifiedRule', () => {
@@ -21,7 +34,8 @@ describe('validationRules', () => {
                 lastUpdateByEmployee: withingSixMonths,
             };
 
-            const errors = lastModifiedRule(recent);
+
+            const errors = lastModifiedRule(recent, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -33,7 +47,7 @@ describe('validationRules', () => {
                 lastUpdateByEmployee: olderThenSixMonths,
             };
 
-            const errors = lastModifiedRule(old);
+            const errors = lastModifiedRule(old, employeeData);
 
             await expect(errors).resolves.toEqual(['OLDER_THAN_SIX_MONTHS']);
         });
@@ -46,7 +60,7 @@ describe('validationRules', () => {
                 data: readFileSync('examples/Mustermann, Max_DE_240209.pptx'),
             };
 
-            const errors = usesCurrentTemplate()(currentTemplate);
+            const errors = usesCurrentTemplate()(currentTemplate, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -59,7 +73,7 @@ describe('validationRules', () => {
                     data: readFileSync(`examples/Mustermann, Max DE_${file}`),
                 };
 
-                const errors = usesCurrentTemplate()(oldTemplate);
+                const errors = usesCurrentTemplate()(oldTemplate, employeeData);
 
                 await expect(errors).resolves.toEqual(['USING_UNKNOWN_TEMPLATE']);
             }
@@ -73,7 +87,7 @@ describe('validationRules', () => {
                     data: readFileSync(`examples/non-exact-template/${file}`),
                 };
 
-                const errors = usesCurrentTemplate()(nonExact);
+                const errors = usesCurrentTemplate()(nonExact, employeeData);
 
                 await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
             }
@@ -87,7 +101,7 @@ describe('validationRules', () => {
                 data: readFileSync('test/onepager/example-2024-DE-no-photo.pptx'),
             };
 
-            const errors = hasPhoto()(onePagerWithoutPhoto);
+            const errors = hasPhoto()(onePagerWithoutPhoto, employeeData);
 
             await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
         });
@@ -95,7 +109,7 @@ describe('validationRules', () => {
         it('should report no error if photo is found', async () => {
             const onePagerWithPhoto = exampleOnePager;
 
-            const errors = hasPhoto()(onePagerWithPhoto);
+            const errors = hasPhoto()(onePagerWithPhoto, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -131,7 +145,7 @@ describe('validationRules', () => {
             const rule2 = async () => ['OLDER_THAN_SIX_MONTHS' as ValidationError];
             const combined = combineRules(rule1, rule2);
 
-            const errors = combined(exampleOnePager);
+            const errors = combined(exampleOnePager, employeeData);
 
             await expect(errors).resolves.toEqual(['MISSING_ONE_PAGER', 'OLDER_THAN_SIX_MONTHS']);
         });

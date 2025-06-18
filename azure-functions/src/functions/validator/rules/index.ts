@@ -10,13 +10,13 @@ export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pp
  *
  */
 
-export const lastModifiedRule: ValidationRule = async onePager => {
+export const lastModifiedRule: ValidationRule = async (onePager, employeeData) => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
-export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
+export const contentLanguageIsIndicatedInName: ValidationRule = async (onePager, employeeData) => {
     if (onePager.contentLanguages.length > 1) {
         return ['MIXED_LANGUAGE_VERSION'];
     }
@@ -49,8 +49,8 @@ export function allRules(log: Logger = console): ValidationRule {
  * @returns The combined validation rule.
  */
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
-    return async onePager => {
-        const errors = await Promise.all(rules.map(rule => rule(onePager)));
+    return async (onePager, employeeData) => {
+        const errors = await Promise.all(rules.map(rule => rule(onePager, employeeData)));
         return errors.flat();
     };
 }

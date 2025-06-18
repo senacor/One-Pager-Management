@@ -19,7 +19,7 @@ function getTemplateHashes(logger: Logger) {
 
 export const usesCurrentTemplate =
     (logger: Logger = console): ValidationRule =>
-    async onePager => {
+    async (onePager, employeeData) => {
         const templateHashes = await getTemplateHashes(logger);
         const contentHashes = await calculateThemeHash(logger, onePager.data);
 

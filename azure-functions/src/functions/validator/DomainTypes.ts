@@ -50,7 +50,7 @@ export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
     data: Buffer;
 };
 
-export type ValidationRule = (onePager: LoadedOnePager) => Promise<ValidationError[]>;
+export type ValidationRule = (onePager: LoadedOnePager, employeeData: EmployeeData) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
     /**

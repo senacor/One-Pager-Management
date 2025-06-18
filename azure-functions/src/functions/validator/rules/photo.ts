@@ -3,7 +3,7 @@ import { detectFaces, labelImage, PhotoLabels } from './ai';
 import { Pptx, PptxImage } from './Pptx';
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
-    return async onePager => {
+    return async (onePager, employeeData) => {
         const pptx = await Pptx.load(onePager.data);
         const usedImages = await pptx.getUsedImages();
 
@@ -30,7 +30,7 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
 export const QUALITY_THRESHOLD = 0.2;
 
 export function hasQualityPhoto(logger: Logger = console): ValidationRule {
-    return async onePager => {
+    return async (onePager, employeeData) => {
         const pptx = await Pptx.load(onePager.data);
         const usedImages = await pptx.getUsedImages();
 

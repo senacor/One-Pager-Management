@@ -70,7 +70,7 @@ export class PowerBIRepository implements EmployeeDataRepository {
 
         const result = await resHandle.json();
 
-        this.logger.log("Employee Data: ", JSON.stringify(result)); // TODO: comment out
+        // this.logger.log("Employee Data: ", JSON.stringify(result));
 
         const data = result.results[0].tables[0].rows;
         if (data.length === 0) {
