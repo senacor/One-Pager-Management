@@ -26,6 +26,7 @@
         "@microsoft/microsoft-graph-client": "^3.0.7",
         "@tensorflow-models/face-detection": "^1.0.3",
         "@tensorflow/tfjs": "^4.22.0",
+        "@tensorflow/tfjs-backend-wasm": "^4.22.0",
         "@tensorflow/tfjs-converter": "^4.22.0",
         "@tensorflow/tfjs-core": "^4.22.0",
         "franc-min": "^6.2.0",

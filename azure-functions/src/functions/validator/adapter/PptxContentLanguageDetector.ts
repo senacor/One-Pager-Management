@@ -100,7 +100,7 @@ function realContent(text: string): boolean {
     return (
         text.length > 0 &&
         ['Senacor Technologies AG', 'kundenanonyme Fassung', 'optionale Ergänzungen'].indexOf(text) === -1 &&
-        !/\d{2}\.\d{2}\.\d{4}/.test(text)
+        !/\d{2}\.\d{2}\.\d{4}/.test(text) &&
+        !text.startsWith('Ergänzung: ')
     );
-
 }
