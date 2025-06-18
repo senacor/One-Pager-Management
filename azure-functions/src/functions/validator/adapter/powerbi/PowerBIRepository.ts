@@ -26,11 +26,10 @@ export class PowerBIRepository implements DataRepository {
     }
 
     async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
-        // const groupID = '2629c92d-7ccb-4308-9c38-06fa93cc13a0';
-        const datasetID = 'ad3b6894-6d91-4556-be87-4260d71c6483';
+        const datasetID = '17c9b3ab-752a-4d66-95bc-2488dd7c4560';
 
         const token = await this.authProvider.getAccessToken();
-        // console.log(token);
+        this.logger.log(token);
 
         // make sure that employeeID  is escaped
         if (!isEmployeeId(employeeId)) {
@@ -39,12 +38,12 @@ export class PowerBIRepository implements DataRepository {
 
         // let escapedIdNum = escapedId.substring(1, escapedId.length-1);
 
-        let resHandle = await fetch(`https://api.powerbi.com/v1.0/myorg/datasets/${datasetID}/executeQueries`, {
+        const resHandle = await fetch(`https://api.powerbi.com/v1.0/myorg/datasets/${datasetID}/executeQueries`, {
             method: 'POST',
             body: JSON.stringify({
                 "queries": [
                     {
-                    "query": `EVALUATE FILTER('employee one-pager', 'employee one-pager'[first_FIS_ID] = \"FIS${employeeId}\")`
+                    "query": `EVALUATE VALUES('current employee')`
                     }
                 ],
                 "serializerSettings": {
@@ -52,7 +51,7 @@ export class PowerBIRepository implements DataRepository {
                 }
             }),
             headers: {
-                'Authorization': 'Bearer ' + token,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json; charset=utf-8',
                 'Accept': 'application/json',
             }
@@ -60,19 +59,29 @@ export class PowerBIRepository implements DataRepository {
 
 
 
-        let result = await resHandle.json();
+        const result = await resHandle.json();
 
         // this.logger.log(JSON.stringify(result));
 
-        let data = result["results"][0]["tables"][0]["rows"];
+        const data = result.results[0].tables[0].rows;
         if (data.length === 0) {
             throw new Error(`No entry found for employee with ID: ${employeeId}`);
         }
 
-        return {
-            name: data[0]["employee one-pager[name]"],
-            email: data[0]["employee one-pager[mail]"],
-            position: data[0]["employee one-pager[first_FIS_ID]"]
+        const employeeData: EmployeeData = {
+            name: data[0]["current employee[name]"],
+            email: data[0]["current employee[email]"], //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+            entry_date: data[0]["current employee[entry_date]"],
+            office: data[0]["current employee[office]"],
+            date_of_employment_change: data[0]["current employee[date_of_employment_change]"],
+            position_current: data[0]["current employee[position_current]"],
+            resource_type_current: data[0]["current employee[resource_type_current]"],
+            staffing_pool_current: data[0]["current employee[staffing_pool_current]"],
+            position_future: data[0]["current employee[position_future]"],
+            resource_type_future: data[0]["current employee[resource_type_future]"],
+            staffing_pool_future: data[0]["current employee[staffing_pool_future]"]
         };
+
+        return employeeData;
     }
 }

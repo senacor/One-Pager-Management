@@ -118,8 +118,16 @@ export interface DataRepository {
 
 export type EmployeeData = {
     name: string;
-    email: string;
-    position: string;
+    email: string; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    entry_date: string;
+    office: string;
+    date_of_employment_change: string | null;
+    position_current: string  | null;
+    resource_type_current: string;
+    staffing_pool_current: string;
+    position_future: string | null;
+    resource_type_future: string | null;
+    staffing_pool_future: string | null;
 };
 
 
