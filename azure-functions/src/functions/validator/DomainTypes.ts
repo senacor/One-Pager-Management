@@ -150,7 +150,7 @@ export interface StorageExplorer {
 
 export type MSScope = 'https://graph.microsoft.com/.default' | 'https://analysis.windows.net/powerbi/api/.default';
 
-export interface DataRepository {
+export interface EmployeeDataRepository {
 
     getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData>;
 }

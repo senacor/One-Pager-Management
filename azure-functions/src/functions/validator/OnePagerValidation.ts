@@ -1,4 +1,5 @@
 import {
+    EmployeeDataRepository,
     EmployeeID,
     EmployeeRepository,
     LanguageDetector,
@@ -22,6 +23,7 @@ export class OnePagerValidation {
     private readonly reporter: ValidationReporter;
     private readonly detector: LanguageDetector;
     private readonly validationRule: ValidationRule;
+    private readonly employeeAdapter: EmployeeDataRepository;
 
     /**
      * Creates an instance of OnePagerValidation.
@@ -37,6 +39,7 @@ export class OnePagerValidation {
         reporter: ValidationReporter,
         detector: LanguageDetector,
         validationRule: ValidationRule,
+        employeeAdapter: EmployeeDataRepository,
         logger: Logger = console
     ) {
         this.logger = logger;
@@ -45,6 +48,7 @@ export class OnePagerValidation {
         this.reporter = reporter;
         this.detector = detector;
         this.validationRule = validationRule;
+        this.employeeAdapter = employeeAdapter;
     }
 
     /**
@@ -57,6 +61,8 @@ export class OnePagerValidation {
             this.logger.error(`Employee ${id} does not exist.`);
             return;
         }
+
+        await this.employeeAdapter.getDataForEmployee(id);
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
         this.logger.log(

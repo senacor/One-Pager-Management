@@ -7,6 +7,7 @@ import {
     ValidationReporter,
 } from '../src/functions/validator/DomainTypes';
 import { OnePagerValidation } from '../src/functions/validator/OnePagerValidation';
+import { InMemoryDataRepository } from '../src/functions/validator/adapter/memory/InMemoryDataRepository';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { initInMemoryOnePagers } from './OnePagerExemplars';
 
@@ -39,7 +40,8 @@ describe('OnePagerValidation', () => {
             repo,
             reporter,
             new TestLanguageDetector(),
-            async () => ['USING_UNKNOWN_TEMPLATE']
+            async () => ['USING_UNKNOWN_TEMPLATE'],
+            new InMemoryDataRepository()
         );
 
         await validation.validateOnePagersOfEmployee('000');
@@ -55,7 +57,8 @@ describe('OnePagerValidation', () => {
             repo,
             reporter,
             new TestLanguageDetector(),
-            async op => (op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : [])
+            async op => (op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : []),
+            new InMemoryDataRepository()
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -79,7 +82,8 @@ describe('OnePagerValidation', () => {
             repo,
             reporter,
             new TestLanguageDetector(),
-            async op => (op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : [])
+            async op => (op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : []),
+            new InMemoryDataRepository()
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -103,7 +107,8 @@ describe('OnePagerValidation', () => {
             repo,
             reporter,
             new TestLanguageDetector(),
-            statefulValidator
+            statefulValidator,
+            new InMemoryDataRepository()
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -130,7 +135,8 @@ describe('OnePagerValidation', () => {
             async op =>
                 !op || op.lastUpdateByEmployee < new Date('2010-01-01')
                     ? ['OLDER_THAN_SIX_MONTHS']
-                    : []
+                    : [],
+            new InMemoryDataRepository()
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -302,7 +308,8 @@ async function validation() {
         repo,
         new InMemoryValidationReporter(),
         new TestLanguageDetector(),
-        async () => []
+        async () => [],
+        new InMemoryDataRepository()
     );
 }
 

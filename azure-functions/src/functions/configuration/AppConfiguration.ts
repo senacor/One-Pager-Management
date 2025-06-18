@@ -16,16 +16,20 @@ import {
     Logger,
     MSScope,
     ValidationReporter,
+    EmployeeDataRepository,
 } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 import { promises as fs } from 'fs';
 import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/SharepointStorageExplorer';
 import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
+import { DatasetID, isDatasetID, PowerBIRepository } from '../validator/adapter/powerbi/PowerBIRepository';
+import { InMemoryDataRepository } from '../validator/adapter/memory/InMemoryDataRepository';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
+    employeeAdapter: () => EmployeeDataRepository;
 };
 
 type MemoryStorageOptions = {
@@ -52,6 +56,7 @@ export type MSClientOptions = {
     SHAREPOINT_CLIENT_SECRET?: string;
     SHAREPOINT_API_LOGGING?: string;
     SHAREPOINT_API_CACHING?: string;
+    POWERBI_DATASET_ID?: string;
 };
 
 export function hasSharepointClientOptions(
@@ -86,6 +91,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 explorer: async () =>
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
+                employeeAdapter: () => new InMemoryDataRepository(logger)
             };
         }
         case 'localfile': {
@@ -98,6 +104,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             return {
                 explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
+                employeeAdapter: () => new InMemoryDataRepository(logger)
             };
         }
         case 'sharepoint': {
@@ -117,7 +124,9 @@ function getSharepointConfig(
     opts: SharepointStorageOptions,
     logger: Logger = console
 ): AppConfiguration {
-    const client = createMSClient(opts);
+    const sharePointAuthProvider = createAuthProvider(opts);
+    const powerbiAuthProvider = createAuthProvider(opts, 'https://analysis.windows.net/powerbi/api/.default');
+    const client = createMSClient(opts, sharePointAuthProvider);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error('Missing SharePoint One Pager site name in environment variables!');
@@ -128,6 +137,11 @@ function getSharepointConfig(
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
     const validationResultListName =
         opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'onepager-status';
+
+    if (!opts.POWERBI_DATASET_ID || !isDatasetID(opts.POWERBI_DATASET_ID)) {
+        throw new Error('Missing or invalid Power BI Dataset ID!');
+    }
+    const datasetID: DatasetID = opts.POWERBI_DATASET_ID;
 
     logger.log(
         `Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`
@@ -151,8 +165,11 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
+        employeeAdapter: () =>
+            new PowerBIRepository(powerbiAuthProvider, datasetID, logger)
     };
 }
+
 
 /**
  * This function creates a SharePoint client using the provided options.
@@ -161,8 +178,10 @@ function getSharepointConfig(
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createMSClient(opts: MSClientOptions, scope: MSScope = 'https://graph.microsoft.com/.default'): Client {
-    const authProvider = createAuthProvider(opts, scope);
+export function createMSClient(opts: MSClientOptions, authProvider: AuthenticationProvider | undefined = undefined, scope: MSScope = 'https://graph.microsoft.com/.default'): Client {
+    if (!authProvider) {
+        authProvider = createAuthProvider(opts, scope);
+    }
 
     // define the middleware chain
     const handlers: Middleware[] = [

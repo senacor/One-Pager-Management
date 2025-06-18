@@ -1,18 +1,24 @@
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
 import {
-    DataRepository,
+    EmployeeDataRepository,
     EmployeeData,
     EmployeeID,
     isEmployeeId,
     Logger
 } from '../../DomainTypes';
 
+export type DatasetID = string;
+export function isDatasetID(item: unknown): item is DatasetID {
+    return typeof item === "string" && item.match(/^([0-9a-zA-Z]+-){4}[0-9a-zA-Z]+$/) !== null;
+}
+
 /**
  * Repository for retrieving information from Power BI.
  */
-export class PowerBIRepository implements DataRepository {
+export class PowerBIRepository implements EmployeeDataRepository {
     private readonly authProvider: AuthenticationProvider;
     private readonly logger: Logger;
+    private readonly datasetID: string;
 
     /**
      * This constructor is private to enforce the use of the static `getInstance` method for instantiation.
@@ -20,30 +26,28 @@ export class PowerBIRepository implements DataRepository {
      * @param onePagers This is a map of employee IDs to their respective one-pager folders or files.
      * @param logger The logger to use for logging messages (default is console).
      */
-    constructor(authProvider: AuthenticationProvider, logger: Logger = console) {
+    constructor(authProvider: AuthenticationProvider, datasetID: DatasetID, logger: Logger = console) {
         this.authProvider = authProvider;
         this.logger = logger;
+        this.datasetID = datasetID;
     }
 
     async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
-        const datasetID = '17c9b3ab-752a-4d66-95bc-2488dd7c4560';
 
         const token = await this.authProvider.getAccessToken();
-        this.logger.log(token);
+        // this.logger.log(token);
 
         // make sure that employeeID  is escaped
         if (!isEmployeeId(employeeId)) {
             throw new Error(`Invalid employee ID: ${employeeId}`);
         }
 
-        // let escapedIdNum = escapedId.substring(1, escapedId.length-1);
-
-        const resHandle = await fetch(`https://api.powerbi.com/v1.0/myorg/datasets/${datasetID}/executeQueries`, {
+        const resHandle = await fetch(`https://api.powerbi.com/v1.0/myorg/datasets/${this.datasetID}/executeQueries`, {
             method: 'POST',
             body: JSON.stringify({
                 "queries": [
                     {
-                    "query": `EVALUATE VALUES('current employee')`
+                    "query": `EVALUATE FILTER('current employee', 'current employee'[fis_id_first] = "${employeeId}")`
                     }
                 ],
                 "serializerSettings": {
@@ -57,11 +61,16 @@ export class PowerBIRepository implements DataRepository {
             }
         });
 
+        if (resHandle.status !== 200) {
+            this.logger.error("Fetching data from Power BI failed!", resHandle);
+            throw new Error("Fetching data from Power BI failed!");
+        }
+
 
 
         const result = await resHandle.json();
 
-        // this.logger.log(JSON.stringify(result));
+        this.logger.log("Employee Data: ", JSON.stringify(result)); // TODO: comment out
 
         const data = result.results[0].tables[0].rows;
         if (data.length === 0) {

@@ -47,6 +47,7 @@ export async function FileChangeQueueTrigger(
             await config.reporter(),
             new PptxContentLanguageDetector(context),
             allRules(context),
+            config.employeeAdapter(),
             context
         );
         await validator.validateOnePagersOfEmployee(item.employeeId);

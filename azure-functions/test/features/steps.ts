@@ -19,6 +19,7 @@ import { OnePagerExemplars } from '../OnePagerExemplars';
 import { MemoryFileSystem } from '../../src/functions/validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../../src/functions/validator/adapter/FileSystemStorageExplorer';
 import { allRules } from '../../src/functions/validator/rules';
+import { InMemoryDataRepository } from '../../src/functions/validator/adapter/memory/InMemoryDataRepository';
 
 type OnePagerExemplar = {
     Name: string;
@@ -55,7 +56,8 @@ Before(async function (this: Context) {
         this.repo,
         this.reporter,
         new PptxContentLanguageDetector(),
-        allRules()
+        allRules(),
+        new InMemoryDataRepository()
     );
 });
 

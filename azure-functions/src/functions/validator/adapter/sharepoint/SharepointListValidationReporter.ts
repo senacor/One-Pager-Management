@@ -94,13 +94,14 @@ export class SharepointListValidationReporter implements ValidationReporter {
             throw new Error(`Cannot fetch lists for site with alias "${siteAlias}" !`);
         }
 
-        const [{ id: listId }] = lists.filter(list => list.displayName === listDisplayName);
-        if (!listId) {
+        const listItems = lists.filter(list => list.displayName === listDisplayName);
+        if (listItems.length === 0 || listItems[0]["id"] === undefined || typeof listItems[0]["id"] !== "string") {
             throw new Error(
                 `Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`
             );
         }
-        return new SharepointListValidationReporter(client, listId, maInfoSite.id, logger);
+
+        return new SharepointListValidationReporter(client, listItems[0].id, maInfoSite.id, logger);
     }
 
     /**
