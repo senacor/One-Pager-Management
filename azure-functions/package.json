@@ -40,6 +40,8 @@
         "xml2js": "^0.6.2"
     },
     "devDependencies": {
+        "@babel/core": "^7.27.4",
+        "@babel/preset-env": "^7.27.2",
         "@cucumber/cucumber": "^11.3.0",
         "@cucumber/html-formatter": "^21.11.0",
         "@cucumber/pretty-formatter": "^1.0.1",
@@ -50,6 +52,7 @@
         "@types/node": "^22.15.21",
         "@types/sinon": "^17.0.4",
         "@types/xml2js": "^0.4.14",
+        "babel-jest": "^30.0.0",
         "cucumber-console-formatter": "^1.0.0",
         "eslint": "^9.29.0",
         "eslint-config-prettier": "^10.1.5",

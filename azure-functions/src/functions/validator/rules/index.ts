@@ -1,5 +1,5 @@
 import { Logger, ValidationRule } from '../DomainTypes';
-import { hasPhoto } from './photo';
+import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
 
 // The path to the current template file used for OnePagers.
@@ -39,7 +39,8 @@ export function allRules(log: Logger = console): ValidationRule {
         lastModifiedRule,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
-        hasPhoto(log)
+        hasPhoto(log),
+        hasQualityPhoto(log)
     );
 }
 

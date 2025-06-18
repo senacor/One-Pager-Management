@@ -1,11 +1,13 @@
 import { LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync, readFileSync } from 'node:fs';
-import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
+import { allRules, combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
 import { hasLowQuality, hasPhoto } from '../src/functions/validator/rules/photo';
+import { PptxContentLanguageDetector } from '../src/functions/validator/adapter/PptxContentLanguageDetector';
 
 const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),
+    local: 'DE',
     contentLanguages: ['DE'],
     data: readFileSync('test/onepager/example-2024-DE.pptx'),
     webLocation: new URL('https://example.com/onepager.pptx'),
@@ -76,6 +78,22 @@ describe('validationRules', () => {
                 const errors = usesCurrentTemplate()(nonExact);
 
                 await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
+            }
+        );
+
+        it.only.each(readdirSync('examples/valid').filter(file => file.endsWith('.pptx')))(
+            'should identify valid template usage in %s',
+            async file => {
+                const data = await promises.readFile(`examples/valid/${file}`);
+                const valid = {
+                    ...exampleOnePager,
+                    contentLanguages: await new PptxContentLanguageDetector().detectLanguage(data),
+                    data,
+                };
+
+                const errors = allRules()(valid);
+
+                await expect(errors).resolves.toEqual([]);
             }
         );
     });
