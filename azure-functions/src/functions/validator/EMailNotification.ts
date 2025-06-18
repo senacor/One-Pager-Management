@@ -7,7 +7,10 @@ import {
 } from './DomainTypes';
 
 export type QueueSaveFunction = (item: object) => void;
-
+export type MailTemplate = {subject: string, content: string};
+import fs from "node:fs";
+import * as config from "../../../app_config/config.json";
+import { render } from 'template-file';
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -16,6 +19,7 @@ export class EMailNotification {
     private readonly logger: Logger;
     private readonly reporter: ValidationReporter;
     private readonly mailAdapter: MailPort;
+
 
     /**
      * Creates an instance of EMailNotification.
@@ -33,21 +37,35 @@ export class EMailNotification {
         this.mailAdapter = mailAdapter
     }
 
-    async notifyEmployee(employeeId: EmployeeID) : Promise<void> {
+    async loadEMailTemplate(): Promise<MailTemplate> {
+        const templateString = fs.readFileSync(`../../../${config.mailTemplatePath}`, { encoding: 'utf8', flag: 'r' });
+        // readFile can cause an error. But it should be fine to not catch it because we would not add any new information to the error
 
-        const subject = 'Please update your One-Pagers!';
+        const template = JSON.parse(templateString);
+
+        return {
+            subject: template.subject,
+            content: template.content
+        };
+    }
+
+    async notifyEmployee(employeeId: EmployeeID) : Promise<void> {
+        const mailTemplate: MailTemplate = await this.loadEMailTemplate();
+
+        const validationErrorArr: ValidationError[] = await this.reporter.getResultFor(employeeId);
+
+
+        const templateData = {
+            errors: validationErrorArr.join(' ')
+        };
+
+        const mailContent = render(mailTemplate.content, templateData);
 
         // TODO: get email of employee
         const emailAddress = '';
 
-        const validationErrorArr: ValidationError[] = await this.reporter.getResultFor(employeeId);
 
-        // TODO: Template formulieren
-        const eMailTemplate = `
-            Your errors are the following:
-            - ${validationErrorArr.join('\n- ')}
-        `;
 
-        await this.mailAdapter.sendMail(emailAddress, subject, eMailTemplate);
+        await this.mailAdapter.sendMail(emailAddress, mailTemplate.subject, mailTemplate.content);
     }
 }
