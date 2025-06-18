@@ -1,15 +1,16 @@
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-cpu';
 
 import * as faceDetection from '@tensorflow-models/face-detection';
 import sharp from 'sharp';
+import { fileSystem } from './node_file_system';
 
 const qualityModelPath = './models/photo-quality/model.json';
 let qualityModelPromise: Promise<tf.LayersModel> | undefined;
 function getQualityModel() {
     if (!qualityModelPromise) {
         // Use tf.io.fileSystem for local files in Node.js (not tf.io.file)
-        qualityModelPromise = tf.loadLayersModel(tf.io.fileSystem(qualityModelPath));
+        qualityModelPromise = tf.loadLayersModel(fileSystem(qualityModelPath));
     }
     return qualityModelPromise;
 }
@@ -29,7 +30,6 @@ const detector = async () => {
 };
 
 export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face[]> {
-    await tf.setBackend('cpu'); // tensorflow backend is missing some image operations
     await tf.ready();
     const input = await imageToTensor3D(imageData);
     return (await detector()).estimateFaces(input);
@@ -44,7 +44,6 @@ export interface PhotoLabels {
 }
 
 export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
-    await tf.setBackend('tensorflow'); // tensorflow is faster then cpu backend
     await tf.ready();
     const input = (await imageToTensor3D(imageData, intelligentCenterCropAndResize))
         .toFloat()
