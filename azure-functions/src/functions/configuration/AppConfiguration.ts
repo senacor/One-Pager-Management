@@ -16,7 +16,7 @@ import {
     Logger,
     MSScope,
     ValidationReporter,
-    EmployeeDataRepository,
+    EmployeeRepository
 } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 import { promises as fs } from 'fs';
@@ -24,12 +24,11 @@ import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/Share
 import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
 import { DatasetID, isDatasetID, PowerBIRepository } from '../validator/adapter/powerbi/PowerBIRepository';
-import { InMemoryDataRepository } from '../validator/adapter/memory/InMemoryDataRepository';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
-    employeeAdapter: () => EmployeeDataRepository;
+    employeeRepo: () => EmployeeRepository | undefined;
 };
 
 type MemoryStorageOptions = {
@@ -91,7 +90,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 explorer: async () =>
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
-                employeeAdapter: () => new InMemoryDataRepository(logger)
+                employeeRepo: () => undefined
             };
         }
         case 'localfile': {
@@ -104,7 +103,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             return {
                 explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
-                employeeAdapter: () => new InMemoryDataRepository(logger)
+                employeeRepo: () => undefined
             };
         }
         case 'sharepoint': {
@@ -165,7 +164,7 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
-        employeeAdapter: () =>
+        employeeRepo: () =>
             new PowerBIRepository(powerbiAuthProvider, datasetID, logger)
     };
 }

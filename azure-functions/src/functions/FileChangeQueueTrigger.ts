@@ -1,11 +1,12 @@
 import { InvocationContext, app } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { isEmployeeId } from './validator/DomainTypes';
+import { EmployeeRepository, isEmployeeId } from './validator/DomainTypes';
 import { OnePagerValidation } from './validator/OnePagerValidation';
 import { printError } from './ErrorHandling';
 import { PptxContentLanguageDetector } from './validator/adapter/PptxContentLanguageDetector';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 import { allRules } from './validator/rules';
+import { PowerBIRepository } from './validator/adapter/powerbi/PowerBIRepository';
 
 export type QueueItem = { employeeId: string };
 
@@ -40,14 +41,15 @@ export async function FileChangeQueueTrigger(
 
         const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
 
+        const employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
+
         // Validate the one-pagers of the employee specified in the queue item.
         const validator = new OnePagerValidation(
             onePagers,
-            onePagers,
+            employeeRepo === undefined ? onePagers : employeeRepo,
             await config.reporter(),
             new PptxContentLanguageDetector(context),
             allRules(context),
-            config.employeeAdapter(),
             context
         );
         await validator.validateOnePagersOfEmployee(item.employeeId);

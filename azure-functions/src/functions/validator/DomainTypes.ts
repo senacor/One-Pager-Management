@@ -69,6 +69,8 @@ export interface EmployeeRepository {
      * Fetches IDs of all current employees.
      */
     getAllEmployees(): Promise<EmployeeID[]>;
+
+    getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData>;
 }
 
 /**
@@ -150,11 +152,6 @@ export interface StorageExplorer {
 
 export type MSScope = 'https://graph.microsoft.com/.default' | 'https://analysis.windows.net/powerbi/api/.default';
 
-export interface EmployeeDataRepository {
-
-    getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData>;
-}
-
 export type EmployeeData = {
     name: string;
     email: string; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
@@ -162,8 +159,8 @@ export type EmployeeData = {
     office: string;
     date_of_employment_change: string | null;
     position_current: string  | null;
-    resource_type_current: string;
-    staffing_pool_current: string;
+    resource_type_current: string | null;
+    staffing_pool_current: string | null;
     position_future: string | null;
     resource_type_future: string | null;
     staffing_pool_future: string | null;
