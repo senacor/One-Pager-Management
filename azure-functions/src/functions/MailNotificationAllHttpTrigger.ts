@@ -21,16 +21,15 @@ export async function MailNotificationAllHttpTrigger(
     try {
         context.log(`HTTP function processed request for url "${request.url}"`);
 
+        const config = loadConfigFromEnv(context);
 
-        // Load the list of employees from the configuration
-        // Load the list of employees from the configuration
-        const onePagers = new FolderBasedOnePagers(
-            await loadConfigFromEnv(context).explorer(),
-            context
-        );
-        const employees = await onePagers.getAllEmployees();
+        const employees = await config.employeeRepo()?.getAllEmployees();
 
-        const items: QueueItem[] = employees.map((id) => { return {employeeId: id}; });
+        if (!employees) {
+            throw new Error("Getting employees failed!");
+        }
+
+        const items: QueueItem[] = employees.map((id) => ({employeeId: id}));
 
         context.extraOutputs.set(queueOutput, items);
 

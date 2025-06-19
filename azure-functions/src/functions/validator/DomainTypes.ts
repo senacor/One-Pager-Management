@@ -50,7 +50,7 @@ export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
     data: Buffer;
 };
 
-export type ValidationRule = (onePager: LoadedOnePager) => Promise<ValidationError[]>;
+export type ValidationRule = (onePager: LoadedOnePager, employeeData: EmployeeData) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
     /**
@@ -69,6 +69,8 @@ export interface EmployeeRepository {
      * Fetches IDs of all current employees.
      */
     getAllEmployees(): Promise<EmployeeID[]>;
+
+    getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData>;
 }
 
 /**
@@ -91,7 +93,8 @@ export interface ValidationReporter {
     reportErrors(
         id: EmployeeID,
         onePager: OnePager | undefined,
-        errors: ValidationError[]
+        errors: ValidationError[],
+        employee: EmployeeData
     ): Promise<void>;
 
     /**
@@ -162,6 +165,25 @@ export interface MailPort {
      */
     sendMail(to: EmailAddress, subject: string, content: string): Promise<void>;
 }
+
+
+export type MSScope = 'https://graph.microsoft.com/.default' | 'https://analysis.windows.net/powerbi/api/.default';
+
+export type EmployeeData = {
+    name: string;
+    email: string; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    entry_date: string;
+    office: string;
+    date_of_employment_change: string | null;
+    position_current: string  | null;
+    resource_type_current: string | null;
+    staffing_pool_current: string | null;
+    position_future: string | null;
+    resource_type_future: string | null;
+    staffing_pool_future: string | null;
+};
+
+
 
 /**
  * --------------------- Auxiliary Interfaces ---------------------

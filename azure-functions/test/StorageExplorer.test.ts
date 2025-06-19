@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'path';
 import {
-    createSharepointClient,
+    createMSClient,
     hasSharepointClientOptions,
 } from '../src/functions/configuration/AppConfiguration';
 import { DriveItem } from '@microsoft/microsoft-graph-types';
@@ -164,7 +164,7 @@ if (hasSharepointClientOptions(opts)) {
         const siteIDAlias: string = 'senacor.sharepoint.com:/teams/MaInfoTest';
         const listName: string = 'OnePagerAutomatedTestEnv';
 
-        const client = createSharepointClient({
+        const client = createMSClient({
             ...opts,
             SHAREPOINT_API_LOGGING: 'false',
         });

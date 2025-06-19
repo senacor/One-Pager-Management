@@ -1,4 +1,5 @@
 import {
+    EmployeeData,
     EmployeeID,
     EmployeeRepository,
     LanguageDetector,
@@ -58,6 +59,8 @@ export class OnePagerValidation {
             return;
         }
 
+        const employeeData: EmployeeData = await this.employees.getDataForEmployee(id);
+
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
         this.logger.log(
             `Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`
@@ -95,7 +98,7 @@ export class OnePagerValidation {
         const validationResults = await Promise.all(
             selectedCandidates.map(async op => ({
                 onePager: op,
-                errors: await this.validationRule(op),
+                errors: await this.validationRule(op, employeeData),
             }))
         );
 
@@ -111,7 +114,7 @@ export class OnePagerValidation {
             await this.reporter.reportValid(id);
         } else {
             this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
-            await this.reporter.reportErrors(id, candidates[0], errors);
+            await this.reporter.reportErrors(id, candidates[0], errors, employeeData);
         }
     }
 

@@ -1,5 +1,6 @@
 import {
     EmployeeID,
+    EmployeeRepository,
     Logger,
     MailPort,
     ValidationError,
@@ -19,6 +20,7 @@ export class EMailNotification {
     private readonly logger: Logger;
     private readonly reporter: ValidationReporter;
     private readonly mailAdapter: MailPort;
+    private readonly employeeRepo: EmployeeRepository;
 
 
     /**
@@ -29,12 +31,14 @@ export class EMailNotification {
      */
     constructor(
         mailAdapter: MailPort,
+        employeeRepo: EmployeeRepository,
         reporter: ValidationReporter,
         logger: Logger = console
     ) {
         this.logger = logger;
         this.reporter = reporter;
         this.mailAdapter = mailAdapter
+        this.employeeRepo = employeeRepo;
     }
 
     async loadEMailTemplate(): Promise<MailTemplate> {
@@ -61,10 +65,9 @@ export class EMailNotification {
 
         const mailContent = render(mailTemplate.content, templateData);
 
-        // TODO: get email of employee
-        const emailAddress = '';
+        const emailAddress = (await this.employeeRepo.getDataForEmployee(employeeId)).email;
 
-        this.logger.log(mailTemplate.subject, mailContent);
+        this.logger.log(emailAddress, mailTemplate.subject, mailContent);
 
 
         await this.mailAdapter.sendMail(emailAddress, mailTemplate.subject, mailContent);

@@ -1,4 +1,6 @@
+import { folder } from 'jszip';
 import {
+    EmployeeData,
     EmployeeID,
     EmployeeRepository,
     isEmployeeId,
@@ -31,6 +33,24 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         this.logger = logger;
     }
 
+
+    async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
+        // TODO: Determine at least some data from one pager names for testing purposes
+        return {
+            name: "",
+            email: "",
+            entry_date: "",
+            office: "",
+            date_of_employment_change: "",
+            position_current: "",
+            resource_type_current: "",
+            staffing_pool_current: "",
+            position_future: "",
+            resource_type_future: "",
+            staffing_pool_future: ""
+        };
+    }
+
     /**
      * Fetch all one-pagers for a specific employee. An employee may have multiple one-pagers.
      * Common occurrences are: different languages, different versions, versions for specific purposes(customers), etc.
@@ -38,6 +58,11 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
      */
     async getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]> {
         const folders = await this.explorer.listFolders();
+
+        if (folders.length === 0) {
+            this.logger.error("No One Pager folders found!");
+        }
+
         const employeeDir = folders.find(dir => dir.endsWith(`_${employeeId}`));
         if (!employeeDir) {
             this.logger.warn(`No OnePagers found for employee "${employeeId}"!`);

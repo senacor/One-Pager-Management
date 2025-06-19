@@ -2,7 +2,7 @@ import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from '@
 import { printError } from './ErrorHandling';
 import { QueueItem, onepagerValidationRequests } from './FileChangeQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { isEmployeeId } from './validator/DomainTypes';
+import { EmployeeID, EmployeeRepository, isEmployeeId } from './validator/DomainTypes';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 
 /**
@@ -39,12 +39,21 @@ export async function FileChangeHttpTrigger(
             };
         }
 
+        const config = loadConfigFromEnv(context);
         // Load the list of employees from the configuration
         const onePagers = new FolderBasedOnePagers(
-            await loadConfigFromEnv(context).explorer(),
+            await config.explorer(),
             context
         );
-        if (!(await onePagers.getAllEmployees()).includes(id)) {
+
+        let employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
+        if (!employeeRepo) {
+            employeeRepo = onePagers;
+        }
+
+
+        const employees: EmployeeID[] = await employeeRepo.getAllEmployees();
+        if (!employees.includes(id)) {
             context.log(`Employee not found: "${id}"!`);
             return { status: 404, body: `Employee not found: "${id}"` };
         }
