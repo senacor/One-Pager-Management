@@ -173,6 +173,7 @@ function getSharepointConfig(
             new InMemoryMailAdapter(),
             // new MSMailAdapter(
             //     client,
+            //     employeeRepo,
             //     logger
             // ), // optional mail adapter for SharePoint storage
         employeeRepo: () =>
