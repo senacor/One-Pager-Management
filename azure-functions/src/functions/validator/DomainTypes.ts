@@ -93,7 +93,8 @@ export interface ValidationReporter {
     reportErrors(
         id: EmployeeID,
         onePager: OnePager | undefined,
-        errors: ValidationError[]
+        errors: ValidationError[],
+        employee: EmployeeData
     ): Promise<void>;
 
     /**

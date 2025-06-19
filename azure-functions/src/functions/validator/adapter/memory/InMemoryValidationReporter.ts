@@ -1,4 +1,5 @@
 import {
+    EmployeeData,
     EmployeeID,
     Logger,
     OnePager,
@@ -44,7 +45,8 @@ export class InMemoryValidationReporter implements ValidationReporter {
     async reportErrors(
         id: EmployeeID,
         onePager: OnePager | undefined,
-        errors: ValidationError[]
+        errors: ValidationError[],
+        employee: EmployeeData
     ): Promise<void> {
         this.logger.log(
             `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`

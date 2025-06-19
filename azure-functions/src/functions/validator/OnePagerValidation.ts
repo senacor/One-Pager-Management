@@ -114,7 +114,7 @@ export class OnePagerValidation {
             await this.reporter.reportValid(id);
         } else {
             this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
-            await this.reporter.reportErrors(id, candidates[0], errors);
+            await this.reporter.reportErrors(id, candidates[0], errors, employeeData);
         }
     }
 

@@ -27,6 +27,14 @@ type PowerBITableRow = {
     "current employee[staffing_pool_future]": string | null;
 };
 
+type PowerBIOutput = {
+    results: Array<{
+        tables: Array<{
+            rows: PowerBITableRow[]
+        }>
+    }>
+};
+
 /**
  * Repository for retrieving information from Power BI.
  */
@@ -49,18 +57,13 @@ export class PowerBIRepository implements EmployeeRepository {
         this.fetchURL = `https://api.powerbi.com/v1.0/myorg/datasets/${this.datasetID}/executeQueries`;
     }
 
-
-    async getAllEmployees(): Promise<EmployeeID[]> {
-        const token = await this.authProvider.getAccessToken();
-        // this.logger.log(token);
-
+    private async fetchDataByQuery(token: string, query: string): Promise<PowerBITableRow[]> {
         const resHandle = await fetch(this.fetchURL, {
             method: 'POST',
             body: JSON.stringify({
                 "queries": [
                     {
-                        // "query": `EVALUATE VALUES('current employee')` // this gets all infos about all rows
-                        "query": `EVALUATE SELECTCOLUMNS('current employee', 'current employee'[fis_id_first])` // we only select the column containing the id
+                        "query": query
                     }
                 ],
                 "serializerSettings": {
@@ -78,14 +81,38 @@ export class PowerBIRepository implements EmployeeRepository {
             this.logger.error("Fetching data from Power BI failed!", resHandle);
             throw new Error("Fetching data from Power BI failed!");
         }
+        const output: PowerBIOutput = await resHandle.json();
+
+        return output.results[0].tables[0].rows;
+    }
+
+    private convertPowerBIRowToEmployeeData(data: PowerBITableRow) {
+        const employeeData: EmployeeData = {
+            name: data["current employee[name]"],
+            email: data["current employee[email]"], //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+            entry_date: data["current employee[entry_date]"],
+            office: data["current employee[office]"],
+            date_of_employment_change: data["current employee[date_of_employment_change]"],
+            position_current: data["current employee[position_current]"],
+            resource_type_current: data["current employee[resource_type_current]"],
+            staffing_pool_current: data["current employee[staffing_pool_current]"],
+            position_future: data["current employee[position_future]"],
+            resource_type_future: data["current employee[resource_type_future]"],
+            staffing_pool_future: data["current employee[staffing_pool_future]"]
+        };
+        return employeeData;
+    }
 
 
+    async getAllEmployees(): Promise<EmployeeID[]> {
+        const token = await this.authProvider.getAccessToken();
+        // this.logger.log(token);
 
-        const result = await resHandle.json();
+        // we only select the column containing the id
+        const data = await this.fetchDataByQuery(token, `EVALUATE SELECTCOLUMNS('current employee', 'current employee'[fis_id_first])`);
 
-        // this.logger.log("Employee Data: ", JSON.stringify(result));
+        // this.logger.log("Employee Data: ", JSON.stringify(data));
 
-        const data = result.results[0].tables[0].rows;
         if (data.length === 0) {
             throw new Error(`No employees found!`);
         }
@@ -94,7 +121,6 @@ export class PowerBIRepository implements EmployeeRepository {
     }
 
     async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
-
         const token = await this.authProvider.getAccessToken();
         // this.logger.log(token);
 
@@ -103,55 +129,20 @@ export class PowerBIRepository implements EmployeeRepository {
             throw new Error(`Invalid employee ID: ${employeeId}`);
         }
 
-        const resHandle = await fetch(this.fetchURL, {
-            method: 'POST',
-            body: JSON.stringify({
-                "queries": [
-                    {
-                    "query": `EVALUATE FILTER('current employee', 'current employee'[fis_id_first] = "${employeeId}")`
-                    }
-                ],
-                "serializerSettings": {
-                    "includeNulls": true
-                }
-            }),
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json; charset=utf-8',
-                'Accept': 'application/json',
-            }
-        });
+        const data = await this.fetchDataByQuery(token, `EVALUATE FILTER('current employee', 'current employee'[fis_id_first] = "${employeeId}")`);
 
-        if (resHandle.status !== 200) {
-            this.logger.error("Fetching data from Power BI failed!", resHandle);
-            throw new Error("Fetching data from Power BI failed!");
-        }
+        // this.logger.log("Employee Data: ", JSON.stringify(data));
 
-
-
-        const result = await resHandle.json();
-
-        this.logger.log("Employee Data: ", JSON.stringify(result));
-
-        const data: PowerBITableRow[] = result.results[0].tables[0].rows;
         if (data.length === 0) {
             throw new Error(`No entry found for employee with ID: ${employeeId}`);
         }
 
-        const employeeData: EmployeeData = {
-            name: data[0]["current employee[name]"],
-            email: data[0]["current employee[email]"], //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
-            entry_date: data[0]["current employee[entry_date]"],
-            office: data[0]["current employee[office]"],
-            date_of_employment_change: data[0]["current employee[date_of_employment_change]"],
-            position_current: data[0]["current employee[position_current]"],
-            resource_type_current: data[0]["current employee[resource_type_current]"],
-            staffing_pool_current: data[0]["current employee[staffing_pool_current]"],
-            position_future: data[0]["current employee[position_future]"],
-            resource_type_future: data[0]["current employee[resource_type_future]"],
-            staffing_pool_future: data[0]["current employee[staffing_pool_future]"]
-        };
+        return this.convertPowerBIRowToEmployeeData(data[0]);
+    }
 
-        return employeeData;
+    async getAllEmployeeData(): Promise<EmployeeData[]> {
+        const token = await this.authProvider.getAccessToken();
+        const tableRows: PowerBITableRow[] = await this.fetchDataByQuery(token, `EVALUATE VALUES('current employee')`);
+        return tableRows.map(this.convertPowerBIRowToEmployeeData);
     }
 }
