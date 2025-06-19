@@ -7,7 +7,7 @@ import { hasLowQuality, hasPhoto } from '../src/functions/validator/rules/photo'
 const exampleOnePager: LoadedOnePager = {
     lastUpdateByEmployee: new Date(),
     contentLanguages: ['DE'],
-    data: readFileSync('test/onepager/example-2024-DE.pptx'),
+    data: readFileSync('test/ressources/onepager/example-2024-DE.pptx'),
     webLocation: new URL('https://example.com/onepager.pptx'),
 };
 const employeeData =  {
@@ -57,7 +57,7 @@ describe('validationRules', () => {
         it('should identify onepager using current template as valid', async () => {
             const currentTemplate = {
                 ...exampleOnePager,
-                data: readFileSync('examples/Mustermann, Max_DE_240209.pptx'),
+                data: readFileSync('test/ressources/examples/Mustermann, Max_DE_240209.pptx'),
             };
 
             const errors = usesCurrentTemplate()(currentTemplate, employeeData);
@@ -70,7 +70,7 @@ describe('validationRules', () => {
             async file => {
                 const oldTemplate = {
                     ...exampleOnePager,
-                    data: readFileSync(`examples/Mustermann, Max DE_${file}`),
+                    data: readFileSync(`test/ressources/examples/Mustermann, Max DE_${file}`),
                 };
 
                 const errors = usesCurrentTemplate()(oldTemplate, employeeData);
@@ -79,12 +79,12 @@ describe('validationRules', () => {
             }
         );
 
-        it.each(readdirSync('examples/non-exact-template').filter(file => file.endsWith('.pptx')))(
+        it.each(readdirSync('test/ressources/examples/non-exact-template').filter(file => file.endsWith('.pptx')))(
             'should identify non-exact template usage in %s',
             async file => {
                 const nonExact = {
                     ...exampleOnePager,
-                    data: readFileSync(`examples/non-exact-template/${file}`),
+                    data: readFileSync(`test/ressources/examples/non-exact-template/${file}`),
                 };
 
                 const errors = usesCurrentTemplate()(nonExact, employeeData);
@@ -98,7 +98,7 @@ describe('validationRules', () => {
         it('should report an error if no photo is present', async () => {
             const onePagerWithoutPhoto = {
                 ...exampleOnePager,
-                data: readFileSync('test/onepager/example-2024-DE-no-photo.pptx'),
+                data: readFileSync('test/ressources/onepager/example-2024-DE-no-photo.pptx'),
             };
 
             const errors = hasPhoto()(onePagerWithoutPhoto, employeeData);
@@ -119,7 +119,7 @@ describe('validationRules', () => {
         it('should report an error if photo does not fit our criteria', async () => {
             const badPhoto = {
                 name: 'bad.jpg',
-                data: () => promises.readFile('test/photos/bad.jpg'),
+                data: () => promises.readFile('test/ressources/photos/bad.jpg'),
             };
 
             const isLow = hasLowQuality(badPhoto);
@@ -130,7 +130,7 @@ describe('validationRules', () => {
         it('should report no error if photo is good', async () => {
             const goodPhoto = {
                 name: 'good.jpg',
-                data: () => promises.readFile('test/photos/good.jpg'),
+                data: () => promises.readFile('test/ressources/photos/good.jpg'),
             };
 
             const isLow = hasLowQuality(goodPhoto);

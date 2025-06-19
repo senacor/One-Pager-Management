@@ -12,7 +12,7 @@ import { LocalFileValidationReporter } from '../validator/adapter/localfile/Loca
 import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
 import {
-    StorageExplorer,
+    MailPort, StorageExplorer,
     Logger,
     MSScope,
     ValidationReporter,
@@ -23,11 +23,14 @@ import { promises as fs } from 'fs';
 import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/SharepointStorageExplorer';
 import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
+import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
+import { InMemoryMailAdapter } from '../validator/adapter/memory/InMemoryMailAdapter';
 import { DatasetID, isDatasetID, PowerBIRepository } from '../validator/adapter/powerbi/PowerBIRepository';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
+    mailAdapter: () => MailPort | undefined; // optional mail adapter for sharepoint storage
     employeeRepo: () => EmployeeRepository | undefined;
 };
 
@@ -90,6 +93,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 explorer: async () =>
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
+                mailAdapter: () => new InMemoryMailAdapter(),
                 employeeRepo: () => undefined
             };
         }
@@ -103,6 +107,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             return {
                 explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
+                mailAdapter: () => undefined,
                 employeeRepo: () => undefined
             };
         }
@@ -164,6 +169,12 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
+        mailAdapter: () =>
+            new InMemoryMailAdapter(),
+            // new MSMailAdapter(
+            //     client,
+            //     logger
+            // ), // optional mail adapter for SharePoint storage
         employeeRepo: () =>
             new PowerBIRepository(powerbiAuthProvider, datasetID, logger)
     };

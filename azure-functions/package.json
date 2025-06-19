@@ -36,6 +36,7 @@
         "node-cache": "^5.1.2",
         "node-pptx-parser": "^1.0.1",
         "sharp": "^0.34.2",
+        "template-file": "^6.0.1",
         "ts-node": "^10.9.2",
         "xml2js": "^0.6.2"
     },
@@ -62,7 +63,7 @@
         "prettier": "^3.5.3",
         "rimraf": "^6.0.1",
         "sinon": "^21.0.0",
-        "ts-jest": "^29.3.4",
+        "ts-jest": "^29.4.0",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.1"
     },
