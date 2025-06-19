@@ -147,6 +147,22 @@ export interface StorageExplorer {
     listFiles(folder: string): Promise<StorageFile[]>;
 }
 
+
+export type EmailAddress = string;
+export function isEmailAddress(txt: unknown): txt is EmailAddress {
+    return typeof txt === 'string' && /^[a-zA-Z0-9._%+-]+@senacor.com$/.test(txt);
+}
+export interface MailPort {
+
+    /**
+     * Sends an email to the specified recipients with the given subject and body.
+     * @param to An array of email addresses to send the email to.
+     * @param subject The subject of the email.
+     * @param body The body content of the email.
+     */
+    sendMail(to: EmailAddress, subject: string, content: string): Promise<void>;
+}
+
 /**
  * --------------------- Auxiliary Interfaces ---------------------
  */

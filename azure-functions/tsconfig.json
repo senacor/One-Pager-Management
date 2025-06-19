@@ -9,6 +9,7 @@
         "esModuleInterop": true,
         "strictNullChecks": true,
         "skipLibCheck": true,
+        "resolveJsonModule": true
     },
-    "exclude": ["node_modules", "dist", "reports"]
+    "exclude": ["node_modules", "dist", "reports", "app_config", "models", "ressources"]
 }
