@@ -34,8 +34,21 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
     }
 
 
-    getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
-        throw new Error('Method not implemented.');
+    async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
+        // TODO: Determine at least some data from one pager names for testing purposes
+        return {
+            name: "",
+            email: "",
+            entry_date: "",
+            office: "",
+            date_of_employment_change: "",
+            position_current: "",
+            resource_type_current: "",
+            staffing_pool_current: "",
+            position_future: "",
+            resource_type_future: "",
+            staffing_pool_future: ""
+        };
     }
 
     /**
