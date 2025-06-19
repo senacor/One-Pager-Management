@@ -6,7 +6,6 @@ import { printError } from './ErrorHandling';
 import { PptxContentLanguageDetector } from './validator/adapter/PptxContentLanguageDetector';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 import { allRules } from './validator/rules';
-import { PowerBIRepository } from './validator/adapter/powerbi/PowerBIRepository';
 
 export type QueueItem = { employeeId: string };
 
