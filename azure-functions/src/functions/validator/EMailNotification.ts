@@ -56,7 +56,7 @@ export class EMailNotification {
 
 
         const templateData = {
-            errors: validationErrorArr.join(' ') + "!"
+            errors: validationErrorArr.join('\n')
         };
 
         const mailContent = render(mailTemplate.content, templateData);
