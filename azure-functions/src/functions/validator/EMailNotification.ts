@@ -31,8 +31,8 @@ export class EMailNotification {
      */
     constructor(
         mailAdapter: MailPort,
+        employeeRepo: EmployeeRepository,
         reporter: ValidationReporter,
-        employeeRepo: EmployeeRepository
         logger: Logger = console
     ) {
         this.logger = logger;
@@ -67,7 +67,7 @@ export class EMailNotification {
 
         const emailAddress = (await this.employeeRepo.getDataForEmployee(employeeId)).email;
 
-        this.logger.log(mailTemplate.subject, mailContent);
+        this.logger.log(emailAddress, mailTemplate.subject, mailContent);
 
 
         await this.mailAdapter.sendMail(emailAddress, mailTemplate.subject, mailContent);

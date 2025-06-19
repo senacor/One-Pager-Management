@@ -2,7 +2,7 @@
 POST {{host}}/api/validate/1338
 x-functions-key: {{functions_key}}
 
-### MaInfoTest sendAllMails
+### sendAllMails
 POST {{host}}/api/sendValidationMails
 x-functions-key: {{functions_key}}
 
@@ -10,9 +10,6 @@ x-functions-key: {{functions_key}}
 POST {{host}}/api/validate/9560
 x-functions-key: {{functions_key}}
 
-### real MaInfo sendAllMails
-POST {{host}}/api/sendValidationMails
-x-functions-key: {{functions_key}}
 
 ### real MaInfo: OLDER_THAN_SIX_MONTHS
 POST {{host}}/api/validate/5823
