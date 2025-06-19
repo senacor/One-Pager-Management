@@ -2,7 +2,6 @@ import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from '@
 import { printError } from './ErrorHandling';
 import { QueueItem, onepagerMailRequests } from './MailNotificationQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { isEmployeeId } from './validator/DomainTypes';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 
 /**

@@ -2,7 +2,7 @@ import { InvocationContext, app, output } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { isEmployeeId, MailPort } from './validator/DomainTypes';
 import { printError } from './ErrorHandling';
-import { EMailNotification, QueueSaveFunction } from './validator/EMailNotification';
+import { EMailNotification } from './validator/EMailNotification';
 import { InMemoryMailAdapter } from './validator/adapter/memory/InMemoryMailAdapter';
 
 export type QueueItem = { employeeId: string };

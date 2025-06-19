@@ -1,5 +1,5 @@
 import { Client } from "@microsoft/microsoft-graph-client";
-import { Logger, MailPort, EmailAddress, isEmailAddress } from "../../DomainTypes";
+import { Logger, MailPort, EmailAddress } from "../../DomainTypes";
 
 export class MSMailAdapter implements MailPort {
     private readonly client: Client | undefined;
