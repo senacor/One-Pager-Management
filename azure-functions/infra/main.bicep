@@ -71,7 +71,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         }
       ]
       ftpsState: 'FtpsOnly'
-      functionAppScaleLimit: 4
+      functionAppScaleLimit: 16
       minTlsVersion: '1.2'
     }
   }
