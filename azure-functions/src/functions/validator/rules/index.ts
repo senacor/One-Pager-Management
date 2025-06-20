@@ -35,7 +35,7 @@ export function allRules(log: Logger = console): ValidationRule {
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
         hasPhoto(log),
-        hasQualityPhoto(log)
+        //hasQualityPhoto(log) uses to much memory, so we disable it for now
     );
 }
 

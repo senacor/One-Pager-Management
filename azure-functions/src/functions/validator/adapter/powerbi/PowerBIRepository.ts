@@ -6,6 +6,7 @@ import {
     Logger,
 } from '../../DomainTypes';
 import NodeCache from 'node-cache';
+import { HardenedFetch } from 'hardened-fetch';
 
 export type DatasetID = string;
 export function isDatasetID(item: unknown): item is DatasetID {
@@ -34,6 +35,15 @@ type PowerBIOutput = {
         }>;
     }>;
 };
+
+const client = new HardenedFetch({
+    // Retry options
+    maxRetries: 3,
+    doNotRetry: [400, 401, 403, 404, 422, 451],
+    // Rate limit options
+    rateLimitHeader: 'retry-after',
+    resetFormat: 'seconds',
+});
 
 /**
  * Repository for retrieving information from Power BI.
@@ -86,11 +96,14 @@ export class PowerBIRepository implements EmployeeRepository {
     private async fetchDataByQuery(query: string): Promise<EmployeeData[]> {
         const result = this.cache.get<EmployeeData[]>(query);
         if (result) {
+            this.logger.log(`Cache hit for query: ${query}`);
             return result;
         }
 
+        this.logger.log(`Cache miss for query: ${query}`);
+
         const token = await this.authProvider.getAccessToken();
-        const resHandle = await fetch(
+        const resHandle = await client.fetch(
             `https://api.powerbi.com/v1.0/myorg/datasets/${this.datasetID}/executeQueries`,
             {
                 method: 'POST',
