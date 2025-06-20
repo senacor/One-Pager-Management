@@ -9,7 +9,7 @@ import { readFile } from 'node:fs/promises';
 let _exampleOnePager: Promise<LoadedOnePager>;
 function exampleOnePager(): Promise<LoadedOnePager> {
     if (!_exampleOnePager) {
-        _exampleOnePager = readFile('test/onepager/example-2024-DE.pptx').then(async data => ({
+        _exampleOnePager = readFile('test/resources/onepager/example-2024-DE.pptx').then(async data => ({
             lastUpdateByEmployee: new Date(),
             local: 'DE',
             contentLanguages: ['DE'],
@@ -19,6 +19,20 @@ function exampleOnePager(): Promise<LoadedOnePager> {
     }
     return _exampleOnePager;
 }
+
+const employeeData =  {
+    name: "",
+    email: "", //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    entry_date: "",
+    office: "",
+    date_of_employment_change: "",
+    position_current: "",
+    resource_type_current: "",
+    staffing_pool_current: "",
+    position_future: "",
+    resource_type_future: "",
+    staffing_pool_future: ""
+};
 
 describe('validationRules', () => {
     describe('lastModifiedRule', () => {
@@ -30,7 +44,7 @@ describe('validationRules', () => {
                 lastUpdateByEmployee: withingSixMonths,
             };
 
-            const errors = lastModifiedRule(recent);
+            const errors = lastModifiedRule(recent, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -42,7 +56,7 @@ describe('validationRules', () => {
                 lastUpdateByEmployee: olderThenSixMonths,
             };
 
-            const errors = lastModifiedRule(old);
+            const errors = lastModifiedRule(old, employeeData);
 
             await expect(errors).resolves.toEqual(['OLDER_THAN_SIX_MONTHS']);
         });
@@ -52,10 +66,10 @@ describe('validationRules', () => {
         it('should identify onepager using current template as valid', async () => {
             const currentTemplate = {
                 ...(await exampleOnePager()),
-                pptx: await readFile('examples/Mustermann, Max_DE_240209.pptx').then(Pptx.load),
+                pptx: await readFile('test/resources/examples/Mustermann, Max_DE_240209.pptx').then(Pptx.load),
             };
 
-            const errors = usesCurrentTemplate()(currentTemplate);
+            const errors = usesCurrentTemplate()(currentTemplate, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -65,24 +79,24 @@ describe('validationRules', () => {
             async file => {
                 const oldTemplate = {
                     ...(await exampleOnePager()),
-                    pptx: await readFile(`examples/Mustermann, Max DE_${file}`).then(Pptx.load),
+                    pptx: await readFile(`test/resources/examples/Mustermann, Max DE_${file}`).then(Pptx.load),
                 };
 
-                const errors = usesCurrentTemplate()(oldTemplate);
+                const errors = usesCurrentTemplate()(oldTemplate, employeeData);
 
                 await expect(errors).resolves.toEqual(['USING_UNKNOWN_TEMPLATE']);
             }
         );
 
-        it.only.each(readdirSync('examples/non-exact-template').filter(file => file.endsWith('.pptx')))(
+        it.each(readdirSync('test/resources/examples/non-exact-template').filter(file => file.endsWith('.pptx')))(
             'should identify non-exact template usage in %s',
             async file => {
                 const nonExact = {
                     ...(await exampleOnePager()),
-                    pptx: await readFile(`examples/non-exact-template/${file}`).then(Pptx.load),
+                    pptx: await readFile(`test/resources/examples/non-exact-template/${file}`).then(Pptx.load),
                 };
 
-                const errors = usesCurrentTemplate()(nonExact);
+                const errors = usesCurrentTemplate()(nonExact, employeeData);
 
                 await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
             }
@@ -93,10 +107,10 @@ describe('validationRules', () => {
         it('should report an error if no photo is present', async () => {
             const onePagerWithoutPhoto = {
                 ...(await exampleOnePager()),
-                pptx: await readFile(`test/onepager/example-2024-DE-no-photo.pptx`).then(Pptx.load),
+                pptx: await readFile(`test/resources/onepager/example-2024-DE-no-photo.pptx`).then(Pptx.load),
             };
 
-            const errors = hasPhoto()(onePagerWithoutPhoto);
+            const errors = hasPhoto()(onePagerWithoutPhoto, employeeData);
 
             await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
         });
@@ -104,7 +118,7 @@ describe('validationRules', () => {
         it('should report no error if photo is found', async () => {
             const onePagerWithPhoto = await exampleOnePager();
 
-            const errors = hasPhoto()(onePagerWithPhoto);
+            const errors = hasPhoto()(onePagerWithPhoto, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -114,7 +128,7 @@ describe('validationRules', () => {
         it('should report an error if photo does not fit our criteria', async () => {
             const badPhoto = {
                 path: 'bad.jpg',
-                data: () => promises.readFile('test/photos/bad.jpg'),
+                data: () => promises.readFile('test/resources/photos/bad.jpg'),
             };
 
             const isLow = hasLowQuality(badPhoto);
@@ -125,7 +139,7 @@ describe('validationRules', () => {
         it('should report no error if photo is good', async () => {
             const goodPhoto = {
                 path: 'good.jpg',
-                data: () => promises.readFile('test/photos/good.jpg'),
+                data: () => promises.readFile('test/resources/photos/good.jpg'),
             };
 
             const isLow = hasLowQuality(goodPhoto);
@@ -140,7 +154,7 @@ describe('validationRules', () => {
             const rule2 = async () => ['OLDER_THAN_SIX_MONTHS' as ValidationError];
             const combined = combineRules(rule1, rule2);
 
-            const errors = combined(await exampleOnePager());
+            const errors = combined(await exampleOnePager(), employeeData);
 
             await expect(errors).resolves.toEqual(['MISSING_ONE_PAGER', 'OLDER_THAN_SIX_MONTHS']);
         });

@@ -36,6 +36,7 @@
         "memfs": "^4.17.2",
         "node-cache": "^5.1.2",
         "sharp": "^0.34.2",
+        "template-file": "^6.0.1",
         "ts-node": "^10.9.2",
         "xml2js": "^0.6.2"
     },
@@ -53,6 +54,7 @@
         "@types/sinon": "^17.0.4",
         "@types/xml2js": "^0.4.14",
         "babel-jest": "^30.0.0",
+        "csv-stringify": "^6.5.2",
         "cucumber-console-formatter": "^1.0.0",
         "eslint": "^9.29.0",
         "eslint-config-prettier": "^10.1.5",
@@ -64,7 +66,7 @@
         "prettier": "^3.5.3",
         "rimraf": "^6.0.1",
         "sinon": "^21.0.0",
-        "ts-jest": "^29.3.4",
+        "ts-jest": "^29.4.0",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.1"
     },

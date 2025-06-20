@@ -3,22 +3,17 @@ import { uniq } from '../OnePagerValidation';
 import { detectLanguage } from './ai';
 import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
+import config from '../../../../app_config/config.json';
 
-// The path to the current template file used for OnePagers.
-export const CURRENT_TEMPLATE_PATH = 'src/templates/OP_Template_PPT_DE_240119.pptx';
+export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
 
-/*
- * -------- Validation rules to check the metadata of a OnePager. --------
- *
- */
-
-export const lastModifiedRule: ValidationRule = async onePager => {
+export const lastModifiedRule: ValidationRule = async (onePager, _) => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
-export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
+export const contentLanguageIsIndicatedInName: ValidationRule = async (onePager, _) => {
     if (onePager.contentLanguages.length > 1) {
         return ['MIXED_LANGUAGE_VERSION'];
     }
@@ -52,8 +47,8 @@ export function allRules(log: Logger = console): ValidationRule {
  * @returns The combined validation rule.
  */
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
-    return async onePager => {
-        const errors = await Promise.all(rules.map(rule => rule(onePager)));
+    return async (onePager, employeeData) => {
+        const errors = await Promise.all(rules.map(rule => rule(onePager, employeeData)));
         return errors.flat();
     };
 }

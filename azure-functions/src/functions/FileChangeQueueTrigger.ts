@@ -1,6 +1,6 @@
 import { InvocationContext, app } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { isEmployeeId } from './validator/DomainTypes';
+import { EmployeeRepository, isEmployeeId } from './validator/DomainTypes';
 import { OnePagerValidation } from './validator/OnePagerValidation';
 import { printError } from './ErrorHandling';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
@@ -39,10 +39,12 @@ export async function FileChangeQueueTrigger(
 
         const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
 
+        const employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
+
         // Validate the one-pagers of the employee specified in the queue item.
         const validator = new OnePagerValidation(
             onePagers,
-            onePagers,
+            employeeRepo === undefined ? onePagers : employeeRepo,
             await config.reporter(),
             allRules(context),
             context
