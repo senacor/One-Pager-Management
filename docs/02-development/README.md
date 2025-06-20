@@ -76,8 +76,10 @@ flowchart TB
 
 
         FileChangeQueueTrigger -- creates --> AppConfiguration
-        SharepointListValidationReporter  -- is used by --> OnePagerValidation 
-        SharePointStorageExplorer -- is used by -->  OnePagerValidation
+        SharepointListValidationReporter  <-- Interact for Information about One Pagers --> OnePagerValidation
+        
+
+        OnePagerValidation <-- Interact for Retrieving and Reporting Validation Errors -->  SharePointStorageExplorer
 
         AppConfiguration -- creates --> SharePointStorageExplorer
 
