@@ -107,17 +107,9 @@ async function imageToTensor3D(
     const img = await transform(sharp(imageData));
     const { data, info } = await img.removeAlpha().raw().toBuffer({ resolveWithObject: true });
 
-    // Sanity checks to prevent memory access errors
-    if (info.channels !== 3) {
-        throw new Error(`Expected 3 channels (RGB) after removeAlpha, got ${info.channels}`);
-    }
-    if (data.length !== info.height * info.width * info.channels) {
-        throw new Error(
-            `Buffer size mismatch: data.length=${data.length}, expected=${info.height}*${info.width}*${info.channels}=${info.height * info.width * info.channels}`
-        );
-    }
-
-    return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], 'int32');
+    // Convert Buffer to number[] using readUInt8
+    const arr: number[] = Array.from({ length: data.length }, (_, i) => data.readUInt8(i));
+    return tf.tensor3d(arr, [info.height, info.width, info.channels], 'int32');
 }
 
 async function intelligentCenterCropAndResize(
