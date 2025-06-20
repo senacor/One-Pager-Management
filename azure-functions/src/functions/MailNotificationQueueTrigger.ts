@@ -55,16 +55,18 @@ export async function MailNotificationQueueTrigger(
             throw new Error('A MailPort can only be used in combination with SharePoint!');
         }
 
-        const mailNotificationHandler = new EMailNotification(mailAdapter, employeeRepo, await config.reporter(), context);
+        const mailNotificationHandler = new EMailNotification(
+            mailAdapter,
+            employeeRepo,
+            await config.reporter(),
+            context
+        );
 
         await mailNotificationHandler.notifyEmployee(item.employeeId);
 
         if (mailAdapter instanceof InMemoryMailAdapter) {
             context.extraOutputs.set(queueOutput, mailAdapter.mails);
         }
-
-
-
     } catch (error) {
         context.error(
             `Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`
@@ -82,5 +84,5 @@ app.storageQueue('MailNotificationQueueTrigger', {
     queueName: onepagerMailRequests,
     connection: '',
     handler: MailNotificationQueueTrigger,
-    extraOutputs: [queueOutput]
+    extraOutputs: [queueOutput],
 });

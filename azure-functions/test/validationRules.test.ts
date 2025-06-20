@@ -1,4 +1,4 @@
-import { LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
+import { EmployeeID, LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
@@ -9,29 +9,32 @@ import { readFile } from 'node:fs/promises';
 let _exampleOnePager: Promise<LoadedOnePager>;
 function exampleOnePager(): Promise<LoadedOnePager> {
     if (!_exampleOnePager) {
-        _exampleOnePager = readFile('test/resources/onepager/example-2024-DE.pptx').then(async data => ({
-            lastUpdateByEmployee: new Date(),
-            local: 'DE',
-            contentLanguages: ['DE'],
-            pptx: await Pptx.load(data),
-            webLocation: new URL('https://example.com/onepager.pptx'),
-        }));
+        _exampleOnePager = readFile('test/resources/onepager/example-2024-DE.pptx').then(
+            async data => ({
+                lastUpdateByEmployee: new Date(),
+                local: 'DE',
+                contentLanguages: ['DE'],
+                pptx: await Pptx.load(data),
+                webLocation: new URL('https://example.com/onepager.pptx'),
+            })
+        );
     }
     return _exampleOnePager;
 }
 
-const employeeData =  {
-    name: "",
-    email: "", //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
-    entry_date: "",
-    office: "",
-    date_of_employment_change: "",
-    position_current: "",
-    resource_type_current: "",
-    staffing_pool_current: "",
-    position_future: "",
-    resource_type_future: "",
-    staffing_pool_future: ""
+const employeeData = {
+    id: '123456' as EmployeeID,
+    name: '',
+    email: '',
+    entry_date: '',
+    office: '',
+    date_of_employment_change: '',
+    position_current: '',
+    resource_type_current: '',
+    staffing_pool_current: '',
+    position_future: '',
+    resource_type_future: '',
+    staffing_pool_future: '',
 };
 
 describe('validationRules', () => {
@@ -66,7 +69,9 @@ describe('validationRules', () => {
         it('should identify onepager using current template as valid', async () => {
             const currentTemplate = {
                 ...(await exampleOnePager()),
-                pptx: await readFile('test/resources/examples/Mustermann, Max_DE_240209.pptx').then(Pptx.load),
+                pptx: await readFile('test/resources/examples/Mustermann, Max_DE_240209.pptx').then(
+                    Pptx.load
+                ),
             };
 
             const errors = usesCurrentTemplate()(currentTemplate, employeeData);
@@ -79,7 +84,9 @@ describe('validationRules', () => {
             async file => {
                 const oldTemplate = {
                     ...(await exampleOnePager()),
-                    pptx: await readFile(`test/resources/examples/Mustermann, Max DE_${file}`).then(Pptx.load),
+                    pptx: await readFile(`test/resources/examples/Mustermann, Max DE_${file}`).then(
+                        Pptx.load
+                    ),
                 };
 
                 const errors = usesCurrentTemplate()(oldTemplate, employeeData);
@@ -88,26 +95,31 @@ describe('validationRules', () => {
             }
         );
 
-        it.each(readdirSync('test/resources/examples/non-exact-template').filter(file => file.endsWith('.pptx')))(
-            'should identify non-exact template usage in %s',
-            async file => {
-                const nonExact = {
-                    ...(await exampleOnePager()),
-                    pptx: await readFile(`test/resources/examples/non-exact-template/${file}`).then(Pptx.load),
-                };
+        it.each(
+            readdirSync('test/resources/examples/non-exact-template').filter(file =>
+                file.endsWith('.pptx')
+            )
+        )('should identify non-exact template usage in %s', async file => {
+            const nonExact = {
+                ...(await exampleOnePager()),
+                pptx: await readFile(`test/resources/examples/non-exact-template/${file}`).then(
+                    Pptx.load
+                ),
+            };
 
-                const errors = usesCurrentTemplate()(nonExact, employeeData);
+            const errors = usesCurrentTemplate()(nonExact, employeeData);
 
-                await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
-            }
-        );
+            await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
+        });
     });
 
     describe('hasPhoto', () => {
         it('should report an error if no photo is present', async () => {
             const onePagerWithoutPhoto = {
                 ...(await exampleOnePager()),
-                pptx: await readFile(`test/resources/onepager/example-2024-DE-no-photo.pptx`).then(Pptx.load),
+                pptx: await readFile(`test/resources/onepager/example-2024-DE-no-photo.pptx`).then(
+                    Pptx.load
+                ),
             };
 
             const errors = hasPhoto()(onePagerWithoutPhoto, employeeData);

@@ -1,7 +1,7 @@
 import { Parser } from 'xml2js';
 import JSZip from 'jszip';
 import { uniq } from '../OnePagerValidation';
-import { Local } from '../DomainTypes';
+import { Local, Logger } from '../DomainTypes';
 import { detectLanguage } from './ai';
 import { createHash } from 'crypto';
 
@@ -14,16 +14,18 @@ const SUPERFLUOS_TEXT_BODIES = [
 const ONEPAGER_SECTION_COUNT = 3; // we expect at least a section for name, position, and other descriptions
 
 export class Pptx {
+    readonly logger: Logger;
     private readonly zip: JSZip;
     private _slides?: Promise<PptxSlide[]>;
 
-    private constructor(zip: JSZip) {
+    private constructor(zip: JSZip, logger: Logger) {
         this.zip = zip;
+        this.logger = logger;
     }
 
-    static async load(data: Buffer): Promise<Pptx> {
+    static async load(data: Buffer, logger: Logger = console): Promise<Pptx> {
         const zip = new JSZip();
-        return new Pptx(await zip.loadAsync(data));
+        return new Pptx(await zip.loadAsync(data), logger);
     }
 
     async getSlides(): Promise<PptxSlide[]> {
@@ -61,13 +63,17 @@ export class Pptx {
     loadFile(filePath: string): Promise<Buffer> {
         const file = this.zip.file(filePath);
         if (!file) {
-            throw new Error(`No ${filePath} found in the PPTX file: ${Object.keys(this.zip.files).join(', ')}`);
+            throw new Error(
+                `No ${filePath} found in the PPTX file: ${Object.keys(this.zip.files).join(', ')}`
+            );
         }
         return file.async('nodebuffer');
     }
 
     filesOf(folder: string): string[] {
-        return Object.keys(this.zip.files).filter(file => file.startsWith(folder) && file.length > folder.length && !file.endsWith('/'));
+        return Object.keys(this.zip.files).filter(
+            file => file.startsWith(folder) && file.length > folder.length && !file.endsWith('/')
+        );
     }
 
     async getContentLanguages(): Promise<Local[]> {
@@ -78,9 +84,7 @@ export class Pptx {
 
     async getUsedImages(): Promise<PptxImage[]> {
         const onePagerSlides = await this.getOnePagerSlides();
-        return (await Promise.all(onePagerSlides.map(slide => slide.images)))
-            .flat()
-            .filter(uniq);
+        return (await Promise.all(onePagerSlides.map(slide => slide.images))).flat().filter(uniq);
     }
 
     async getOnePagerThemes(): Promise<PptxTheme[]> {
@@ -115,7 +119,14 @@ class ZipPptxSlide implements PptxSlide {
     readonly usedLanguage: Local | undefined;
     readonly theme: PptxTheme;
 
-    constructor(path: string, isOnePager: boolean, texts: string[], images: PptxImage[], usedLanguage: Local | undefined, theme: PptxTheme) {
+    constructor(
+        path: string,
+        isOnePager: boolean,
+        texts: string[],
+        images: PptxImage[],
+        usedLanguage: Local | undefined,
+        theme: PptxTheme
+    ) {
         this.path = path;
         this.isOnePager = isOnePager;
         this.texts = texts;
@@ -126,9 +137,10 @@ class ZipPptxSlide implements PptxSlide {
 
     static async create(pptx: Pptx, path: string): Promise<PptxSlide> {
         const last = path.lastIndexOf('/');
-        const slideRels = pptx.parseXml<XmlRels>(`ppt/slides/_rels/${path.substring(last + 1)}.rels`);
+        const slideRels = pptx.parseXml<XmlRels>(
+            `ppt/slides/_rels/${path.substring(last + 1)}.rels`
+        );
         const slide = pptx.parseXml<XmlSlide>(path);
-
 
         const images = this.imagesFrom(await slideRels);
         const texts = this.texts(await slide);
@@ -138,11 +150,18 @@ class ZipPptxSlide implements PptxSlide {
 
         const theme = this.discoverTheme(await slideRels, pptx);
 
-        return new ZipPptxSlide(path, await isOnePager, texts, images.map(i => new ZipPptxImage(pptx, i)), await usedLanguage, await theme);
+        return new ZipPptxSlide(
+            path,
+            await isOnePager,
+            texts,
+            images.map(i => new ZipPptxImage(pptx, i)),
+            await usedLanguage,
+            await theme
+        );
     }
 
     private static async isOnePager(texts: string[]): Promise<boolean> {
-        return texts.filter(t => !t.startsWith('Ergänzung: ')).length >= ONEPAGER_SECTION_COUNT;;
+        return texts.filter(t => !t.startsWith('Ergänzung: ')).length >= ONEPAGER_SECTION_COUNT;
     }
 
     private static texts(slide: XmlSlide) {
@@ -173,6 +192,7 @@ class ZipPptxSlide implements PptxSlide {
         )?.$.Target;
 
         for (const masterRelFile of pptx.filesOf('ppt/slideMasters/_rels/')) {
+            // eslint-disable-next-line no-await-in-loop
             const mXml = await pptx.parseXml<XmlRels>(masterRelFile);
             if (!mXml.Relationships.Relationship.some(rel => rel.$.Target === layoutRel)) {
                 continue;
@@ -181,13 +201,16 @@ class ZipPptxSlide implements PptxSlide {
                 rel.$.Type.endsWith('/theme')
             );
             if (!themeRel) {
-                console.warn(`no theme found in matching master rel file ${masterRelFile}: ${JSON.stringify(mXml.Relationships.Relationship)}`);
+                pptx.logger.warn(
+                    `no theme found in matching master rel file ${masterRelFile}: ${JSON.stringify(mXml.Relationships.Relationship)}`
+                );
                 continue;
             }
 
             const themeTarget = themeRel.$.Target;
             const path = `ppt/${themeTarget.substring('../'.length)}`;
 
+            // eslint-disable-next-line no-await-in-loop
             const content = await pptx.loadFile(path);
 
             const hash = createHash('md5');

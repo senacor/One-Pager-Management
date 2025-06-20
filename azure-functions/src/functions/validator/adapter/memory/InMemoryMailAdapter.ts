@@ -1,6 +1,6 @@
-import { MailPort, EmailAddress } from "../../DomainTypes";
+import { MailPort, EmailAddress } from '../../DomainTypes';
 
-export type MailItem = {emailAddress: string, subject: string, content: string};
+export type MailItem = { emailAddress: string; subject: string; content: string };
 
 export class InMemoryMailAdapter implements MailPort {
     private readonly _mails: Array<MailItem> = [];
@@ -9,7 +9,7 @@ export class InMemoryMailAdapter implements MailPort {
         this._mails.push({
             emailAddress,
             subject,
-            content
+            content,
         });
     }
 
@@ -17,5 +17,3 @@ export class InMemoryMailAdapter implements MailPort {
         return [...this._mails];
     }
 }
-
-

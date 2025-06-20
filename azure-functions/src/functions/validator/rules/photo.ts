@@ -3,7 +3,7 @@ import { detectFaces, labelImage, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
-    return async (onePager, _) => {
+    return async onePager  => {
         const usedImages = await onePager.pptx.getUsedImages();
 
         const withFaces = (
@@ -29,7 +29,7 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
 export const QUALITY_THRESHOLD = 0.2;
 
 export function hasQualityPhoto(logger: Logger = console): ValidationRule {
-    return async (onePager, _) => {
+    return async onePager => {
         const usedImages = await onePager.pptx.getUsedImages();
 
         const scored = await Promise.all(

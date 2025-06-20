@@ -2,7 +2,6 @@ import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from '@
 import { printError } from './ErrorHandling';
 import { QueueItem, onepagerMailRequests } from './MailNotificationQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 
 /**
  * Azure Queue used to store One Pager validation requests.
@@ -11,7 +10,6 @@ const queueOutput = output.storageQueue({
     queueName: onepagerMailRequests,
     connection: '',
 });
-
 
 export async function MailNotificationAllHttpTrigger(
     request: HttpRequest,
@@ -26,10 +24,10 @@ export async function MailNotificationAllHttpTrigger(
         const employees = await config.employeeRepo()?.getAllEmployees();
 
         if (!employees) {
-            throw new Error("Getting employees failed!");
+            throw new Error('Getting employees failed!');
         }
 
-        const items: QueueItem[] = employees.map((id) => ({employeeId: id}));
+        const items: QueueItem[] = employees.map(id => ({ employeeId: id }));
 
         context.extraOutputs.set(queueOutput, items);
 
