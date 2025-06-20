@@ -47,11 +47,7 @@ export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face
 
     const img = await imageToTensor3D(imageData);
 
-    try {
-        return await (await detector()).estimateFaces(img);
-    } finally {
-        img.dispose();
-    }
+    return await (await detector()).estimateFaces(img);
 }
 
 export interface PhotoLabels {
@@ -69,26 +65,20 @@ export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
         .div(tf.scalar(255.0));
     const batched = input.expandDims(0); // Add batch dimension: [1, height, width, 3]
 
-    try {
-        const model = await getQualityModel();
-        const [prediction] = (await (model.predict(batched) as tf.Tensor).array()) as number[][]; // because its batched we have an extra dimension
-        if (prediction.length !== 5) {
-            throw new Error(`Unexpected prediction length: ${prediction.length}. Expected 5.`);
-        }
-        const [brightBackground, neutralBackground, whiteShirt, highQuality, businessAttire] =
-            prediction;
-        return {
-            brightBackground,
-            neutralBackground,
-            whiteShirt,
-            highQuality,
-            businessAttire,
-        };
-    } finally {
-        // Clean up tensor memory
-        input.dispose();
-        batched.dispose();
+    const model = await getQualityModel();
+    const [prediction] = (await (model.predict(batched) as tf.Tensor).array()) as number[][]; // because its batched we have an extra dimension
+    if (prediction.length !== 5) {
+        throw new Error(`Unexpected prediction length: ${prediction.length}. Expected 5.`);
     }
+    const [brightBackground, neutralBackground, whiteShirt, highQuality, businessAttire] =
+        prediction;
+    return {
+        brightBackground,
+        neutralBackground,
+        whiteShirt,
+        highQuality,
+        businessAttire,
+    };
 }
 
 const LOCAL_MAPPINGS: Record<string, Local> = {
