@@ -1,4 +1,5 @@
 import { URL } from 'node:url';
+import { Pptx } from './rules/Pptx';
 
 /**
  * Represents an employee ID as a string that consists of digits only.
@@ -46,11 +47,14 @@ export type ValidationError =
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
 export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
+    pptx: Pptx;
     contentLanguages: Local[];
-    data: Buffer;
 };
 
-export type ValidationRule = (onePager: LoadedOnePager) => Promise<ValidationError[]>;
+export type ValidationRule = (
+    onePager: LoadedOnePager,
+    employeeData: EmployeeData
+) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
     /**
@@ -69,6 +73,8 @@ export interface EmployeeRepository {
      * Fetches IDs of all current employees.
      */
     getAllEmployees(): Promise<EmployeeID[]>;
+
+    getDataForEmployee(id: EmployeeID): Promise<EmployeeData | undefined>;
 }
 
 /**
@@ -91,7 +97,8 @@ export interface ValidationReporter {
     reportErrors(
         id: EmployeeID,
         onePager: OnePager | undefined,
-        errors: ValidationError[]
+        errors: ValidationError[],
+        employee: EmployeeData
     ): Promise<void>;
 
     /**
@@ -99,15 +106,6 @@ export interface ValidationReporter {
      * @param id The ID of the employee whose validation results should be fetched.
      */
     getResultFor(id: EmployeeID): Promise<ValidationError[]>;
-}
-
-export interface LanguageDetector {
-    /**
-     * Detects the language of the given one-pager content.
-     * @param content The content of the one-pager.
-     * @returns The detected language, or undefined if no language could be detected.
-     */
-    detectLanguage(content: Buffer): Promise<Local[]>;
 }
 
 export type StorageFile = {
@@ -147,13 +145,11 @@ export interface StorageExplorer {
     listFiles(folder: string): Promise<StorageFile[]>;
 }
 
-
 export type EmailAddress = string;
 export function isEmailAddress(txt: unknown): txt is EmailAddress {
     return typeof txt === 'string' && /^[a-zA-Z0-9._%+-]+@senacor.com$/.test(txt);
 }
 export interface MailPort {
-
     /**
      * Sends an email to the specified recipients with the given subject and body.
      * @param to An array of email addresses to send the email to.
@@ -162,6 +158,25 @@ export interface MailPort {
      */
     sendMail(to: EmailAddress, subject: string, content: string): Promise<void>;
 }
+
+export type MSScope =
+    | 'https://graph.microsoft.com/.default'
+    | 'https://analysis.windows.net/powerbi/api/.default';
+
+export type EmployeeData = {
+    id: EmployeeID;
+    name: string;
+    email: string; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    entry_date: string;
+    office: string;
+    date_of_employment_change: string | null;
+    position_current: string | null;
+    resource_type_current: string | null;
+    staffing_pool_current: string | null;
+    position_future: string | null;
+    resource_type_future: string | null;
+    staffing_pool_future: string | null;
+};
 
 /**
  * --------------------- Auxiliary Interfaces ---------------------

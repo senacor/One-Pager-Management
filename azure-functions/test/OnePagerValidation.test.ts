@@ -1,5 +1,4 @@
 import {
-    LanguageDetector,
     LoadedOnePager,
     Local,
     OnePager,
@@ -8,13 +7,8 @@ import {
 } from '../src/functions/validator/DomainTypes';
 import { OnePagerValidation } from '../src/functions/validator/OnePagerValidation';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
+import { Pptx } from '../src/functions/validator/rules/Pptx';
 import { initInMemoryOnePagers } from './OnePagerExemplars';
-
-class TestLanguageDetector implements LanguageDetector {
-    async detectLanguage(): Promise<Local[]> {
-        return ['DE'];
-    }
-}
 
 function OnePager(local?: Local, lastUpdateByEmployee: Date = new Date()): OnePager {
     return {
@@ -34,13 +28,9 @@ describe('OnePagerValidation', () => {
 
     it('should not report errors for unknown employee', async () => {
         const repo = await initInMemoryOnePagers({});
-        const validation = new OnePagerValidation(
-            repo,
-            repo,
-            reporter,
-            new TestLanguageDetector(),
-            async () => ['USING_UNKNOWN_TEMPLATE']
-        );
+        const validation = new OnePagerValidation(repo, repo, reporter, async () => [
+            'USING_UNKNOWN_TEMPLATE',
+        ]);
 
         await validation.validateOnePagersOfEmployee('000');
 
@@ -50,12 +40,8 @@ describe('OnePagerValidation', () => {
     it('should report errors for employee without one-pager', async () => {
         const id = '111';
         const repo = await initInMemoryOnePagers({ [id]: [] });
-        const validation = new OnePagerValidation(
-            repo,
-            repo,
-            reporter,
-            new TestLanguageDetector(),
-            async op => (op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : [])
+        const validation = new OnePagerValidation(repo, repo, reporter, async op =>
+            op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -74,12 +60,8 @@ describe('OnePagerValidation', () => {
                 { lastUpdateByEmployee: new Date(), local: 'EN' },
             ],
         });
-        const validation = new OnePagerValidation(
-            repo,
-            repo,
-            reporter,
-            new TestLanguageDetector(),
-            async op => (op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : [])
+        const validation = new OnePagerValidation(repo, repo, reporter, async op =>
+            op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -98,13 +80,7 @@ describe('OnePagerValidation', () => {
         let callCounter = 0;
         const statefulValidator = async () =>
             callCounter++ === 0 ? (['OLDER_THAN_SIX_MONTHS'] as ValidationError[]) : [];
-        const validation = new OnePagerValidation(
-            repo,
-            repo,
-            reporter,
-            new TestLanguageDetector(),
-            statefulValidator
-        );
+        const validation = new OnePagerValidation(repo, repo, reporter, statefulValidator);
 
         await validation.validateOnePagersOfEmployee(id);
         await validation.validateOnePagersOfEmployee(id);
@@ -122,15 +98,8 @@ describe('OnePagerValidation', () => {
                 { lastUpdateByEmployee: new Date('2005-01-01'), local: 'EN' },
             ],
         });
-        const validation = new OnePagerValidation(
-            repo,
-            repo,
-            reporter,
-            new TestLanguageDetector(),
-            async op =>
-                !op || op.lastUpdateByEmployee < new Date('2010-01-01')
-                    ? ['OLDER_THAN_SIX_MONTHS']
-                    : []
+        const validation = new OnePagerValidation(repo, repo, reporter, async op =>
+            !op || op.lastUpdateByEmployee < new Date('2010-01-01') ? ['OLDER_THAN_SIX_MONTHS'] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -251,7 +220,7 @@ describe('OnePagerValidation', () => {
                 local,
                 contentLanguages: contentLanguages || (local ? [local] : []),
                 lastUpdateByEmployee: new Date(),
-                data: Buffer.from(''),
+                pptx: undefined as never as Pptx,
                 webLocation: new URL('file:///example.pptx'),
             };
         }
@@ -297,13 +266,7 @@ describe('OnePagerValidation', () => {
 async function validation() {
     const repo = await initInMemoryOnePagers({});
 
-    return new OnePagerValidation(
-        repo,
-        repo,
-        new InMemoryValidationReporter(),
-        new TestLanguageDetector(),
-        async () => []
-    );
+    return new OnePagerValidation(repo, repo, new InMemoryValidationReporter(), async () => []);
 }
 
 function assertSameItems<T>(actual: T[], expected: T[]): void {

@@ -1,96 +1,52 @@
 import { readFile } from 'fs/promises';
 import { CURRENT_TEMPLATE_PATH } from '.';
 import { Logger, ValidationError, ValidationRule } from '../DomainTypes';
-import JSZip from 'jszip';
-import { createHash } from 'crypto';
+import { Pptx, PptxTheme } from './Pptx';
 
-let templateHashes: Promise<{
-    names: string[];
-    hashes: Record<string, string>;
-}>;
+let templateHashes: Promise<PptxTheme[]>;
+
 function getTemplateHashes(logger: Logger) {
     if (!templateHashes) {
-        templateHashes = readFile(CURRENT_TEMPLATE_PATH).then(templateData =>
-            calculateThemeHash(logger, templateData)
-        );
+        templateHashes = readFile(CURRENT_TEMPLATE_PATH)
+            .then(data => Pptx.load(data, logger))
+            .then(pptx => pptx.getOnePagerThemes());
     }
     return templateHashes;
 }
 
-export const usesCurrentTemplate =
-    (logger: Logger = console): ValidationRule =>
-    async onePager => {
-        const templateHashes = await getTemplateHashes(logger);
-        const contentHashes = await calculateThemeHash(logger, onePager.data);
+export function usesCurrentTemplate(logger: Logger = console): ValidationRule {
+    return async onePager => {
+        const templateThemes = await getTemplateHashes(logger);
+        const contentThemes = await onePager.pptx.getOnePagerThemes();
 
-        const templateKeys = Object.keys(templateHashes.hashes);
-        const contentKeys = Object.keys(contentHashes.hashes);
+        const templateThemeDigests = templateThemes.map(theme => theme.digest);
+        const contentThemeDigests = contentThemes.map(theme => theme.digest);
 
-        // no error if theme contents are equal
-        if (
-            templateKeys.length === contentKeys.length &&
-            templateKeys.every(
-                key =>
-                    contentKeys.includes(key) &&
-                    templateHashes.hashes[key] === contentHashes.hashes[key]
-            )
-        ) {
+        // no error content uses only themes from the template
+        if (contentThemeDigests.every(key => templateThemeDigests.includes(key))) {
             return [];
         }
 
-        const themeCountWithSameContent = templateKeys.filter(key =>
-            contentKeys.includes(key)
-        ).length;
-        const hasSomeOriginalTemplateThemes = templateHashes.names.some(name =>
-            contentHashes.names.includes(name)
+        const contentThemesWithSameDigest = contentThemes.filter(t =>
+            templateThemes.some(tt => tt.digest === t.digest)
         );
+        const contentThemesWithSameName = contentThemes.filter(ct =>
+            templateThemes.some(tt => tt.name === ct.name)
+        );
+
+        logger.warn(`
+        Content uses themes not part of the template.
+        Content themes:  ${JSON.stringify(contentThemes)}
+        Template themes: ${JSON.stringify(templateThemes)}
+        ${contentThemesWithSameDigest.length} themes with same digest and ${contentThemesWithSameName.length} themes with same name found.
+    `);
 
         // if we detect at least one theme of the template we consider the current one-pager based on it
         const error: ValidationError[] = [
-            themeCountWithSameContent > 0 || hasSomeOriginalTemplateThemes
+            contentThemesWithSameDigest.length > 0 || contentThemesWithSameName.length > 0
                 ? 'USING_MODIFIED_TEMPLATE'
                 : 'USING_UNKNOWN_TEMPLATE',
         ];
         return error;
     };
-
-async function calculateThemeHash(
-    logger: Logger,
-    pptxContent: Buffer
-): Promise<{ names: string[]; hashes: Record<string, string> }> {
-    const zip = new JSZip();
-    const pptx = await zip.loadAsync(pptxContent);
-    const masterFiles = Object.keys(pptx.files)
-        .filter(file => file.match(/ppt\/(theme)\//))
-        .sort();
-
-    const hashes: Record<string, string> = {};
-    const names: string[] = [];
-
-    const xmlContents = await Promise.all(
-        masterFiles.map(async f => {
-            const c = await pptx.files[f].async('string');
-            return c;
-        })
-    );
-    for (const [i, xmlContent] of xmlContents.entries()) {
-        const match = xmlContent.match(/<a:theme [^>]+ name="(?:\d_)?([^"]+)">/);
-        if (!match) {
-            continue;
-        }
-        const [, themeName] = match;
-        // these seem to be default themes we do not care about
-        if (themeName.toLocaleLowerCase().includes('office')) {
-            continue;
-        }
-
-        const hash = createHash('md5');
-        hash.update(xmlContent);
-        const digest = hash.digest('hex');
-
-        hashes[digest] = masterFiles[i];
-        names.push(themeName);
-    }
-
-    return { names, hashes };
 }

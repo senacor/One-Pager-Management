@@ -1,6 +1,7 @@
 import { ClientSecretCredential } from '@azure/identity';
 import {
     AuthenticationHandler,
+    AuthenticationProvider,
     Client,
     HTTPMessageHandler,
     Middleware,
@@ -10,19 +11,31 @@ import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-grap
 import { LocalFileValidationReporter } from '../validator/adapter/localfile/LocalFileValidationReporter';
 import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
-import { Logger, MailPort, StorageExplorer, ValidationReporter } from '../validator/DomainTypes';
+import {
+    MailPort,
+    StorageExplorer,
+    Logger,
+    MSScope,
+    ValidationReporter,
+    EmployeeRepository,
+} from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 import { promises as fs } from 'fs';
 import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/SharepointStorageExplorer';
 import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
-import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
 import { InMemoryMailAdapter } from '../validator/adapter/memory/InMemoryMailAdapter';
+import {
+    DatasetID,
+    isDatasetID,
+    PowerBIRepository,
+} from '../validator/adapter/powerbi/PowerBIRepository';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
     mailAdapter: () => MailPort | undefined; // optional mail adapter for sharepoint storage
+    employeeRepo: () => EmployeeRepository | undefined;
 };
 
 type MemoryStorageOptions = {
@@ -35,7 +48,7 @@ type LocalStorageOptions = {
     VALIDATION_RESULT_DIR?: string;
 };
 
-type SharepointStorageOptions = SharepointClientOptions & {
+type SharepointStorageOptions = MSClientOptions & {
     STORAGE_SOURCE: 'sharepoint';
     SHAREPOINT_ONE_PAGER_SITE_NAME?: string;
     SHAREPOINT_ONE_PAGER_DRIVE_NAME?: string;
@@ -43,17 +56,16 @@ type SharepointStorageOptions = SharepointClientOptions & {
     SHAREPOINT_VALIDATION_RESULT_LIST_NAME?: string;
 };
 
-export type SharepointClientOptions = {
+export type MSClientOptions = {
     SHAREPOINT_TENANT_ID?: string;
     SHAREPOINT_CLIENT_ID?: string;
     SHAREPOINT_CLIENT_SECRET?: string;
     SHAREPOINT_API_LOGGING?: string;
     SHAREPOINT_API_CACHING?: string;
+    POWERBI_DATASET_ID?: string;
 };
 
-export function hasSharepointClientOptions(
-    opts: Record<string, unknown>
-): opts is SharepointClientOptions {
+export function hasSharepointClientOptions(opts: Record<string, unknown>): opts is MSClientOptions {
     return (
         Boolean(opts.SHAREPOINT_TENANT_ID) &&
         Boolean(opts.SHAREPOINT_CLIENT_ID) &&
@@ -83,7 +95,8 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 explorer: async () =>
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
-                mailAdapter: () => new InMemoryMailAdapter()
+                mailAdapter: () => new InMemoryMailAdapter(),
+                employeeRepo: () => undefined,
             };
         }
         case 'localfile': {
@@ -96,7 +109,8 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             return {
                 explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
-                mailAdapter: () => undefined
+                mailAdapter: () => undefined,
+                employeeRepo: () => undefined,
             };
         }
         case 'sharepoint': {
@@ -116,7 +130,12 @@ function getSharepointConfig(
     opts: SharepointStorageOptions,
     logger: Logger = console
 ): AppConfiguration {
-    const client = createSharepointClient(opts);
+    const sharePointAuthProvider = createAuthProvider(opts);
+    const powerbiAuthProvider = createAuthProvider(
+        opts,
+        'https://analysis.windows.net/powerbi/api/.default'
+    );
+    const client = createMSClient(opts, sharePointAuthProvider);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
         throw new Error('Missing SharePoint One Pager site name in environment variables!');
@@ -127,6 +146,11 @@ function getSharepointConfig(
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
     const validationResultListName =
         opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'onepager-status';
+
+    if (!opts.POWERBI_DATASET_ID || !isDatasetID(opts.POWERBI_DATASET_ID)) {
+        throw new Error('Missing or invalid Power BI Dataset ID!');
+    }
+    const datasetID: DatasetID = opts.POWERBI_DATASET_ID;
 
     logger.log(
         `Fetching OnePagers from SharePoint storage with site: "${onePagerSiteName}", drive: "${onePagerDriveName}"!`
@@ -150,12 +174,13 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
-        mailAdapter: () =>
-            new InMemoryMailAdapter()
-            // new MSMailAdapter(
-            //     client,
-            //     logger
-            // ) // optional mail adapter for SharePoint storage
+        mailAdapter: () => new InMemoryMailAdapter(),
+        // new MSMailAdapter(
+        //     client,
+        //     employeeRepo,
+        //     logger
+        // ), // optional mail adapter for SharePoint storage
+        employeeRepo: () => new PowerBIRepository(powerbiAuthProvider, datasetID, logger),
     };
 }
 
@@ -166,31 +191,14 @@ function getSharepointConfig(
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createSharepointClient(opts: SharepointClientOptions): Client {
-    if (
-        !opts.SHAREPOINT_TENANT_ID ||
-        !opts.SHAREPOINT_CLIENT_ID ||
-        !opts.SHAREPOINT_CLIENT_SECRET
-    ) {
-        throw new Error(
-            'Missing SharePoint authentication configuration in environment variables!'
-        );
+export function createMSClient(
+    opts: MSClientOptions,
+    authProvider: AuthenticationProvider | undefined = undefined,
+    scope: MSScope = 'https://graph.microsoft.com/.default'
+): Client {
+    if (!authProvider) {
+        authProvider = createAuthProvider(opts, scope);
     }
-
-    // Use ClientSecretCredential for authentication.
-    const credential = new ClientSecretCredential(
-        opts.SHAREPOINT_TENANT_ID,
-        opts.SHAREPOINT_CLIENT_ID,
-        opts.SHAREPOINT_CLIENT_SECRET
-    );
-
-    // Define the authentication provider using TokenCredentialAuthenticationProvider.
-    // This provider will use the credential to authenticate requests to the Microsoft Graph API.
-    // It requires the scopes to be set for the Microsoft Graph API.
-    // The scope '.default' is used to request all permissions granted to the application.
-    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-        scopes: ['https://graph.microsoft.com/.default'],
-    });
 
     // define the middleware chain
     const handlers: Middleware[] = [
@@ -213,4 +221,36 @@ export function createSharepointClient(opts: SharepointClientOptions): Client {
         debugLogging: opts.SHAREPOINT_API_LOGGING === 'true',
         middleware: handlers[0],
     });
+}
+
+export function createAuthProvider(
+    opts: MSClientOptions,
+    scope: MSScope = 'https://graph.microsoft.com/.default'
+): AuthenticationProvider {
+    if (
+        !opts.SHAREPOINT_TENANT_ID ||
+        !opts.SHAREPOINT_CLIENT_ID ||
+        !opts.SHAREPOINT_CLIENT_SECRET
+    ) {
+        throw new Error(
+            'Missing SharePoint authentication configuration in environment variables!'
+        );
+    }
+
+    // Use ClientSecretCredential for authentication.
+    const credential = new ClientSecretCredential(
+        opts.SHAREPOINT_TENANT_ID,
+        opts.SHAREPOINT_CLIENT_ID,
+        opts.SHAREPOINT_CLIENT_SECRET
+    );
+
+    // Define the authentication provider using TokenCredentialAuthenticationProvider.
+    // This provider will use the credential to authenticate requests to the Microsoft Graph API.
+    // It requires the scopes to be set for the Microsoft Graph API.
+    // The scope '.default' is used to request all permissions granted to the application.
+    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+        scopes: [scope],
+    });
+
+    return authProvider;
 }

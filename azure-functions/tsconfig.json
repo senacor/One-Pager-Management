@@ -11,5 +11,7 @@
         "skipLibCheck": true,
         "resolveJsonModule": true
     },
-    "exclude": ["node_modules", "dist", "reports", "app_config", "models", "ressources"]
+    "exclude": ["node_modules", "dist", "reports", "app_config", "models",
+        "resources"
+    ]
 }

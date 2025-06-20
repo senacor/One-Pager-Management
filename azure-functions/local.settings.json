@@ -7,9 +7,12 @@
     "STORAGE_SOURCE": "sharepoint",
     "FEATURE_DOWNLOAD_ONEPAGER": "true",
     "SHAREPOINT_API_LOGGING": "true",
-    "SHAREPOINT_ONE_PAGER_SITE_NAME": "senacor.sharepoint.com:/teams/MaInfoTest",
+    "SHAREPOINT_ONE_PAGER_SITE_NAME": "senacor.sharepoint.com:/sites/MaInfo",
+    "SHAREPOINT_VALIDATION_SITE_NAME": "senacor.sharepoint.com:/teams/MaInfoTest",
+    "SHAREPOINT_VALIDATION_RESULT_LIST_NAME": "onepager-status",
     "SHAREPOINT_CLIENT_ID": "1621d264-a7bb-40b6-bfef-9b2839cb7eec",
     "SHAREPOINT_TENANT_ID": "52497ec2-0945-4f55-8021-79766363dd96",
-    "SHAREPOINT_CLIENT_SECRET": "<add your client secret here>"
+    "SHAREPOINT_CLIENT_SECRET": "<add your client secret here>",
+    "POWERBI_DATASET_ID": "17c9b3ab-752a-4d66-95bc-2488dd7c4560"
   }
 }

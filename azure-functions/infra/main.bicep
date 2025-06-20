@@ -4,6 +4,7 @@ param sharepointOnePagerSiteName string = 'senacor.sharepoint.com:/sites/MaInfo'
 param sharepointResultSiteName string = 'senacor.sharepoint.com:/teams/MaInfoTest'
 param sharepointClientId string = '1621d264-a7bb-40b6-bfef-9b2839cb7eec'
 param sharepointTenantId string = '52497ec2-0945-4f55-8021-79766363dd96'
+param powerBIDatasetID string = '17c9b3ab-752a-4d66-95bc-2488dd7c4560'
 @secure()
 param sharepointClientSecret string
 
@@ -54,6 +55,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { name: 'SHAREPOINT_VALIDATION_SITE_NAME', value: sharepointResultSiteName }
         { name: 'SHAREPOINT_CLIENT_ID', value: sharepointClientId }
         { name: 'SHAREPOINT_TENANT_ID', value: sharepointTenantId }
+        { name: 'POWERBI_DATASET_ID', value: powerBIDatasetID }
         { name: 'SHAREPOINT_API_LOGGING', value: 'true' }
         {
           name: 'SHAREPOINT_CLIENT_SECRET'
@@ -69,7 +71,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         }
       ]
       ftpsState: 'FtpsOnly'
-      functionAppScaleLimit: 1
+      functionAppScaleLimit: 16
       minTlsVersion: '1.2'
     }
   }

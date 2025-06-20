@@ -70,6 +70,7 @@ deploy functions
 ```bash
 func azure functionapp publish poc-one-pager
 ```
+Debug with KQL query `union traces,requests,exceptions | where severityLevel > 2`
 
 ## Development
 

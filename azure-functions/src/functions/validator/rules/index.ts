@@ -1,16 +1,9 @@
 import { Logger, ValidationRule } from '../DomainTypes';
-import { hasPhoto } from './photo';
+import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
 import config from '../../../../app_config/config.json';
 
-
-// The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
-
-/*
- * -------- Validation rules to check the metadata of a OnePager. --------
- *
- */
 
 export const lastModifiedRule: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
@@ -41,7 +34,8 @@ export function allRules(log: Logger = console): ValidationRule {
         lastModifiedRule,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
-        hasPhoto(log)
+        hasPhoto(log),
+        hasQualityPhoto(log)
     );
 }
 
@@ -51,8 +45,8 @@ export function allRules(log: Logger = console): ValidationRule {
  * @returns The combined validation rule.
  */
 export function combineRules(...rules: ValidationRule[]): ValidationRule {
-    return async onePager => {
-        const errors = await Promise.all(rules.map(rule => rule(onePager)));
+    return async (onePager, employeeData) => {
+        const errors = await Promise.all(rules.map(rule => rule(onePager, employeeData)));
         return errors.flat();
     };
 }

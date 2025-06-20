@@ -2,6 +2,7 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
 import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
 import {
+    EmployeeData,
     EmployeeID,
     Logger,
     OnePager,
@@ -22,10 +23,22 @@ const COLUMN_VALIDATION_ERRORS: string = 'Festgestellte_Fehler';
  */
 const COLUMN_URL: string = 'Location';
 
+const COLUMN_MA_NAME: string = 'Name';
+
+const COLUMN_MA_OFFICE: string = 'Office';
+
+const COLUMN_MA_EMAIL: string = 'EMail_Adresse';
+
+const COLUMN_MA_CURR_POSITION: string = 'Derzeitige_Position';
+
 type ListItemWithFields = {
     [COLUMN_MA_ID]: string;
     [COLUMN_VALIDATION_ERRORS]: string;
     [COLUMN_URL]: string;
+    [COLUMN_MA_NAME]: string;
+    [COLUMN_MA_OFFICE]: string;
+    [COLUMN_MA_EMAIL]: string;
+    [COLUMN_MA_CURR_POSITION]: string | null;
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -38,7 +51,15 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
         COLUMN_VALIDATION_ERRORS in record &&
         typeof record[COLUMN_VALIDATION_ERRORS] === 'string' &&
         COLUMN_URL in record &&
-        typeof record[COLUMN_URL] === 'string'
+        typeof record[COLUMN_URL] === 'string' &&
+        COLUMN_MA_NAME in record &&
+        typeof record[COLUMN_MA_NAME] === 'string' &&
+        COLUMN_MA_OFFICE in record &&
+        typeof record[COLUMN_MA_OFFICE] === 'string' &&
+        COLUMN_MA_EMAIL in record &&
+        typeof record[COLUMN_MA_EMAIL] === 'string' &&
+        COLUMN_MA_CURR_POSITION in record &&
+        ['string', 'null'].includes(typeof record[COLUMN_MA_CURR_POSITION])
     );
 }
 
@@ -94,13 +115,18 @@ export class SharepointListValidationReporter implements ValidationReporter {
             throw new Error(`Cannot fetch lists for site with alias "${siteAlias}" !`);
         }
 
-        const [{ id: listId }] = lists.filter(list => list.displayName === listDisplayName);
-        if (!listId) {
+        const listItems = lists.filter(list => list.displayName === listDisplayName);
+        if (
+            listItems.length === 0 ||
+            listItems[0].id === undefined ||
+            typeof listItems[0].id !== 'string'
+        ) {
             throw new Error(
                 `Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`
             );
         }
-        return new SharepointListValidationReporter(client, listId, maInfoSite.id, logger);
+
+        return new SharepointListValidationReporter(client, listItems[0].id, maInfoSite.id, logger);
     }
 
     /**
@@ -127,7 +153,8 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async reportErrors(
         id: EmployeeID,
         onePager: OnePager | undefined,
-        errors: ValidationError[]
+        errors: ValidationError[],
+        employee: EmployeeData
     ): Promise<void> {
         const itemId = await this.getItemIdOfEmployee(id);
 
@@ -143,6 +170,10 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [COLUMN_MA_ID]: id,
                     [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
                     [COLUMN_URL]: onePagerUrl,
+                    [COLUMN_MA_NAME]: employee.name,
+                    [COLUMN_MA_OFFICE]: employee.office,
+                    [COLUMN_MA_EMAIL]: employee.email,
+                    [COLUMN_MA_CURR_POSITION]: employee.position_current || '',
                 },
             });
         } else {
@@ -176,16 +207,15 @@ export class SharepointListValidationReporter implements ValidationReporter {
             .select('fields')
             .get()) as ListItem;
 
-        if (item.fields === null || !isListItemWithFields(item.fields)) {
+        if (!item.fields || !isListItemWithFields(item.fields)) {
             this.logger.error(
                 `Item with ID "${itemId}" does not have the expected fields structure!`
             );
             return [];
         }
-
         const itemFields: ListItemWithFields = item.fields;
 
-        return itemFields[COLUMN_VALIDATION_ERRORS].split('\n') as ValidationError[];
+        return itemFields[COLUMN_VALIDATION_ERRORS]!.split('\n') as ValidationError[];
     }
 
     /**

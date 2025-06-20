@@ -51,7 +51,7 @@ jobs:
               --parameters sharepointClientSecret=${{ secrets.SHAREPOINT_CLIENT_SECRET }} \
 
   deploy-functions:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     concurrency:
         group: 'AzureInfra'
     permissions:
@@ -76,7 +76,7 @@ jobs:
           cache-dependency-path: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/package-lock.json'
       - run: |
           pushd "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          npm ci
+          npm run ci:windows_ia32
           npm run build
           npm prune --production
           popd

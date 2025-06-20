@@ -1,7 +1,6 @@
 import {
     EmployeeID,
     EmployeeRepository,
-    LanguageDetector,
     LoadedOnePager,
     Local,
     Logger,
@@ -11,6 +10,7 @@ import {
     ValidationReporter,
     ValidationRule,
 } from './DomainTypes';
+import { Pptx } from './rules/Pptx';
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -20,7 +20,6 @@ export class OnePagerValidation {
     private readonly onePagers: OnePagerRepository;
     private readonly employees: EmployeeRepository;
     private readonly reporter: ValidationReporter;
-    private readonly detector: LanguageDetector;
     private readonly validationRule: ValidationRule;
 
     /**
@@ -35,7 +34,6 @@ export class OnePagerValidation {
         onePagers: OnePagerRepository,
         employees: EmployeeRepository,
         reporter: ValidationReporter,
-        detector: LanguageDetector,
         validationRule: ValidationRule,
         logger: Logger = console
     ) {
@@ -43,7 +41,6 @@ export class OnePagerValidation {
         this.onePagers = onePagers;
         this.employees = employees;
         this.reporter = reporter;
-        this.detector = detector;
         this.validationRule = validationRule;
     }
 
@@ -53,7 +50,8 @@ export class OnePagerValidation {
      * @param id The employee ID to validate one-pagers for.
      */
     async validateOnePagersOfEmployee(id: EmployeeID): Promise<void> {
-        if (!(await this.employees.getAllEmployees()).includes(id)) {
+        const employeeData = await this.employees.getDataForEmployee(id);
+        if (!employeeData) {
             this.logger.error(`Employee ${id} does not exist.`);
             return;
         }
@@ -95,7 +93,7 @@ export class OnePagerValidation {
         const validationResults = await Promise.all(
             selectedCandidates.map(async op => ({
                 onePager: op,
-                errors: await this.validationRule(op),
+                errors: await this.validationRule(op, employeeData),
             }))
         );
 
@@ -111,7 +109,7 @@ export class OnePagerValidation {
             await this.reporter.reportValid(id);
         } else {
             this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
-            await this.reporter.reportErrors(id, candidates[0], errors);
+            await this.reporter.reportErrors(id, candidates[0], errors, employeeData);
         }
     }
 
@@ -191,12 +189,11 @@ export class OnePagerValidation {
 
     private async loadOnePager(onePager: OnePager): Promise<LoadedOnePager> {
         this.logger.log(`Loading one-pager from ${onePager.webLocation}`);
-        const data = await onePager.data();
-        const contentLanguages = await this.detector.detectLanguage(data);
+        const pptx = await onePager.data().then(data => Pptx.load(data, this.logger));
         return {
             ...onePager,
-            data,
-            contentLanguages,
+            pptx,
+            contentLanguages: await pptx.getContentLanguages(),
         };
     }
 }

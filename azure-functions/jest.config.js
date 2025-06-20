@@ -5,8 +5,12 @@ module.exports = {
     moduleFileExtensions: ["ts", "js", "json", "node"],
     roots: ["<rootDir>/test"],
     transform: {
-        "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.json" }]
+        "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.json" }],
+        "^.+\\.js$": "babel-jest"
     },
+    transformIgnorePatterns: [
+        "node_modules/(?!(franc-min|trigram-utils|n-gram|collapse-white-space)/)"
+    ],
     reporters: [
         "default",
         ["jest-junit", {
@@ -19,5 +23,5 @@ module.exports = {
             usePathForSuiteName: "true"
         }]
     ],
-    testTimeout: 5000 // 5 seconds
+    testTimeout: 5000
 };

@@ -1,5 +1,5 @@
-import { Client } from "@microsoft/microsoft-graph-client";
-import { Logger, MailPort, EmailAddress, isEmailAddress } from "../../DomainTypes";
+import { Client } from '@microsoft/microsoft-graph-client';
+import { Logger, MailPort, EmailAddress } from '../../DomainTypes';
 
 export class MSMailAdapter implements MailPort {
     private readonly client: Client | undefined;
@@ -12,7 +12,9 @@ export class MSMailAdapter implements MailPort {
 
     async sendMail(emailAddress: EmailAddress, subject: string, content: string): Promise<void> {
         if (!this.client) {
-            throw new Error('Mail client is not initialized. Please provide a valid Microsoft Graph client.');
+            throw new Error(
+                'Mail client is not initialized. Please provide a valid Microsoft Graph client.'
+            );
         }
 
         const sendMailObject = {
@@ -20,13 +22,12 @@ export class MSMailAdapter implements MailPort {
                 subject: subject,
                 body: {
                     contentType: 'HTML', // e.g. Text or HTML
-                    content: content
+                    content: content,
                 },
                 toRecipients: {
                     emailAddress: {
-                        address: emailAddress
-                    }
-
+                        address: emailAddress,
+                    },
                 },
                 // ccRecipients: [
                 //     {
@@ -36,12 +37,12 @@ export class MSMailAdapter implements MailPort {
                 //     }
                 // ],
                 // saveToSentItems: 'false'
-            }
+            },
         };
 
-        const sendMailResp = await this.client.api('/users/staffing@senacor.com/sendMail').post(sendMailObject);
+        const sendMailResp = await this.client
+            .api('/users/staffing@senacor.com/sendMail')
+            .post(sendMailObject);
         this.logger.log('Mail sent successfully:', sendMailResp);
     }
 }
-
-

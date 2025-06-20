@@ -1,6 +1,6 @@
 import { InvocationContext, app, output } from '@azure/functions';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { isEmployeeId, MailPort } from './validator/DomainTypes';
+import { EmployeeRepository, isEmployeeId, MailPort } from './validator/DomainTypes';
 import { printError } from './ErrorHandling';
 import { EMailNotification } from './validator/EMailNotification';
 import { InMemoryMailAdapter } from './validator/adapter/memory/InMemoryMailAdapter';
@@ -44,22 +44,29 @@ export async function MailNotificationQueueTrigger(
 
         // Establish a connection to the repository containing one-pagers and our report output list.
         const config = loadConfigFromEnv(context);
+        const employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
+
+        if (employeeRepo === undefined) {
+            throw new Error('We need a viable Employee Repository to send Mails!');
+        }
 
         const mailAdapter: MailPort | undefined = config.mailAdapter();
         if (!mailAdapter) {
             throw new Error('A MailPort can only be used in combination with SharePoint!');
         }
 
-        const mailNotificationHandler = new EMailNotification(mailAdapter, await config.reporter(), context);
+        const mailNotificationHandler = new EMailNotification(
+            mailAdapter,
+            employeeRepo,
+            await config.reporter(),
+            context
+        );
 
         await mailNotificationHandler.notifyEmployee(item.employeeId);
 
         if (mailAdapter instanceof InMemoryMailAdapter) {
             context.extraOutputs.set(queueOutput, mailAdapter.mails);
         }
-
-
-
     } catch (error) {
         context.error(
             `Error processing queue item "${JSON.stringify(queueItem)}": "${printError(error)}"!`
@@ -77,5 +84,5 @@ app.storageQueue('MailNotificationQueueTrigger', {
     queueName: onepagerMailRequests,
     connection: '',
     handler: MailNotificationQueueTrigger,
-    extraOutputs: [queueOutput]
+    extraOutputs: [queueOutput],
 });

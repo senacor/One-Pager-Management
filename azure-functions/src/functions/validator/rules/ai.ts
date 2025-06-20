@@ -1,15 +1,27 @@
-import * as tf from '@tensorflow/tfjs-node';
-import '@tensorflow/tfjs-backend-cpu';
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-backend-wasm';
 
 import * as faceDetection from '@tensorflow-models/face-detection';
 import sharp from 'sharp';
+import { fileSystem } from './node_file_system';
+import { Local } from '../DomainTypes';
+import { franc } from 'franc-min';
+
+// Initialize TensorFlow.js for Node.js environment
+let tfInitialized = false;
+async function initializeTensorFlow() {
+    if (!tfInitialized) {
+        await tf.ready();
+        await tf.setBackend('wasm');
+        tfInitialized = true;
+    }
+}
 
 const qualityModelPath = './models/photo-quality/model.json';
 let qualityModelPromise: Promise<tf.LayersModel> | undefined;
 function getQualityModel() {
     if (!qualityModelPromise) {
-        // Use tf.io.fileSystem for local files in Node.js (not tf.io.file)
-        qualityModelPromise = tf.loadLayersModel(tf.io.fileSystem(qualityModelPath));
+        qualityModelPromise = tf.loadLayersModel(fileSystem(qualityModelPath));
     }
     return qualityModelPromise;
 }
@@ -22,6 +34,8 @@ export const detectorConfig = {
 let _detector: Promise<faceDetection.FaceDetector> | undefined;
 const detector = async () => {
     if (!_detector) {
+        // Ensure TensorFlow.js is initialized first
+        await initializeTensorFlow();
         const faceModel = faceDetection.SupportedModels.MediaPipeFaceDetector;
         _detector = faceDetection.createDetector(faceModel, detectorConfig);
     }
@@ -29,10 +43,15 @@ const detector = async () => {
 };
 
 export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face[]> {
-    await tf.setBackend('cpu'); // tensorflow backend is missing some image operations
-    await tf.ready();
-    const input = await imageToTensor3D(imageData);
-    return (await detector()).estimateFaces(input);
+    await initializeTensorFlow();
+
+    const img = await imageToTensor3D(imageData);
+
+    try {
+        return await (await detector()).estimateFaces(img);
+    } finally {
+        img.dispose();
+    }
 }
 
 export interface PhotoLabels {
@@ -44,27 +63,41 @@ export interface PhotoLabels {
 }
 
 export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
-    await tf.setBackend('tensorflow'); // tensorflow is faster then cpu backend
-    await tf.ready();
+    await initializeTensorFlow();
     const input = (await imageToTensor3D(imageData, intelligentCenterCropAndResize))
         .toFloat()
         .div(tf.scalar(255.0));
     const batched = input.expandDims(0); // Add batch dimension: [1, height, width, 3]
-    const model = await getQualityModel();
 
-    const [prediction] = (await (model.predict(batched) as tf.Tensor).array()) as number[][]; // because its batched we have an extra dimension
-    if (prediction.length !== 5) {
-        throw new Error(`Unexpected prediction length: ${prediction.length}. Expected 5.`);
+    try {
+        const model = await getQualityModel();
+        const [prediction] = (await (model.predict(batched) as tf.Tensor).array()) as number[][]; // because its batched we have an extra dimension
+        if (prediction.length !== 5) {
+            throw new Error(`Unexpected prediction length: ${prediction.length}. Expected 5.`);
+        }
+        const [brightBackground, neutralBackground, whiteShirt, highQuality, businessAttire] =
+            prediction;
+        return {
+            brightBackground,
+            neutralBackground,
+            whiteShirt,
+            highQuality,
+            businessAttire,
+        };
+    } finally {
+        // Clean up tensor memory
+        input.dispose();
+        batched.dispose();
     }
-    const [brightBackground, neutralBackground, whiteShirt, highQuality, businessAttire] =
-        prediction;
-    return {
-        brightBackground,
-        neutralBackground,
-        whiteShirt,
-        highQuality,
-        businessAttire,
-    };
+}
+
+const LOCAL_MAPPINGS: Record<string, Local> = {
+    DEU: 'DE',
+    ENG: 'EN',
+};
+export async function detectLanguage(text: string): Promise<Local | undefined> {
+    const francResp = await franc(text);
+    return LOCAL_MAPPINGS[francResp.toLocaleUpperCase()];
 }
 
 async function imageToTensor3D(
@@ -74,11 +107,9 @@ async function imageToTensor3D(
     const img = await transform(sharp(imageData));
     const { data, info } = await img.removeAlpha().raw().toBuffer({ resolveWithObject: true });
 
-    return tf.tensor3d(
-        data,
-        [info.height, info.width, info.channels],
-        'int32'
-    );
+    // Convert Buffer to number[] using readUInt8
+    const arr: number[] = Array.from({ length: data.length }, (_, i) => data.readUInt8(i));
+    return tf.tensor3d(arr, [info.height, info.width, info.channels], 'int32');
 }
 
 async function intelligentCenterCropAndResize(
