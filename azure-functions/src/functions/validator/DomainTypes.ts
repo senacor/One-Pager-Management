@@ -1,4 +1,5 @@
 import { URL } from 'node:url';
+import { Pptx } from './rules/Pptx';
 
 /**
  * Represents an employee ID as a string that consists of digits only.
@@ -46,8 +47,8 @@ export type ValidationError =
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
 export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
+    pptx: Pptx;
     contentLanguages: Local[];
-    data: Buffer;
 };
 
 export type ValidationRule = (onePager: LoadedOnePager, employeeData: EmployeeData) => Promise<ValidationError[]>;
@@ -102,15 +103,6 @@ export interface ValidationReporter {
      * @param id The ID of the employee whose validation results should be fetched.
      */
     getResultFor(id: EmployeeID): Promise<ValidationError[]>;
-}
-
-export interface LanguageDetector {
-    /**
-     * Detects the language of the given one-pager content.
-     * @param content The content of the one-pager.
-     * @returns The detected language, or undefined if no language could be detected.
-     */
-    detectLanguage(content: Buffer): Promise<Local[]>;
 }
 
 export type StorageFile = {

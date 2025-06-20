@@ -1,24 +1,19 @@
 import { Logger, ValidationRule } from '../DomainTypes';
-import { hasPhoto } from './photo';
+import { uniq } from '../OnePagerValidation';
+import { detectLanguage } from './ai';
+import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
 import config from '../../../../app_config/config.json';
 
-
-// The path to the current template file used for OnePagers.
 export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
 
-/*
- * -------- Validation rules to check the metadata of a OnePager. --------
- *
- */
-
-export const lastModifiedRule: ValidationRule = async (onePager, employeeData) => {
+export const lastModifiedRule: ValidationRule = async (onePager, _) => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
-export const contentLanguageIsIndicatedInName: ValidationRule = async (onePager, employeeData) => {
+export const contentLanguageIsIndicatedInName: ValidationRule = async (onePager, _) => {
     if (onePager.contentLanguages.length > 1) {
         return ['MIXED_LANGUAGE_VERSION'];
     }
@@ -41,7 +36,8 @@ export function allRules(log: Logger = console): ValidationRule {
         lastModifiedRule,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
-        hasPhoto(log)
+        hasPhoto(log),
+        hasQualityPhoto(log)
     );
 }
 

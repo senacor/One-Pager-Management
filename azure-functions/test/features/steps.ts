@@ -10,7 +10,6 @@ import assert from 'assert';
 import sinon, { SinonFakeTimers } from 'sinon';
 import { promises as fs } from 'fs';
 import { InMemoryValidationReporter } from '../../src/functions/validator/adapter/memory/InMemoryValidationReporter';
-import { PptxContentLanguageDetector } from '../../src/functions/validator/adapter/PptxContentLanguageDetector';
 import {
     extractLanguageCode,
     FolderBasedOnePagers,
@@ -50,13 +49,7 @@ Before(async function (this: Context) {
     const explorer = new FileSystemStorageExplorer('/', new MemoryFileSystem());
     this.repo = new FolderBasedOnePagers(explorer);
     this.exemplars = new OnePagerExemplars(explorer);
-    this.service = new OnePagerValidation(
-        this.repo,
-        this.repo,
-        this.reporter,
-        new PptxContentLanguageDetector(),
-        allRules()
-    );
+    this.service = new OnePagerValidation(this.repo, this.repo, this.reporter, allRules());
 });
 
 After(async function (this: Context) {
@@ -115,7 +108,7 @@ async function createOnePagers(
 }
 
 async function templatePath(language: string, templateVersion?: string): Promise<string> {
-    const file = `test/ressources/onepager/example-${templateVersion || '2024'}-${language}.pptx`;
+    const file = `test/resources/onepager/example-${templateVersion || '2024'}-${language}.pptx`;
     try {
         await fs.access(file);
     } catch {

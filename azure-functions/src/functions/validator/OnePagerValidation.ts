@@ -2,7 +2,6 @@ import {
     EmployeeData,
     EmployeeID,
     EmployeeRepository,
-    LanguageDetector,
     LoadedOnePager,
     Local,
     Logger,
@@ -12,6 +11,7 @@ import {
     ValidationReporter,
     ValidationRule,
 } from './DomainTypes';
+import { Pptx } from './rules/Pptx';
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -21,7 +21,6 @@ export class OnePagerValidation {
     private readonly onePagers: OnePagerRepository;
     private readonly employees: EmployeeRepository;
     private readonly reporter: ValidationReporter;
-    private readonly detector: LanguageDetector;
     private readonly validationRule: ValidationRule;
 
     /**
@@ -36,7 +35,6 @@ export class OnePagerValidation {
         onePagers: OnePagerRepository,
         employees: EmployeeRepository,
         reporter: ValidationReporter,
-        detector: LanguageDetector,
         validationRule: ValidationRule,
         logger: Logger = console
     ) {
@@ -44,7 +42,6 @@ export class OnePagerValidation {
         this.onePagers = onePagers;
         this.employees = employees;
         this.reporter = reporter;
-        this.detector = detector;
         this.validationRule = validationRule;
     }
 
@@ -194,12 +191,11 @@ export class OnePagerValidation {
 
     private async loadOnePager(onePager: OnePager): Promise<LoadedOnePager> {
         this.logger.log(`Loading one-pager from ${onePager.webLocation}`);
-        const data = await onePager.data();
-        const contentLanguages = await this.detector.detectLanguage(data);
+        const pptx = await onePager.data().then(Pptx.load);
         return {
             ...onePager,
-            data,
-            contentLanguages,
+            pptx,
+            contentLanguages: await pptx.getContentLanguages(),
         };
     }
 }

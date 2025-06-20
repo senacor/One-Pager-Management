@@ -3,7 +3,6 @@ import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { EmployeeRepository, isEmployeeId } from './validator/DomainTypes';
 import { OnePagerValidation } from './validator/OnePagerValidation';
 import { printError } from './ErrorHandling';
-import { PptxContentLanguageDetector } from './validator/adapter/PptxContentLanguageDetector';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 import { allRules } from './validator/rules';
 
@@ -47,7 +46,6 @@ export async function FileChangeQueueTrigger(
             onePagers,
             employeeRepo === undefined ? onePagers : employeeRepo,
             await config.reporter(),
-            new PptxContentLanguageDetector(context),
             allRules(context),
             context
         );
