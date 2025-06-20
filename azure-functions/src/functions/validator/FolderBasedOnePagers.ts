@@ -1,4 +1,3 @@
-import { folder } from 'jszip';
 import {
     EmployeeData,
     EmployeeID,
@@ -33,7 +32,11 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         this.logger = logger;
     }
 
-    async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
+    async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData | undefined> {
+        if (!(await this.getAllEmployees()).includes(employeeId)) {
+            return undefined;
+        }
+
         // TODO: Determine at least some data from one pager names for testing purposes
         return {
             id: employeeId,

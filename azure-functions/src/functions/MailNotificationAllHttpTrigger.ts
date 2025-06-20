@@ -2,7 +2,6 @@ import { HttpRequest, HttpResponseInit, InvocationContext, app, output } from '@
 import { printError } from './ErrorHandling';
 import { QueueItem, onepagerMailRequests } from './MailNotificationQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
-import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
 
 /**
  * Azure Queue used to store One Pager validation requests.

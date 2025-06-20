@@ -1,7 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import {
-    EmployeeData,
     EmployeeID,
     Logger,
     OnePager,
@@ -59,8 +58,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
     async reportErrors(
         id: EmployeeID,
         onePager: OnePager | undefined,
-        errors: ValidationError[],
-        employee: EmployeeData
+        errors: ValidationError[]
     ): Promise<void> {
         await this.ensureDataDir();
         await fs.writeFile(this.validationFile(id), JSON.stringify(errors));

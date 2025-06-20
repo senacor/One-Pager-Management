@@ -24,7 +24,6 @@ import { promises as fs } from 'fs';
 import { SharepointStorageExplorer } from '../validator/adapter/sharepoint/SharepointStorageExplorer';
 import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
-import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
 import { InMemoryMailAdapter } from '../validator/adapter/memory/InMemoryMailAdapter';
 import {
     DatasetID,

@@ -14,7 +14,7 @@
  * limitations under the License.
  * =============================================================================
  */
-
+/* eslint-disable */
 import * as tf from '@tensorflow/tfjs';
 import * as fs from 'fs';
 import { dirname, join, resolve } from 'path';

@@ -1,23 +1,22 @@
 import { readFile } from 'fs/promises';
 import { CURRENT_TEMPLATE_PATH } from '.';
-import { LoadedOnePager, Logger, ValidationError, ValidationRule } from '../DomainTypes';
+import { Logger, ValidationError, ValidationRule } from '../DomainTypes';
 import { Pptx, PptxTheme } from './Pptx';
-import { toTreeSync } from 'memfs/lib/print';
 
 let templateHashes: Promise<PptxTheme[]>;
 
-function getTemplateHashes() {
+function getTemplateHashes(logger: Logger) {
     if (!templateHashes) {
         templateHashes = readFile(CURRENT_TEMPLATE_PATH)
-            .then(Pptx.load)
+            .then(data => Pptx.load(data, logger))
             .then(pptx => pptx.getOnePagerThemes());
     }
     return templateHashes;
 }
 
 export function usesCurrentTemplate(logger: Logger = console): ValidationRule {
-    return async (onePager, _) => {
-        const templateThemes = await getTemplateHashes();
+    return async onePager => {
+        const templateThemes = await getTemplateHashes(logger);
         const contentThemes = await onePager.pptx.getOnePagerThemes();
 
         const templateThemeDigests = templateThemes.map(theme => theme.digest);

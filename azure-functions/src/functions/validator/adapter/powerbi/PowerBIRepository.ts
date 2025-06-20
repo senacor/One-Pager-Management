@@ -3,7 +3,6 @@ import {
     EmployeeData,
     EmployeeID,
     EmployeeRepository,
-    isEmployeeId,
     Logger,
 } from '../../DomainTypes';
 import NodeCache from 'node-cache';

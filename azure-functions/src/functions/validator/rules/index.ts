@@ -1,19 +1,17 @@
 import { Logger, ValidationRule } from '../DomainTypes';
-import { uniq } from '../OnePagerValidation';
-import { detectLanguage } from './ai';
 import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
 import config from '../../../../app_config/config.json';
 
 export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
 
-export const lastModifiedRule: ValidationRule = async (onePager, _) => {
+export const lastModifiedRule: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
-export const contentLanguageIsIndicatedInName: ValidationRule = async (onePager, _) => {
+export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
     if (onePager.contentLanguages.length > 1) {
         return ['MIXED_LANGUAGE_VERSION'];
     }

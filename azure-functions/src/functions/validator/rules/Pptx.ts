@@ -1,7 +1,7 @@
 import { Parser } from 'xml2js';
 import JSZip from 'jszip';
 import { uniq } from '../OnePagerValidation';
-import { Local } from '../DomainTypes';
+import { Local, Logger } from '../DomainTypes';
 import { detectLanguage } from './ai';
 import { createHash } from 'crypto';
 
@@ -14,16 +14,18 @@ const SUPERFLUOS_TEXT_BODIES = [
 const ONEPAGER_SECTION_COUNT = 3; // we expect at least a section for name, position, and other descriptions
 
 export class Pptx {
+    readonly logger: Logger;
     private readonly zip: JSZip;
     private _slides?: Promise<PptxSlide[]>;
 
-    private constructor(zip: JSZip) {
+    private constructor(zip: JSZip, logger: Logger) {
         this.zip = zip;
+        this.logger = logger;
     }
 
-    static async load(data: Buffer): Promise<Pptx> {
+    static async load(data: Buffer, logger: Logger = console): Promise<Pptx> {
         const zip = new JSZip();
-        return new Pptx(await zip.loadAsync(data));
+        return new Pptx(await zip.loadAsync(data), logger);
     }
 
     async getSlides(): Promise<PptxSlide[]> {
@@ -190,6 +192,7 @@ class ZipPptxSlide implements PptxSlide {
         )?.$.Target;
 
         for (const masterRelFile of pptx.filesOf('ppt/slideMasters/_rels/')) {
+            // eslint-disable-next-line no-await-in-loop
             const mXml = await pptx.parseXml<XmlRels>(masterRelFile);
             if (!mXml.Relationships.Relationship.some(rel => rel.$.Target === layoutRel)) {
                 continue;
@@ -198,7 +201,7 @@ class ZipPptxSlide implements PptxSlide {
                 rel.$.Type.endsWith('/theme')
             );
             if (!themeRel) {
-                console.warn(
+                pptx.logger.warn(
                     `no theme found in matching master rel file ${masterRelFile}: ${JSON.stringify(mXml.Relationships.Relationship)}`
                 );
                 continue;
@@ -207,6 +210,7 @@ class ZipPptxSlide implements PptxSlide {
             const themeTarget = themeRel.$.Target;
             const path = `ppt/${themeTarget.substring('../'.length)}`;
 
+            // eslint-disable-next-line no-await-in-loop
             const content = await pptx.loadFile(path);
 
             const hash = createHash('md5');

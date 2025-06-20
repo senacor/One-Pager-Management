@@ -118,8 +118,8 @@ export class SharepointListValidationReporter implements ValidationReporter {
         const listItems = lists.filter(list => list.displayName === listDisplayName);
         if (
             listItems.length === 0 ||
-            listItems[0]['id'] === undefined ||
-            typeof listItems[0]['id'] !== 'string'
+            listItems[0].id === undefined ||
+            typeof listItems[0].id !== 'string'
         ) {
             throw new Error(
                 `Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`

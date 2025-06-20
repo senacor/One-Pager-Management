@@ -189,7 +189,7 @@ export class OnePagerValidation {
 
     private async loadOnePager(onePager: OnePager): Promise<LoadedOnePager> {
         this.logger.log(`Loading one-pager from ${onePager.webLocation}`);
-        const pptx = await onePager.data().then(Pptx.load);
+        const pptx = await onePager.data().then(data => Pptx.load(data, this.logger));
         return {
             ...onePager,
             pptx,
