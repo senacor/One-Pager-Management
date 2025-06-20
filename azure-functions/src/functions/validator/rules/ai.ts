@@ -4,6 +4,8 @@ import '@tensorflow/tfjs-backend-wasm';
 import * as faceDetection from '@tensorflow-models/face-detection';
 import sharp from 'sharp';
 import { fileSystem } from './node_file_system';
+import { Local } from '../DomainTypes';
+import { franc } from 'franc-min';
 
 // Initialize TensorFlow.js for Node.js environment
 let tfInitialized = false;
@@ -89,6 +91,15 @@ export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
     }
 }
 
+const LOCAL_MAPPINGS: Record<string, Local> = {
+    DEU: 'DE',
+    ENG: 'EN',
+};
+export async function detectLanguage(text: string): Promise<Local | undefined> {
+    const francResp = await franc(text);
+    return LOCAL_MAPPINGS[francResp.toLocaleUpperCase()];
+}
+
 async function imageToTensor3D(
     imageData: Buffer,
     transform: (img: sharp.Sharp) => Promise<sharp.Sharp> = async i => i
@@ -96,11 +107,7 @@ async function imageToTensor3D(
     const img = await transform(sharp(imageData));
     const { data, info } = await img.removeAlpha().raw().toBuffer({ resolveWithObject: true });
 
-    return tf.tensor3d(
-        data,
-        [info.height, info.width, info.channels],
-        'int32'
-    );
+    return tf.tensor3d(data, [info.height, info.width, info.channels], 'int32');
 }
 
 async function intelligentCenterCropAndResize(

@@ -1,4 +1,6 @@
 import { Logger, ValidationRule } from '../DomainTypes';
+import { uniq } from '../OnePagerValidation';
+import { detectLanguage } from './ai';
 import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
 

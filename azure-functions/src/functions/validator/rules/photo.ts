@@ -1,11 +1,10 @@
 import { Logger, ValidationRule } from '../DomainTypes';
 import { detectFaces, labelImage, PhotoLabels } from './ai';
-import { Pptx, PptxImage } from './Pptx';
+import { PptxImage } from './Pptx';
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
-        const pptx = await Pptx.load(onePager.data);
-        const usedImages = await pptx.getUsedImages();
+        const usedImages = await onePager.pptx.getUsedImages();
 
         const withFaces = (
             await Promise.all(
@@ -17,7 +16,7 @@ export function hasPhoto(logger: Logger = console): ValidationRule {
                             return img;
                         }
                     } catch (err) {
-                        logger.error(`Error processing image ${img.name}:`, err);
+                        logger.error(`Error processing image ${img.path}:`, err);
                     }
                 })
             )
@@ -31,8 +30,7 @@ export const QUALITY_THRESHOLD = 0.2;
 
 export function hasQualityPhoto(logger: Logger = console): ValidationRule {
     return async onePager => {
-        const pptx = await Pptx.load(onePager.data);
-        const usedImages = await pptx.getUsedImages();
+        const usedImages = await onePager.pptx.getUsedImages();
 
         const scored = await Promise.all(
             usedImages.map(async img => ((await hasLowQuality(img)) ? [img] : []))
