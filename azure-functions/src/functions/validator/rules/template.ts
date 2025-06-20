@@ -1,14 +1,16 @@
-import {readFile} from 'fs/promises';
-import {CURRENT_TEMPLATE_PATH} from '.';
-import {LoadedOnePager, Logger, ValidationError, ValidationRule} from '../DomainTypes';
-import {Pptx, PptxTheme} from './Pptx';
-import {toTreeSync} from 'memfs/lib/print';
+import { readFile } from 'fs/promises';
+import { CURRENT_TEMPLATE_PATH } from '.';
+import { LoadedOnePager, Logger, ValidationError, ValidationRule } from '../DomainTypes';
+import { Pptx, PptxTheme } from './Pptx';
+import { toTreeSync } from 'memfs/lib/print';
 
 let templateHashes: Promise<PptxTheme[]>;
 
 function getTemplateHashes() {
     if (!templateHashes) {
-        templateHashes = readFile(CURRENT_TEMPLATE_PATH).then(Pptx.load).then(pptx => pptx.getOnePagerThemes());
+        templateHashes = readFile(CURRENT_TEMPLATE_PATH)
+            .then(Pptx.load)
+            .then(pptx => pptx.getOnePagerThemes());
     }
     return templateHashes;
 }

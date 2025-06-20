@@ -41,16 +41,12 @@ export async function FileChangeHttpTrigger(
 
         const config = loadConfigFromEnv(context);
         // Load the list of employees from the configuration
-        const onePagers = new FolderBasedOnePagers(
-            await config.explorer(),
-            context
-        );
+        const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
 
         let employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
         if (!employeeRepo) {
             employeeRepo = onePagers;
         }
-
 
         const employees: EmployeeID[] = await employeeRepo.getAllEmployees();
         if (!employees.includes(id)) {

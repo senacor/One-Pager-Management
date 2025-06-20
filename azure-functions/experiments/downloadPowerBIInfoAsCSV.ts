@@ -25,6 +25,4 @@ import * as fs from 'node:fs';
             fs.writeFileSync('./experiments/employeeData.csv', output, 'utf8');
         });
     }
-
-
 })();

@@ -12,7 +12,6 @@ const queueOutput = output.storageQueue({
     connection: '',
 });
 
-
 export async function MailNotificationAllHttpTrigger(
     request: HttpRequest,
     context: InvocationContext
@@ -26,10 +25,10 @@ export async function MailNotificationAllHttpTrigger(
         const employees = await config.employeeRepo()?.getAllEmployees();
 
         if (!employees) {
-            throw new Error("Getting employees failed!");
+            throw new Error('Getting employees failed!');
         }
 
-        const items: QueueItem[] = employees.map((id) => ({employeeId: id}));
+        const items: QueueItem[] = employees.map(id => ({ employeeId: id }));
 
         context.extraOutputs.set(queueOutput, items);
 

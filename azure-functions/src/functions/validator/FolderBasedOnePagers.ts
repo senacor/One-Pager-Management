@@ -33,21 +33,21 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         this.logger = logger;
     }
 
-
     async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData> {
         // TODO: Determine at least some data from one pager names for testing purposes
         return {
-            name: "",
-            email: "",
-            entry_date: "",
-            office: "",
-            date_of_employment_change: "",
-            position_current: "",
-            resource_type_current: "",
-            staffing_pool_current: "",
-            position_future: "",
-            resource_type_future: "",
-            staffing_pool_future: ""
+            id: employeeId,
+            name: '',
+            email: '',
+            entry_date: '',
+            office: '',
+            date_of_employment_change: '',
+            position_current: '',
+            resource_type_current: '',
+            staffing_pool_current: '',
+            position_future: '',
+            resource_type_future: '',
+            staffing_pool_future: '',
         };
     }
 
@@ -60,7 +60,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         const folders = await this.explorer.listFolders();
 
         if (folders.length === 0) {
-            this.logger.error("No One Pager folders found!");
+            this.logger.error('No One Pager folders found!');
         }
 
         const employeeDir = folders.find(dir => dir.endsWith(`_${employeeId}`));

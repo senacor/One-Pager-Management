@@ -1,5 +1,4 @@
 import {
-    EmployeeData,
     EmployeeID,
     EmployeeRepository,
     LoadedOnePager,
@@ -51,12 +50,11 @@ export class OnePagerValidation {
      * @param id The employee ID to validate one-pagers for.
      */
     async validateOnePagersOfEmployee(id: EmployeeID): Promise<void> {
-        if (!(await this.employees.getAllEmployees()).includes(id)) {
+        const employeeData = await this.employees.getDataForEmployee(id);
+        if (!employeeData) {
             this.logger.error(`Employee ${id} does not exist.`);
             return;
         }
-
-        const employeeData: EmployeeData = await this.employees.getDataForEmployee(id);
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
         this.logger.log(

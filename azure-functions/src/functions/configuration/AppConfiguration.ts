@@ -12,11 +12,12 @@ import { LocalFileValidationReporter } from '../validator/adapter/localfile/Loca
 import { InMemoryValidationReporter } from '../validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../validator/adapter/sharepoint/SharepointListValidationReporter';
 import {
-    MailPort, StorageExplorer,
+    MailPort,
+    StorageExplorer,
     Logger,
     MSScope,
     ValidationReporter,
-    EmployeeRepository
+    EmployeeRepository,
 } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 import { promises as fs } from 'fs';
@@ -25,7 +26,11 @@ import { MemoryFileSystem } from '../validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../validator/adapter/FileSystemStorageExplorer';
 import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
 import { InMemoryMailAdapter } from '../validator/adapter/memory/InMemoryMailAdapter';
-import { DatasetID, isDatasetID, PowerBIRepository } from '../validator/adapter/powerbi/PowerBIRepository';
+import {
+    DatasetID,
+    isDatasetID,
+    PowerBIRepository,
+} from '../validator/adapter/powerbi/PowerBIRepository';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
@@ -61,9 +66,7 @@ export type MSClientOptions = {
     POWERBI_DATASET_ID?: string;
 };
 
-export function hasSharepointClientOptions(
-    opts: Record<string, unknown>
-): opts is MSClientOptions {
+export function hasSharepointClientOptions(opts: Record<string, unknown>): opts is MSClientOptions {
     return (
         Boolean(opts.SHAREPOINT_TENANT_ID) &&
         Boolean(opts.SHAREPOINT_CLIENT_ID) &&
@@ -94,7 +97,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
                 mailAdapter: () => new InMemoryMailAdapter(),
-                employeeRepo: () => undefined
+                employeeRepo: () => undefined,
             };
         }
         case 'localfile': {
@@ -108,7 +111,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
                 mailAdapter: () => undefined,
-                employeeRepo: () => undefined
+                employeeRepo: () => undefined,
             };
         }
         case 'sharepoint': {
@@ -129,7 +132,10 @@ function getSharepointConfig(
     logger: Logger = console
 ): AppConfiguration {
     const sharePointAuthProvider = createAuthProvider(opts);
-    const powerbiAuthProvider = createAuthProvider(opts, 'https://analysis.windows.net/powerbi/api/.default');
+    const powerbiAuthProvider = createAuthProvider(
+        opts,
+        'https://analysis.windows.net/powerbi/api/.default'
+    );
     const client = createMSClient(opts, sharePointAuthProvider);
 
     if (!opts.SHAREPOINT_ONE_PAGER_SITE_NAME) {
@@ -169,18 +175,15 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
-        mailAdapter: () =>
-            new InMemoryMailAdapter(),
-            // new MSMailAdapter(
-            //     client,
-            //     employeeRepo,
-            //     logger
-            // ), // optional mail adapter for SharePoint storage
-        employeeRepo: () =>
-            new PowerBIRepository(powerbiAuthProvider, datasetID, logger)
+        mailAdapter: () => new InMemoryMailAdapter(),
+        // new MSMailAdapter(
+        //     client,
+        //     employeeRepo,
+        //     logger
+        // ), // optional mail adapter for SharePoint storage
+        employeeRepo: () => new PowerBIRepository(powerbiAuthProvider, datasetID, logger),
     };
 }
-
 
 /**
  * This function creates a SharePoint client using the provided options.
@@ -189,7 +192,11 @@ function getSharepointConfig(
  * @param logger The logger to use for logging errors (default is console).
  * @returns The initialized Microsoft Graph Client with the configured middleware.
  */
-export function createMSClient(opts: MSClientOptions, authProvider: AuthenticationProvider | undefined = undefined, scope: MSScope = 'https://graph.microsoft.com/.default'): Client {
+export function createMSClient(
+    opts: MSClientOptions,
+    authProvider: AuthenticationProvider | undefined = undefined,
+    scope: MSScope = 'https://graph.microsoft.com/.default'
+): Client {
     if (!authProvider) {
         authProvider = createAuthProvider(opts, scope);
     }

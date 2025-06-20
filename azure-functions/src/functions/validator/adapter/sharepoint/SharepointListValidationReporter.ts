@@ -116,7 +116,11 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
 
         const listItems = lists.filter(list => list.displayName === listDisplayName);
-        if (listItems.length === 0 || listItems[0]["id"] === undefined || typeof listItems[0]["id"] !== "string") {
+        if (
+            listItems.length === 0 ||
+            listItems[0]['id'] === undefined ||
+            typeof listItems[0]['id'] !== 'string'
+        ) {
             throw new Error(
                 `Cannot find list with name "${listDisplayName}" on site "${siteAlias}" !`
             );
@@ -169,7 +173,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [COLUMN_MA_NAME]: employee.name,
                     [COLUMN_MA_OFFICE]: employee.office,
                     [COLUMN_MA_EMAIL]: employee.email,
-                    [COLUMN_MA_CURR_POSITION]: employee.position_current || ''
+                    [COLUMN_MA_CURR_POSITION]: employee.position_current || '',
                 },
             });
         } else {
@@ -203,8 +207,6 @@ export class SharepointListValidationReporter implements ValidationReporter {
             .select('fields')
             .get()) as ListItem;
 
-
-
         if (!item.fields || !isListItemWithFields(item.fields)) {
             this.logger.error(
                 `Item with ID "${itemId}" does not have the expected fields structure!`
@@ -214,7 +216,6 @@ export class SharepointListValidationReporter implements ValidationReporter {
         const itemFields: ListItemWithFields = item.fields;
 
         return itemFields[COLUMN_VALIDATION_ERRORS]!.split('\n') as ValidationError[];
-
     }
 
     /**
