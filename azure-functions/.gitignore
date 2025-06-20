@@ -4,3 +4,4 @@ node_modules/
 reports/
 .azurite/
 .storage/
+experiments/*.csv
