@@ -12,14 +12,14 @@ import {
 
 const enum ListItemColumnNames {
     MA_ID = 'MitarbeiterID',
-    VALIDATION_ERRORS = '',
+    VALIDATION_ERRORS = 'Festgestellte_Fehler',
     URL = 'Location',
     MA_NAME = 'Name',
     MA_OFFICE = 'Office',
-    MA_EMAIL = 'EMail_Adresse',
+    MA_EMAIL = 'E_Mail_Adresse',
     MA_CURR_POSITION = 'Derzeitige_Position',
     VALIDATION_DATE = 'Validierungsdatum',
-    LAST_MODIFIED_DATE = 'Änderungsdatum'
+    LAST_MODIFIED_DATE = 'Aenderungsdatum',
 }
 
 type ListItemWithFields = {
@@ -31,7 +31,7 @@ type ListItemWithFields = {
     [ListItemColumnNames.MA_EMAIL]: string;
     [ListItemColumnNames.MA_CURR_POSITION]: string | null;
     [ListItemColumnNames.VALIDATION_DATE]: string;
-    [ListItemColumnNames.LAST_MODIFIED_DATE]: string;
+    [ListItemColumnNames.LAST_MODIFIED_DATE]: string | null;
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -55,7 +55,7 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
         ['string', 'null'].includes(typeof record[ListItemColumnNames.MA_CURR_POSITION]) &&
         ListItemColumnNames.VALIDATION_DATE in record &&
         typeof record[ListItemColumnNames.VALIDATION_DATE] === 'string' &&
-        ListItemColumnNames.LAST_MODIFIED_DATE in record &&
+        ['string', 'null'].includes(typeof record[ListItemColumnNames.LAST_MODIFIED_DATE]) &&
         typeof record[ListItemColumnNames.LAST_MODIFIED_DATE] === 'string'
     );
 }
@@ -171,8 +171,9 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [ListItemColumnNames.MA_OFFICE]: employee.office,
                     [ListItemColumnNames.MA_EMAIL]: employee.email,
                     [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
-                    [ListItemColumnNames.VALIDATION_DATE]: (new Date()).toLocaleDateString(),
-                    [ListItemColumnNames.LAST_MODIFIED_DATE]: onePager?.lastUpdateByEmployee
+                    [ListItemColumnNames.VALIDATION_DATE]: new Date().toLocaleDateString(),
+                    [ListItemColumnNames.LAST_MODIFIED_DATE]:
+                        onePager?.lastUpdateByEmployee.toLocaleDateString() || null,
                 },
             });
         } else {
@@ -186,8 +187,9 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [ListItemColumnNames.MA_OFFICE]: employee.office,
                     [ListItemColumnNames.MA_EMAIL]: employee.email,
                     [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
-                    [ListItemColumnNames.VALIDATION_DATE]: (new Date()).toLocaleDateString(),
-                    [ListItemColumnNames.LAST_MODIFIED_DATE]: onePager?.lastUpdateByEmployee
+                    [ListItemColumnNames.VALIDATION_DATE]: new Date().toLocaleDateString(),
+                    [ListItemColumnNames.LAST_MODIFIED_DATE]:
+                        onePager?.lastUpdateByEmployee.toLocaleDateString() || null,
                 });
         }
     }
