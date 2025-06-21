@@ -1,0 +1,1157 @@
+<svg version="1.1" baseProfile="full" width="6913.0" height="1611.0" viewBox="0 0 6913 1611" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events">
+<desc >#.interface: fill=lightblue
+#.enumeration: fill=lightgreen
+#.type: fill=lightgray
+#.interface: fill=lightblue
+#.enumeration: fill=lightgreen
+#.type: fill=lightgreen
+#stroke: black
+#fill: lightgray
+[&lt;type&gt;QueueItem|employeeId: string|]
+[&lt;type&gt;QueueItem|employeeId: string|]
+[&lt;type&gt;AppConfiguration|explorer: () =&gt; Promise&lt;StorageExplorer&gt;;reporter: () =&gt; Promise&lt;ValidationReporter&gt;;mailAdapter: () =&gt; MailPort \| undefined;employeeRepo: () =&gt; EmployeeRepository \| undefined|]
+[&lt;type&gt;MSClientOptions|SHAREPOINT_TENANT_ID?: string;SHAREPOINT_CLIENT_ID?: string;SHAREPOINT_CLIENT_SECRET?: string;SHAREPOINT_API_LOGGING?: string;SHAREPOINT_API_CACHING?: string;POWERBI_DATASET_ID?: string|]
+[CachingHandler|cache: NodeCache;logger: Logger;nextMiddleware?: Middleware|execute(): Promise&lt;void&gt;;setNext(): void]
+[Middleware]&lt;:--[CachingHandler]
+[CachingHandler]  -  [Logger]
+[&lt;interface&gt;OnePagerRepository||getAllOnePagersOfEmployee(): Promise&lt;OnePager\[\]&gt;]
+[&lt;interface&gt;EmployeeRepository||getAllEmployees(): Promise&lt;`${number}`\[\]&gt;;getDataForEmployee(): Promise&lt;EmployeeData \| undefined&gt;]
+[&lt;interface&gt;ValidationReporter||reportValid(): Promise&lt;void&gt;;reportErrors(): Promise&lt;void&gt;;getResultFor(): Promise&lt;ValidationError\[\]&gt;]
+[&lt;interface&gt;StorageExplorer||createFile(): Promise&lt;void&gt;;createFolder(): Promise&lt;void&gt;;listFolders(): Promise&lt;string\[\]&gt;;listFiles(): Promise&lt;StorageFile\[\]&gt;]
+[&lt;interface&gt;MailPort||sendMail(): Promise&lt;void&gt;]
+[&lt;interface&gt;Logger||debug(): void;log(): void;warn(): void;error(): void]
+[&lt;type&gt;OnePager|lastUpdateByEmployee: Date;local?: Local;data: () =&gt; Promise&lt;Buffer&gt;;webLocation: URL|]
+[&lt;type&gt;StorageFile|name: string;lastModified: Date;data: () =&gt; Promise&lt;Buffer&gt;;url?: URL|]
+[&lt;type&gt;EmployeeData|id: `${number}`;name: string;email: string;entry_date: string;office: string;date_of_employment_change: string \| null;position_current: string \| null;resource_type_current: string \| null;staffing_pool_current: string \| null;position_future: string \| null;resource_type_future: string \| null;staffing_pool_future: string \| null|]
+[EMailNotification|logger: Logger;reporter: ValidationReporter;mailAdapter: MailPort;employeeRepo: EmployeeRepository|notifyEmployee(): Promise&lt;void&gt;;loadEMailTemplate(): Promise&lt;MailTemplate&gt;]
+[&lt;type&gt;MailTemplate|subject: string;content: string|]
+[EMailNotification]  -  [Logger]
+[EMailNotification]  -  [ValidationReporter]
+[EMailNotification]  -  [MailPort]
+[EMailNotification]  -  [EmployeeRepository]
+[FolderBasedOnePagers|explorer: StorageExplorer;logger: Logger|getDataForEmployee(): Promise&lt;EmployeeData \| undefined&gt;;getAllOnePagersOfEmployee(): Promise&lt;OnePager\[\]&gt;;getAllEmployees(): Promise&lt;`${number}`\[\]&gt;]
+[OnePagerRepository]&lt;:--[FolderBasedOnePagers]
+[EmployeeRepository]&lt;:--[FolderBasedOnePagers]
+[FolderBasedOnePagers]  -  [StorageExplorer]
+[FolderBasedOnePagers]  -  [Logger]
+[OnePagerValidation|logger: Logger;onePagers: OnePagerRepository;employees: EmployeeRepository;reporter: ValidationReporter;validationRule: ValidationRule|validateOnePagersOfEmployee(): Promise&lt;void&gt;;validateRequiredVersions(): { onePager: undefined; errors: ValidationError\[\]; }\[\];selectNewestOnePagers(): OnePager\[\];loadOnePager(): Promise&lt;LoadedOnePager&gt;]
+[OnePagerValidation]  -  [Logger]
+[OnePagerValidation]  -  [OnePagerRepository]
+[OnePagerValidation]  -  [EmployeeRepository]
+[OnePagerValidation]  -  [ValidationReporter]
+[FileSystemStorageExplorer|baseDir: string;fs: FileSystem;logger: Logger|createFolder(): Promise&lt;void&gt;;silenceError(): void;listFolders(): Promise&lt;string\[\]&gt;;createFile(): Promise&lt;void&gt;;listFiles(): Promise&lt;StorageFile\[\]&gt;;dateFromOnePagerFile(): Date;fromYYMMDD(): Date]
+[&lt;interface&gt;FileSystem||readdir(): Promise&lt;string\[\]&gt;;mkdir(): Promise&lt;unknown&gt;;writeFile(): Promise&lt;void&gt;;readFile(): Promise&lt;Buffer&gt;]
+[StorageExplorer]&lt;:--[FileSystemStorageExplorer]
+[FileSystemStorageExplorer]  -  [FileSystem]
+[FileSystemStorageExplorer]  -  [Logger]
+[&lt;interface&gt;PhotoLabels|brightBackground: number;neutralBackground: number;whiteShirt: number;highQuality: number;businessAttire: number|]
+[NodeFileSystem|URL_SCHEME: &quot;file://&quot;;path: string \| string\[\];MODEL_JSON_FILENAME: &quot;model.json&quot;;WEIGHTS_BINARY_FILENAME: &quot;weights.bin&quot;;MODEL_BINARY_FILENAME: &quot;tensorflowjs.pb&quot;|save(): Promise&lt;SaveResult&gt;;load(): Promise&lt;ModelArtifacts&gt;;loadBinaryModel(): Promise&lt;ModelArtifacts&gt;;loadJSONModel(): Promise&lt;ModelArtifacts&gt;;loadWeights(): Promise&lt;\[WeightsManifestEntry\[\], ArrayBuffer\]&gt;;createOrVerifyDirectory(): Promise&lt;void&gt;]
+[IOHandler]&lt;:--[NodeFileSystem]
+[Pptx|logger: Logger;zip: JSZip;_slides?: Promise&lt;PptxSlide\[\]&gt;|load(): Promise&lt;Pptx&gt;;getSlides(): Promise&lt;PptxSlide\[\]&gt;;getOnePagerSlides(): Promise&lt;PptxSlide\[\]&gt;;loadSlides(): Promise&lt;PptxSlide\[\]&gt;;parseXml(): Promise&lt;T&gt;;loadFile(): Promise&lt;Buffer&gt;;filesOf(): string\[\];getContentLanguages(): Promise&lt;Local\[\]&gt;;getUsedImages(): Promise&lt;PptxImage\[\]&gt;;getOnePagerThemes(): Promise&lt;PptxTheme\[\]&gt;]
+[&lt;interface&gt;PptxSlide|isOnePager: boolean;texts: string\[\];images: PptxImage\[\];usedLanguage?: Local;theme: PptxTheme|]
+[&lt;interface&gt;PptxTheme|name: string;path: string;digest: string|]
+[&lt;interface&gt;PptxImage|path: string|data(): Promise&lt;Buffer&gt;]
+[Pptx]  -  [Logger]
+[PptxSlide]  - 0..* [PptxImage]
+[PptxSlide]  -  [PptxTheme]
+[LocalFileValidationReporter|dataDir: string;logger: Logger|validationFile(): string;ensureDataDir(): Promise&lt;void&gt;;reportValid(): Promise&lt;void&gt;;reportErrors(): Promise&lt;void&gt;;getResultFor(): Promise&lt;ValidationError\[\]&gt;]
+[ValidationReporter]&lt;:--[LocalFileValidationReporter]
+[LocalFileValidationReporter]  -  [Logger]
+[MSMailAdapter|client: Client \| undefined;logger: Logger|sendMail(): Promise&lt;void&gt;]
+[MailPort]&lt;:--[MSMailAdapter]
+[MSMailAdapter]  -  [Logger]
+[InMemoryMailAdapter|_mails: MailItem\[\]|sendMail(): Promise&lt;void&gt;]
+[&lt;type&gt;MailItem|emailAddress: string;subject: string;content: string|]
+[MailPort]&lt;:--[InMemoryMailAdapter]
+[InMemoryMailAdapter]  - 0..* [MailItem]
+[InMemoryValidationReporter|logger: Logger;reports: Map&lt;`${number}`, { onePager: OnePager \| undefined; errors?: ValidationError\[\] \| undefined; }&gt;|reportValid(): Promise&lt;void&gt;;reportErrors(): Promise&lt;void&gt;;getResultFor(): Promise&lt;ValidationError\[\]&gt;]
+[ValidationReporter]&lt;:--[InMemoryValidationReporter]
+[InMemoryValidationReporter]  -  [Logger]
+[MemoryFileSystem|volume: FsPromisesApi|readdir(): Promise&lt;string\[\]&gt;;mkdtemp(): Promise&lt;string&gt;;mkdir(): Promise&lt;string \| undefined&gt;;writeFile(): Promise&lt;void&gt;;readFile(): Promise&lt;Buffer&gt;]
+[FileSystem]&lt;:--[MemoryFileSystem]
+[PowerBIRepository|authProvider: AuthenticationProvider;logger: Logger;datasetID: string;cache: NodeCache|getAllEmployees(): Promise&lt;`${number}`\[\]&gt;;getDataForEmployee(): Promise&lt;EmployeeData \| undefined&gt;;getAllEmployeeData(): Promise&lt;EmployeeData\[\]&gt;;fetchDataByQuery(): Promise&lt;EmployeeData\[\]&gt;]
+[EmployeeRepository]&lt;:--[PowerBIRepository]
+[PowerBIRepository]  -  [Logger]
+[SharepointListValidationReporter|listId: string;client: Client;siteId: string;logger: Logger|getInstance(): Promise&lt;SharepointListValidationReporter&gt;;reportValid(): Promise&lt;void&gt;;reportErrors(): Promise&lt;void&gt;;getResultFor(): Promise&lt;ValidationError\[\]&gt;;getItemIdOfEmployee(): Promise&lt;string \| undefined&gt;;clearList(): Promise&lt;void&gt;]
+[ValidationReporter]&lt;:--[SharepointListValidationReporter]
+[SharepointListValidationReporter]  -  [Logger]
+[SharepointStorageExplorer|client: Client;driveId: string;logger: Logger|getInstance(): Promise&lt;SharepointStorageExplorer&gt;;createFolder(): Promise&lt;void&gt;;folderExists(): Promise&lt;boolean&gt;;silenceNotFound(): Promise&lt;void&gt;;createFile(): Promise&lt;void&gt;;listFolders(): Promise&lt;string\[\]&gt;;listFiles(): Promise&lt;StorageFile\[\]&gt;]
+[StorageExplorer]&lt;:--[SharepointStorageExplorer]
+[SharepointStorageExplorer]  -  [Logger]</desc>
+<g stroke-width="1.0" text-align="left" font="12pt Helvetica, Arial, sans-serif" font-size="12pt" font-family="Helvetica" font-weight="normal" font-style="normal">
+<g font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" stroke-width="3.0" stroke-linejoin="round" stroke-linecap="round" stroke="black">
+<g stroke="transparent" fill="transparent">
+<rect x="0.0" y="0.0" height="1611.0" width="6913.0" stroke="none"></rect>
+</g>
+<g transform="translate(8, 8)" fill="black">
+<g transform="translate(20, 20)" fill="black" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal">
+<g stroke-dasharray="6 6">
+<path d="M2589.5 846.8 L2589.5 898 L2589.5 983 L2589.5 983.0 " fill="none"></path>
+</g>
+<path d="M2594.8 846.8 L2589.5 846.8 L2584.2 846.8 L2589.5 833.5 Z"></path>
+<path d="M2589.5 1128.0 L2589.5 1213 L4294.75 1290.7418235877105 L4294.8 1290.7 " fill="none"></path>
+<path d="M3199.5 168.1 L2754.5 270 L2754.5 411 L2754.5 411 L2754.5 552 L2754.5 552 L2754.5 644.5 L2754.5 644.5 L2754.5 737 L2754.5 737 L2754.5 817.5 L2754.5 817.5 L2754.5 898 L2754.5 898 L2754.5 1055.5 L2754.5 1055.5 L2754.5 1213 L2754.5 1213 L4294.75 1290.457519912541 L4294.8 1290.5 " fill="none"></path>
+<path d="M3199.5 204.8 L3045.5 270 L3045.5 411 L3045.5 411 L3045.5 552 L3045.5 552 L3045.5 644.5 L3045.5 644.5 L3045.5 737 L3045.5 737 L4414.75 808.3774485996438 L4414.8 808.4 " fill="none"></path>
+<path d="M3433.2 205.5 L3469.5 270 L3469.5 411 L3469.5 411 L3469.5 552 L3469.5 552 L3469.5 644.5 L3469.5 644.5 L3469.5 737 L3469.5 737 L3469.5 781.5 L3469.5 781.5 " fill="none"></path>
+<path d="M3549.6 205.5 L3679 270 L5756.25 395.9345372460497 L5756.3 395.9 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M6596.5 460.3 L6596.5 552 L6047.5 615.6771159874609 L6047.5 615.7 " fill="none"></path>
+</g>
+<path d="M6601.8 460.3 L6596.5 460.3 L6591.2 460.3 L6596.5 447.0 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M5929.5 462.5 L5799 552 L5799 572 L5799.0 572.0 " fill="none"></path>
+</g>
+<path d="M5932.6 466.9 L5929.5 462.5 L5926.5 458.1 L5940.5 455.0 Z"></path>
+<path d="M5628.5 717.0 L5581.5 737 L5581.5 757 L5581.5 757.0 " fill="none"></path>
+<path d="M5982.8 717.0 L6033.5 737 L6033.5 817.5 L6033.5 817.5 L6033.5 898 L6033.5 898 L6033.5 1055.5 L6033.5 1055.5 L6033.5 1213 L6033.5 1213 L4415.75 1290.5980187695516 L4415.8 1290.6 " fill="none"></path>
+<path d="M6133.0 136.7 L3755.5 270 L3755.5 411 L3755.5 411 L3755.5 552 L3755.5 552 L3755.5 644.5 L3755.5 644.5 L3755.5 737 L3755.5 737 L3755.5 817.5 L3755.5 817.5 L3755.5 898 L3755.5 898 L3755.5 1055.5 L3755.5 1055.5 L3755.5 1213 L3755.5 1213 L4294.75 1285.3795331388078 L4294.8 1285.4 " fill="none"></path>
+<path d="M6256.3 246.0 L6239.25 270 L6505.287234042553 375 L6505.3 375.0 " fill="none"></path>
+<path d="M6358.7 246.0 L6362 270 L6116.232269503546 367 L6116.2 367.0 " fill="none"></path>
+<path d="M6551.0 183.8 L6857 270 L6857 411 L6857 411 L6857 552 L6857 552 L6857 644.5 L6857 644.5 L6857 737 L6857 737 L4764.75 811.2865255265189 L4764.8 811.3 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M5428.7 879.8 L5384 898 L5384 942.5 L5384.0 942.5 " fill="none"></path>
+</g>
+<path d="M5430.7 884.7 L5428.7 879.8 L5426.6 874.9 L5441.0 874.8 Z"></path>
+<path d="M5248.2 1168.5 L5194.75 1213 L5652.25 1276.9943527367507 L5652.3 1277.0 " fill="none"></path>
+<path d="M5511.3 1168.5 L5561.5 1213 L4415.75 1289.462487046632 L4415.8 1289.5 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M2057.0 154.3 L2057 270 L2057 290 L2057.0 290.0 " fill="none"></path>
+</g>
+<path d="M2062.3 154.3 L2057.0 154.3 L2051.7 154.3 L2057.0 141.0 Z"></path>
+<path d="M2989.0 1193.0 L2989 1213 L4294.75 1289.9353156450138 L4294.8 1289.9 " fill="none"></path>
+<text x="2419.5" y="355.0" stroke="none">0..*</text>
+<path d="M2507.5 193.5 L2454.5 270 L2454.5 363 L2454.5 363.0 " fill="none"></path>
+<path d="M2602.5 193.5 L2655.5 270 L2655.5 358.5 L2655.5 358.5 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M4401.5 842.0 L3970.5 898 L3970.5 967 L3970.5 967.0 " fill="none"></path>
+</g>
+<path d="M4402.2 847.3 L4401.5 842.0 L4400.8 836.7 L4414.8 840.2 Z"></path>
+<path d="M3970.5 1144.0 L3970.5 1213 L4294.75 1280.8417803768682 L4294.8 1280.8 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3398.6 860.4 L3336.5 898 L3336.5 999.5 L3336.5 999.5 " fill="none"></path>
+</g>
+<path d="M3401.4 865.0 L3398.6 860.4 L3395.9 855.8 L3410.0 853.5 Z"></path>
+<path d="M3336.5 1111.5 L3336.5 1213 L4294.75 1288.7193865030674 L4294.8 1288.7 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M3540.4 860.4 L3602.5 898 L3602.5 1007.5 L3602.5 1007.5 " fill="none"></path>
+</g>
+<path d="M3543.1 855.8 L3540.4 860.4 L3537.6 865.0 L3529.0 853.5 Z"></path>
+<text x="3421.5" y="1255.1" stroke="none">0..*</text>
+<path d="M3602.5 1103.5 L3602.5 1213 L3456.5 1263.1194029850747 L3456.5 1263.1 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M4478.0 876.2 L4436.5 898 L4436.5 966.5 L4436.5 966.5 " fill="none"></path>
+</g>
+<path d="M4480.5 880.9 L4478.0 876.2 L4475.5 871.5 L4489.8 870.0 Z"></path>
+<path d="M4436.5 1144.5 L4436.5 1213 L4415.75 1233.5584615384616 L4415.8 1233.6 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M5770.3 1367.3 L5770.25 1374 L5770.25 1394 L5770.3 1394.0 " fill="none"></path>
+</g>
+<path d="M5775.6 1367.3 L5770.3 1367.3 L5764.9 1367.3 L5770.3 1354.0 Z"></path>
+<g stroke-dasharray="6 6">
+<path d="M6115.9 460.4 L6322 552 L6322 644.5 L6322 644.5 L6322 737 L6322 737 L6322 817.5 L6322 817.5 L6322 898 L6322 898 L6322 958.5 L6322.0 958.5 " fill="none"></path>
+</g>
+<path d="M6118.1 455.5 L6115.9 460.4 L6113.8 465.3 L6103.8 455.0 Z"></path>
+<path d="M6322.0 1152.5 L6322 1213 L4415.75 1291.0237066226007 L4415.8 1291.0 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M4777.8 857.8 L4965.5 898 L4965.5 942.5 L4965.5 942.5 " fill="none"></path>
+</g>
+<path d="M4778.9 852.6 L4777.8 857.8 L4776.7 863.0 L4764.8 855.0 Z"></path>
+<path d="M4965.5 1168.5 L4965.5 1213 L4415.75 1285.5192544039328 L4415.8 1285.5 " fill="none"></path>
+<g stroke-dasharray="6 6">
+<path d="M5734.3 879.8 L5779 898 L5779 942.5 L5779.0 942.5 " fill="none"></path>
+</g>
+<path d="M5736.4 874.9 L5734.3 879.8 L5732.3 884.7 L5722.0 874.8 Z"></path>
+<path d="M5779.0 1168.5 L5779 1213 L4415.75 1290.079280070237 L4415.8 1290.1 " fill="none"></path>
+<g data-name="QueueItem">
+<g fill="lightgreen" stroke="black" data-name="QueueItem">
+<rect x="0.0" y="89.0" height="72.0" width="162.0" data-name="QueueItem"></rect>
+<path d="M0.0 121.0 L162.0 121.0" fill="none" data-name="QueueItem"></path>
+<path d="M0.0 153.0 L162.0 153.0" fill="none" data-name="QueueItem"></path>
+</g>
+<g transform="translate(0, 89)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="QueueItem" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="QueueItem" data-compartment="0">
+<a id="..\src\functions\MailNotificationQueueTrigger.ts.QueueItem" xlink:href="..\src\functions\MailNotificationQueueTrigger.ts"><text x="73.0" y="14.1" stroke="none" text-anchor="middle" data-name="QueueItem" data-compartment="0">QueueItem</text></a>
+
+</g>
+</g>
+<g transform="translate(0, 121)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="QueueItem" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="QueueItem" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="QueueItem" data-compartment="1">employeeId: string</text>
+
+</g>
+</g>
+<g transform="translate(0, 153)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="QueueItem" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="QueueItem" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="AppConfiguration">
+<g fill="lightgreen" stroke="black" data-name="AppConfiguration">
+<rect x="202.0" y="64.5" height="121.0" width="444.0" data-name="AppConfiguration"></rect>
+<path d="M202.0 96.5 L646.0 96.5" fill="none" data-name="AppConfiguration"></path>
+<path d="M202.0 177.5 L646.0 177.5" fill="none" data-name="AppConfiguration"></path>
+</g>
+<g transform="translate(202, 64.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AppConfiguration" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="AppConfiguration" data-compartment="0">
+<a id="..\src\functions\configuration\AppConfiguration.ts.AppConfiguration" xlink:href="..\src\functions\configuration\AppConfiguration.ts"><text x="214.0" y="14.1" stroke="none" text-anchor="middle" data-name="AppConfiguration" data-compartment="0">AppConfiguration</text></a>
+
+</g>
+</g>
+<g transform="translate(202, 96.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AppConfiguration" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="AppConfiguration" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="AppConfiguration" data-compartment="1">explorer: () =&gt; Promise&lt;StorageExplorer&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="AppConfiguration" data-compartment="1">reporter: () =&gt; Promise&lt;ValidationReporter&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="AppConfiguration" data-compartment="1">mailAdapter: () =&gt; MailPort | undefined</text>
+<text x="0.0" y="62.7" stroke="none" data-name="AppConfiguration" data-compartment="1">employeeRepo: () =&gt; EmployeeRepository | undefined</text>
+
+</g>
+</g>
+<g transform="translate(202, 177.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="AppConfiguration" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="AppConfiguration" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="MSClientOptions">
+<g fill="lightgreen" stroke="black" data-name="MSClientOptions">
+<rect x="686.0" y="48.5" height="153.0" width="335.0" data-name="MSClientOptions"></rect>
+<path d="M686.0 80.5 L1021.0 80.5" fill="none" data-name="MSClientOptions"></path>
+<path d="M686.0 193.5 L1021.0 193.5" fill="none" data-name="MSClientOptions"></path>
+</g>
+<g transform="translate(686, 48.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MSClientOptions" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="MSClientOptions" data-compartment="0">
+<a id="..\src\functions\configuration\AppConfiguration.ts.MSClientOptions" xlink:href="..\src\functions\configuration\AppConfiguration.ts"><text x="159.5" y="14.1" stroke="none" text-anchor="middle" data-name="MSClientOptions" data-compartment="0">MSClientOptions</text></a>
+
+</g>
+</g>
+<g transform="translate(686, 80.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MSClientOptions" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MSClientOptions" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MSClientOptions" data-compartment="1">SHAREPOINT_TENANT_ID?: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MSClientOptions" data-compartment="1">SHAREPOINT_CLIENT_ID?: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="MSClientOptions" data-compartment="1">SHAREPOINT_CLIENT_SECRET?: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="MSClientOptions" data-compartment="1">SHAREPOINT_API_LOGGING?: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="MSClientOptions" data-compartment="1">SHAREPOINT_API_CACHING?: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="MSClientOptions" data-compartment="1">POWERBI_DATASET_ID?: string</text>
+
+</g>
+</g>
+<g transform="translate(686, 193.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MSClientOptions" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="MSClientOptions" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="CachingHandler">
+<g fill="lightgray" stroke="black" data-name="CachingHandler">
+<rect x="2464.5" y="983.0" height="145.0" width="250.0" data-name="CachingHandler"></rect>
+<path d="M2464.5 1015.0 L2714.5 1015.0" fill="none" data-name="CachingHandler"></path>
+<path d="M2464.5 1080.0 L2714.5 1080.0" fill="none" data-name="CachingHandler"></path>
+</g>
+<g transform="translate(2464.5, 983)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="CachingHandler" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="CachingHandler" data-compartment="0">
+<a id="..\src\functions\configuration\CachingHandler.ts.CachingHandler" xlink:href="..\src\functions\configuration\CachingHandler.ts"><text x="117.0" y="14.1" stroke="none" text-anchor="middle" data-name="CachingHandler" data-compartment="0">CachingHandler</text></a>
+
+</g>
+</g>
+<g transform="translate(2464.5, 1015)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="CachingHandler" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="CachingHandler" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="CachingHandler" data-compartment="1">cache: NodeCache</text>
+<text x="0.0" y="30.3" stroke="none" data-name="CachingHandler" data-compartment="1">logger: Logger</text>
+<text x="0.0" y="46.5" stroke="none" data-name="CachingHandler" data-compartment="1">nextMiddleware?: Middleware</text>
+
+</g>
+</g>
+<g transform="translate(2464.5, 1080)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="CachingHandler" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="CachingHandler" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="CachingHandler" data-compartment="2">execute(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="CachingHandler" data-compartment="2">setNext(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="Middleware">
+<g fill="lightgray" stroke="black" data-name="Middleware">
+<rect x="2536.5" y="801.5" height="32.0" width="106.0" data-name="Middleware"></rect>
+</g>
+<g transform="translate(2536.5, 801.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="Middleware" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="Middleware" data-compartment="0">
+<text x="45.0" y="14.1" stroke="none" text-anchor="middle" data-name="Middleware" data-compartment="0">Middleware</text>
+
+</g>
+</g>
+</g>
+<g data-name="Logger">
+<g fill="lightblue" stroke="black" data-name="Logger">
+<rect x="4294.8" y="1233.0" height="121.0" width="121.0" data-name="Logger"></rect>
+<path d="M4294.8 1265.0 L4415.8 1265.0" fill="none" data-name="Logger"></path>
+<path d="M4294.8 1273.0 L4415.8 1273.0" fill="none" data-name="Logger"></path>
+</g>
+<g transform="translate(4294.75, 1233)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Logger" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="Logger" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.Logger" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="52.5" y="14.1" stroke="none" text-anchor="middle" data-name="Logger" data-compartment="0">Logger</text></a>
+
+</g>
+</g>
+<g transform="translate(4294.75, 1265)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Logger" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="Logger" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(4294.75, 1273)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Logger" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="Logger" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="Logger" data-compartment="2">debug(): void</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Logger" data-compartment="2">log(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Logger" data-compartment="2">warn(): void</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Logger" data-compartment="2">error(): void</text>
+
+</g>
+</g>
+</g>
+<g data-name="OnePagerRepository">
+<g fill="lightblue" stroke="black" data-name="OnePagerRepository">
+<rect x="6376.0" y="375.0" height="72.0" width="441.0" data-name="OnePagerRepository"></rect>
+<path d="M6376.0 407.0 L6817.0 407.0" fill="none" data-name="OnePagerRepository"></path>
+<path d="M6376.0 415.0 L6817.0 415.0" fill="none" data-name="OnePagerRepository"></path>
+</g>
+<g transform="translate(6376, 375)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePagerRepository" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="OnePagerRepository" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.OnePagerRepository" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="212.5" y="14.1" stroke="none" text-anchor="middle" data-name="OnePagerRepository" data-compartment="0">OnePagerRepository</text></a>
+
+</g>
+</g>
+<g transform="translate(6376, 407)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePagerRepository" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="OnePagerRepository" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(6376, 415)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePagerRepository" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="OnePagerRepository" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="OnePagerRepository" data-compartment="2">getAllOnePagersOfEmployee(): Promise&lt;OnePager[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="EmployeeRepository">
+<g fill="lightblue" stroke="black" data-name="EmployeeRepository">
+<rect x="5756.3" y="367.0" height="88.0" width="497.0" data-name="EmployeeRepository"></rect>
+<path d="M5756.3 399.0 L6253.3 399.0" fill="none" data-name="EmployeeRepository"></path>
+<path d="M5756.3 407.0 L6253.3 407.0" fill="none" data-name="EmployeeRepository"></path>
+</g>
+<g transform="translate(5756.25, 367)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EmployeeRepository" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="EmployeeRepository" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.EmployeeRepository" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="240.5" y="14.1" stroke="none" text-anchor="middle" data-name="EmployeeRepository" data-compartment="0">EmployeeRepository</text></a>
+
+</g>
+</g>
+<g transform="translate(5756.25, 399)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EmployeeRepository" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="EmployeeRepository" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(5756.25, 407)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EmployeeRepository" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="EmployeeRepository" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="EmployeeRepository" data-compartment="2">getAllEmployees(): Promise&lt;`${number}`[]&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="EmployeeRepository" data-compartment="2">getDataForEmployee(): Promise&lt;EmployeeData | undefined&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="ValidationReporter">
+<g fill="lightblue" stroke="black" data-name="ValidationReporter">
+<rect x="4414.8" y="765.0" height="105.0" width="350.0" data-name="ValidationReporter"></rect>
+<path d="M4414.8 797.0 L4764.8 797.0" fill="none" data-name="ValidationReporter"></path>
+<path d="M4414.8 805.0 L4764.8 805.0" fill="none" data-name="ValidationReporter"></path>
+</g>
+<g transform="translate(4414.75, 765)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ValidationReporter" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="ValidationReporter" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.ValidationReporter" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="167.0" y="14.1" stroke="none" text-anchor="middle" data-name="ValidationReporter" data-compartment="0">ValidationReporter</text></a>
+
+</g>
+</g>
+<g transform="translate(4414.75, 797)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ValidationReporter" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="ValidationReporter" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(4414.75, 805)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="ValidationReporter" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="ValidationReporter" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="ValidationReporter" data-compartment="2">reportValid(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="ValidationReporter" data-compartment="2">reportErrors(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="ValidationReporter" data-compartment="2">getResultFor(): Promise&lt;ValidationError[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="StorageExplorer">
+<g fill="lightblue" stroke="black" data-name="StorageExplorer">
+<rect x="5441.0" y="757.0" height="121.0" width="281.0" data-name="StorageExplorer"></rect>
+<path d="M5441.0 789.0 L5722.0 789.0" fill="none" data-name="StorageExplorer"></path>
+<path d="M5441.0 797.0 L5722.0 797.0" fill="none" data-name="StorageExplorer"></path>
+</g>
+<g transform="translate(5441, 757)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageExplorer" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="StorageExplorer" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.StorageExplorer" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="132.5" y="14.1" stroke="none" text-anchor="middle" data-name="StorageExplorer" data-compartment="0">StorageExplorer</text></a>
+
+</g>
+</g>
+<g transform="translate(5441, 789)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageExplorer" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="StorageExplorer" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(5441, 797)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageExplorer" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="StorageExplorer" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="StorageExplorer" data-compartment="2">createFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="StorageExplorer" data-compartment="2">createFolder(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="StorageExplorer" data-compartment="2">listFolders(): Promise&lt;string[]&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="StorageExplorer" data-compartment="2">listFiles(): Promise&lt;StorageFile[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="MailPort">
+<g fill="lightblue" stroke="black" data-name="MailPort">
+<rect x="3356.5" y="781.5" height="72.0" width="226.0" data-name="MailPort"></rect>
+<path d="M3356.5 813.5 L3582.5 813.5" fill="none" data-name="MailPort"></path>
+<path d="M3356.5 821.5 L3582.5 821.5" fill="none" data-name="MailPort"></path>
+</g>
+<g transform="translate(3356.5, 781.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailPort" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="MailPort" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.MailPort" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="105.0" y="14.1" stroke="none" text-anchor="middle" data-name="MailPort" data-compartment="0">MailPort</text></a>
+
+</g>
+</g>
+<g transform="translate(3356.5, 813.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailPort" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="MailPort" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(3356.5, 821.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailPort" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MailPort" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="MailPort" data-compartment="2">sendMail(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="OnePager">
+<g fill="lightgreen" stroke="black" data-name="OnePager">
+<rect x="1061.0" y="64.5" height="121.0" width="246.0" data-name="OnePager"></rect>
+<path d="M1061.0 96.5 L1307.0 96.5" fill="none" data-name="OnePager"></path>
+<path d="M1061.0 177.5 L1307.0 177.5" fill="none" data-name="OnePager"></path>
+</g>
+<g transform="translate(1061, 64.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePager" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="OnePager" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.OnePager" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="115.0" y="14.1" stroke="none" text-anchor="middle" data-name="OnePager" data-compartment="0">OnePager</text></a>
+
+</g>
+</g>
+<g transform="translate(1061, 96.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePager" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="OnePager" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="OnePager" data-compartment="1">lastUpdateByEmployee: Date</text>
+<text x="0.0" y="30.3" stroke="none" data-name="OnePager" data-compartment="1">local?: Local</text>
+<text x="0.0" y="46.5" stroke="none" data-name="OnePager" data-compartment="1">data: () =&gt; Promise&lt;Buffer&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="OnePager" data-compartment="1">webLocation: URL</text>
+
+</g>
+</g>
+<g transform="translate(1061, 177.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePager" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="OnePager" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="StorageFile">
+<g fill="lightgreen" stroke="black" data-name="StorageFile">
+<rect x="1347.0" y="64.5" height="121.0" width="234.0" data-name="StorageFile"></rect>
+<path d="M1347.0 96.5 L1581.0 96.5" fill="none" data-name="StorageFile"></path>
+<path d="M1347.0 177.5 L1581.0 177.5" fill="none" data-name="StorageFile"></path>
+</g>
+<g transform="translate(1347, 64.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageFile" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="StorageFile" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.StorageFile" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="109.0" y="14.1" stroke="none" text-anchor="middle" data-name="StorageFile" data-compartment="0">StorageFile</text></a>
+
+</g>
+</g>
+<g transform="translate(1347, 96.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageFile" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="StorageFile" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="StorageFile" data-compartment="1">name: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="StorageFile" data-compartment="1">lastModified: Date</text>
+<text x="0.0" y="46.5" stroke="none" data-name="StorageFile" data-compartment="1">data: () =&gt; Promise&lt;Buffer&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="StorageFile" data-compartment="1">url?: URL</text>
+
+</g>
+</g>
+<g transform="translate(1347, 177.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="StorageFile" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="StorageFile" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="EmployeeData">
+<g fill="lightgreen" stroke="black" data-name="EmployeeData">
+<rect x="1621.0" y="0.0" height="250.0" width="348.0" data-name="EmployeeData"></rect>
+<path d="M1621.0 32.0 L1969.0 32.0" fill="none" data-name="EmployeeData"></path>
+<path d="M1621.0 242.0 L1969.0 242.0" fill="none" data-name="EmployeeData"></path>
+</g>
+<g transform="translate(1621, 0)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EmployeeData" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="EmployeeData" data-compartment="0">
+<a id="..\src\functions\validator\DomainTypes.ts.EmployeeData" xlink:href="..\src\functions\validator\DomainTypes.ts"><text x="166.0" y="14.1" stroke="none" text-anchor="middle" data-name="EmployeeData" data-compartment="0">EmployeeData</text></a>
+
+</g>
+</g>
+<g transform="translate(1621, 32)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EmployeeData" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="EmployeeData" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="EmployeeData" data-compartment="1">id: `${number}`</text>
+<text x="0.0" y="30.3" stroke="none" data-name="EmployeeData" data-compartment="1">name: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="EmployeeData" data-compartment="1">email: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="EmployeeData" data-compartment="1">entry_date: string</text>
+<text x="0.0" y="78.9" stroke="none" data-name="EmployeeData" data-compartment="1">office: string</text>
+<text x="0.0" y="95.1" stroke="none" data-name="EmployeeData" data-compartment="1">date_of_employment_change: string | null</text>
+<text x="0.0" y="111.3" stroke="none" data-name="EmployeeData" data-compartment="1">position_current: string | null</text>
+<text x="0.0" y="127.5" stroke="none" data-name="EmployeeData" data-compartment="1">resource_type_current: string | null</text>
+<text x="0.0" y="143.7" stroke="none" data-name="EmployeeData" data-compartment="1">staffing_pool_current: string | null</text>
+<text x="0.0" y="159.9" stroke="none" data-name="EmployeeData" data-compartment="1">position_future: string | null</text>
+<text x="0.0" y="176.1" stroke="none" data-name="EmployeeData" data-compartment="1">resource_type_future: string | null</text>
+<text x="0.0" y="192.3" stroke="none" data-name="EmployeeData" data-compartment="1">staffing_pool_future: string | null</text>
+
+</g>
+</g>
+<g transform="translate(1621, 242)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EmployeeData" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="EmployeeData" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="EMailNotification">
+<g fill="lightgray" stroke="black" data-name="EMailNotification">
+<rect x="3199.5" y="44.5" height="161.0" width="377.0" data-name="EMailNotification"></rect>
+<path d="M3199.5 76.5 L3576.5 76.5" fill="none" data-name="EMailNotification"></path>
+<path d="M3199.5 157.5 L3576.5 157.5" fill="none" data-name="EMailNotification"></path>
+</g>
+<g transform="translate(3199.5, 44.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="EMailNotification" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="EMailNotification" data-compartment="0">
+<a id="..\src\functions\validator\EMailNotification.ts.EMailNotification" xlink:href="..\src\functions\validator\EMailNotification.ts"><text x="180.5" y="14.1" stroke="none" text-anchor="middle" data-name="EMailNotification" data-compartment="0">EMailNotification</text></a>
+
+</g>
+</g>
+<g transform="translate(3199.5, 76.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EMailNotification" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="EMailNotification" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="EMailNotification" data-compartment="1">logger: Logger</text>
+<text x="0.0" y="30.3" stroke="none" data-name="EMailNotification" data-compartment="1">reporter: ValidationReporter</text>
+<text x="0.0" y="46.5" stroke="none" data-name="EMailNotification" data-compartment="1">mailAdapter: MailPort</text>
+<text x="0.0" y="62.7" stroke="none" data-name="EMailNotification" data-compartment="1">employeeRepo: EmployeeRepository</text>
+
+</g>
+</g>
+<g transform="translate(3199.5, 157.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="EMailNotification" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="EMailNotification" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="EMailNotification" data-compartment="2">notifyEmployee(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="EMailNotification" data-compartment="2">loadEMailTemplate(): Promise&lt;MailTemplate&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="MailTemplate">
+<g fill="lightgreen" stroke="black" data-name="MailTemplate">
+<rect x="2165.8" y="81.0" height="88.0" width="129.0" data-name="MailTemplate"></rect>
+<path d="M2165.8 113.0 L2294.8 113.0" fill="none" data-name="MailTemplate"></path>
+<path d="M2165.8 161.0 L2294.8 161.0" fill="none" data-name="MailTemplate"></path>
+</g>
+<g transform="translate(2165.75, 81)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailTemplate" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="MailTemplate" data-compartment="0">
+<a id="..\src\functions\validator\EMailNotification.ts.MailTemplate" xlink:href="..\src\functions\validator\EMailNotification.ts"><text x="56.5" y="14.1" stroke="none" text-anchor="middle" data-name="MailTemplate" data-compartment="0">MailTemplate</text></a>
+
+</g>
+</g>
+<g transform="translate(2165.75, 113)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailTemplate" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MailTemplate" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MailTemplate" data-compartment="1">subject: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MailTemplate" data-compartment="1">content: string</text>
+
+</g>
+</g>
+<g transform="translate(2165.75, 161)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailTemplate" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="MailTemplate" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="FolderBasedOnePagers">
+<g fill="lightgray" stroke="black" data-name="FolderBasedOnePagers">
+<rect x="5550.5" y="572.0" height="145.0" width="497.0" data-name="FolderBasedOnePagers"></rect>
+<path d="M5550.5 604.0 L6047.5 604.0" fill="none" data-name="FolderBasedOnePagers"></path>
+<path d="M5550.5 652.0 L6047.5 652.0" fill="none" data-name="FolderBasedOnePagers"></path>
+</g>
+<g transform="translate(5550.5, 572)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="FolderBasedOnePagers" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="FolderBasedOnePagers" data-compartment="0">
+<a id="..\src\functions\validator\FolderBasedOnePagers.ts.FolderBasedOnePagers" xlink:href="..\src\functions\validator\FolderBasedOnePagers.ts"><text x="240.5" y="14.1" stroke="none" text-anchor="middle" data-name="FolderBasedOnePagers" data-compartment="0">FolderBasedOnePagers</text></a>
+
+</g>
+</g>
+<g transform="translate(5550.5, 604)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FolderBasedOnePagers" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="FolderBasedOnePagers" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="FolderBasedOnePagers" data-compartment="1">explorer: StorageExplorer</text>
+<text x="0.0" y="30.3" stroke="none" data-name="FolderBasedOnePagers" data-compartment="1">logger: Logger</text>
+
+</g>
+</g>
+<g transform="translate(5550.5, 652)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FolderBasedOnePagers" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="FolderBasedOnePagers" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="FolderBasedOnePagers" data-compartment="2">getDataForEmployee(): Promise&lt;EmployeeData | undefined&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="FolderBasedOnePagers" data-compartment="2">getAllOnePagersOfEmployee(): Promise&lt;OnePager[]&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="FolderBasedOnePagers" data-compartment="2">getAllEmployees(): Promise&lt;`${number}`[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="OnePagerValidation">
+<g fill="lightgray" stroke="black" data-name="OnePagerValidation">
+<rect x="6133.0" y="4.0" height="242.0" width="418.0" data-name="OnePagerValidation"></rect>
+<path d="M6133.0 36.0 L6551.0 36.0" fill="none" data-name="OnePagerValidation"></path>
+<path d="M6133.0 133.0 L6551.0 133.0" fill="none" data-name="OnePagerValidation"></path>
+</g>
+<g transform="translate(6133, 4)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="OnePagerValidation" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="OnePagerValidation" data-compartment="0">
+<a id="..\src\functions\validator\OnePagerValidation.ts.OnePagerValidation" xlink:href="..\src\functions\validator\OnePagerValidation.ts"><text x="201.0" y="14.1" stroke="none" text-anchor="middle" data-name="OnePagerValidation" data-compartment="0">OnePagerValidation</text></a>
+
+</g>
+</g>
+<g transform="translate(6133, 36)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePagerValidation" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="OnePagerValidation" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="OnePagerValidation" data-compartment="1">logger: Logger</text>
+<text x="0.0" y="30.3" stroke="none" data-name="OnePagerValidation" data-compartment="1">onePagers: OnePagerRepository</text>
+<text x="0.0" y="46.5" stroke="none" data-name="OnePagerValidation" data-compartment="1">employees: EmployeeRepository</text>
+<text x="0.0" y="62.7" stroke="none" data-name="OnePagerValidation" data-compartment="1">reporter: ValidationReporter</text>
+<text x="0.0" y="78.9" stroke="none" data-name="OnePagerValidation" data-compartment="1">validationRule: ValidationRule</text>
+
+</g>
+</g>
+<g transform="translate(6133, 133)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="OnePagerValidation" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="OnePagerValidation" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="OnePagerValidation" data-compartment="2">validateOnePagersOfEmployee(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="OnePagerValidation" data-compartment="2">validateRequiredVersions(): { onePager: undefined</text>
+<text x="0.0" y="46.5" stroke="none" data-name="OnePagerValidation" data-compartment="2">errors: ValidationError[]</text>
+<text x="0.0" y="62.7" stroke="none" data-name="OnePagerValidation" data-compartment="2">}[]</text>
+<text x="0.0" y="78.9" stroke="none" data-name="OnePagerValidation" data-compartment="2">selectNewestOnePagers(): OnePager[]</text>
+<text x="0.0" y="95.1" stroke="none" data-name="OnePagerValidation" data-compartment="2">loadOnePager(): Promise&lt;LoadedOnePager&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="FileSystemStorageExplorer">
+<g fill="lightgray" stroke="black" data-name="FileSystemStorageExplorer">
+<rect x="5243.5" y="942.5" height="226.0" width="281.0" data-name="FileSystemStorageExplorer"></rect>
+<path d="M5243.5 974.5 L5524.5 974.5" fill="none" data-name="FileSystemStorageExplorer"></path>
+<path d="M5243.5 1039.5 L5524.5 1039.5" fill="none" data-name="FileSystemStorageExplorer"></path>
+</g>
+<g transform="translate(5243.5, 942.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="FileSystemStorageExplorer" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="FileSystemStorageExplorer" data-compartment="0">
+<a id="..\src\functions\validator\adapter\FileSystemStorageExplorer.ts.FileSystemStorageExplorer" xlink:href="..\src\functions\validator\adapter\FileSystemStorageExplorer.ts"><text x="132.5" y="14.1" stroke="none" text-anchor="middle" data-name="FileSystemStorageExplorer" data-compartment="0">FileSystemStorageExplorer</text></a>
+
+</g>
+</g>
+<g transform="translate(5243.5, 974.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FileSystemStorageExplorer" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="FileSystemStorageExplorer" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="1">baseDir: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="1">fs: FileSystem</text>
+<text x="0.0" y="46.5" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="1">logger: Logger</text>
+
+</g>
+</g>
+<g transform="translate(5243.5, 1039.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FileSystemStorageExplorer" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="FileSystemStorageExplorer" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">createFolder(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">silenceError(): void</text>
+<text x="0.0" y="46.5" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">listFolders(): Promise&lt;string[]&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">createFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">listFiles(): Promise&lt;StorageFile[]&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">dateFromOnePagerFile(): Date</text>
+<text x="0.0" y="111.3" stroke="none" data-name="FileSystemStorageExplorer" data-compartment="2">fromYYMMDD(): Date</text>
+
+</g>
+</g>
+</g>
+<g data-name="FileSystem">
+<g fill="lightblue" stroke="black" data-name="FileSystem">
+<rect x="5652.3" y="1233.0" height="121.0" width="236.0" data-name="FileSystem"></rect>
+<path d="M5652.3 1265.0 L5888.3 1265.0" fill="none" data-name="FileSystem"></path>
+<path d="M5652.3 1273.0 L5888.3 1273.0" fill="none" data-name="FileSystem"></path>
+</g>
+<g transform="translate(5652.25, 1233)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FileSystem" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="FileSystem" data-compartment="0">
+<a id="..\src\functions\validator\adapter\FileSystemStorageExplorer.ts.FileSystem" xlink:href="..\src\functions\validator\adapter\FileSystemStorageExplorer.ts"><text x="110.0" y="14.1" stroke="none" text-anchor="middle" data-name="FileSystem" data-compartment="0">FileSystem</text></a>
+
+</g>
+</g>
+<g transform="translate(5652.25, 1265)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FileSystem" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" data-name="FileSystem" data-compartment="1">
+
+</g>
+</g>
+<g transform="translate(5652.25, 1273)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="FileSystem" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="FileSystem" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="FileSystem" data-compartment="2">readdir(): Promise&lt;string[]&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="FileSystem" data-compartment="2">mkdir(): Promise&lt;unknown&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="FileSystem" data-compartment="2">writeFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="FileSystem" data-compartment="2">readFile(): Promise&lt;Buffer&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="PhotoLabels">
+<g fill="lightblue" stroke="black" data-name="PhotoLabels">
+<rect x="2694.0" y="56.5" height="137.0" width="236.0" data-name="PhotoLabels"></rect>
+<path d="M2694.0 88.5 L2930.0 88.5" fill="none" data-name="PhotoLabels"></path>
+<path d="M2694.0 185.5 L2930.0 185.5" fill="none" data-name="PhotoLabels"></path>
+</g>
+<g transform="translate(2694, 56.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PhotoLabels" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="PhotoLabels" data-compartment="0">
+<a id="..\src\functions\validator\rules\ai.ts.PhotoLabels" xlink:href="..\src\functions\validator\rules\ai.ts"><text x="110.0" y="14.1" stroke="none" text-anchor="middle" data-name="PhotoLabels" data-compartment="0">PhotoLabels</text></a>
+
+</g>
+</g>
+<g transform="translate(2694, 88.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PhotoLabels" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PhotoLabels" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="PhotoLabels" data-compartment="1">brightBackground: number</text>
+<text x="0.0" y="30.3" stroke="none" data-name="PhotoLabels" data-compartment="1">neutralBackground: number</text>
+<text x="0.0" y="46.5" stroke="none" data-name="PhotoLabels" data-compartment="1">whiteShirt: number</text>
+<text x="0.0" y="62.7" stroke="none" data-name="PhotoLabels" data-compartment="1">highQuality: number</text>
+<text x="0.0" y="78.9" stroke="none" data-name="PhotoLabels" data-compartment="1">businessAttire: number</text>
+
+</g>
+</g>
+<g transform="translate(2694, 185.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PhotoLabels" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="PhotoLabels" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="NodeFileSystem">
+<g fill="lightgray" stroke="black" data-name="NodeFileSystem">
+<rect x="1801.5" y="290.0" height="242.0" width="511.0" data-name="NodeFileSystem"></rect>
+<path d="M1801.5 322.0 L2312.5 322.0" fill="none" data-name="NodeFileSystem"></path>
+<path d="M1801.5 419.0 L2312.5 419.0" fill="none" data-name="NodeFileSystem"></path>
+</g>
+<g transform="translate(1801.5, 290)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="NodeFileSystem" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="NodeFileSystem" data-compartment="0">
+<a id="..\src\functions\validator\rules\node_file_system.ts.NodeFileSystem" xlink:href="..\src\functions\validator\rules\node_file_system.ts"><text x="247.5" y="14.1" stroke="none" text-anchor="middle" data-name="NodeFileSystem" data-compartment="0">NodeFileSystem</text></a>
+
+</g>
+</g>
+<g transform="translate(1801.5, 322)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="NodeFileSystem" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="NodeFileSystem" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="NodeFileSystem" data-compartment="1">URL_SCHEME: &quot;file://&quot;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="NodeFileSystem" data-compartment="1">path: string | string[]</text>
+<text x="0.0" y="46.5" stroke="none" data-name="NodeFileSystem" data-compartment="1">MODEL_JSON_FILENAME: &quot;model.json&quot;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="NodeFileSystem" data-compartment="1">WEIGHTS_BINARY_FILENAME: &quot;weights.bin&quot;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="NodeFileSystem" data-compartment="1">MODEL_BINARY_FILENAME: &quot;tensorflowjs.pb&quot;</text>
+
+</g>
+</g>
+<g transform="translate(1801.5, 419)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="NodeFileSystem" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="NodeFileSystem" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="NodeFileSystem" data-compartment="2">save(): Promise&lt;SaveResult&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="NodeFileSystem" data-compartment="2">load(): Promise&lt;ModelArtifacts&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="NodeFileSystem" data-compartment="2">loadBinaryModel(): Promise&lt;ModelArtifacts&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="NodeFileSystem" data-compartment="2">loadJSONModel(): Promise&lt;ModelArtifacts&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="NodeFileSystem" data-compartment="2">loadWeights(): Promise&lt;[WeightsManifestEntry[], ArrayBuffer]&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="NodeFileSystem" data-compartment="2">createOrVerifyDirectory(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="IOHandler">
+<g fill="lightgray" stroke="black" data-name="IOHandler">
+<rect x="2009.0" y="109.0" height="32.0" width="96.0" data-name="IOHandler"></rect>
+</g>
+<g transform="translate(2009, 109)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="IOHandler" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="IOHandler" data-compartment="0">
+<text x="40.0" y="14.1" stroke="none" text-anchor="middle" data-name="IOHandler" data-compartment="0">IOHandler</text>
+
+</g>
+</g>
+</g>
+<g data-name="Pptx">
+<g fill="lightgray" stroke="black" data-name="Pptx">
+<rect x="2794.5" y="918.0" height="275.0" width="389.0" data-name="Pptx"></rect>
+<path d="M2794.5 950.0 L3183.5 950.0" fill="none" data-name="Pptx"></path>
+<path d="M2794.5 1015.0 L3183.5 1015.0" fill="none" data-name="Pptx"></path>
+</g>
+<g transform="translate(2794.5, 918)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="Pptx" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="Pptx" data-compartment="0">
+<a id="..\src\functions\validator\rules\Pptx.ts.Pptx" xlink:href="..\src\functions\validator\rules\Pptx.ts"><text x="186.5" y="14.1" stroke="none" text-anchor="middle" data-name="Pptx" data-compartment="0">Pptx</text></a>
+
+</g>
+</g>
+<g transform="translate(2794.5, 950)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Pptx" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="Pptx" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="Pptx" data-compartment="1">logger: Logger</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Pptx" data-compartment="1">zip: JSZip</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Pptx" data-compartment="1">_slides?: Promise&lt;PptxSlide[]&gt;</text>
+
+</g>
+</g>
+<g transform="translate(2794.5, 1015)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="Pptx" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="Pptx" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="Pptx" data-compartment="2">load(): Promise&lt;Pptx&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="Pptx" data-compartment="2">getSlides(): Promise&lt;PptxSlide[]&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="Pptx" data-compartment="2">getOnePagerSlides(): Promise&lt;PptxSlide[]&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="Pptx" data-compartment="2">loadSlides(): Promise&lt;PptxSlide[]&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="Pptx" data-compartment="2">parseXml(): Promise&lt;T&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="Pptx" data-compartment="2">loadFile(): Promise&lt;Buffer&gt;</text>
+<text x="0.0" y="111.3" stroke="none" data-name="Pptx" data-compartment="2">filesOf(): string[]</text>
+<text x="0.0" y="127.5" stroke="none" data-name="Pptx" data-compartment="2">getContentLanguages(): Promise&lt;Local[]&gt;</text>
+<text x="0.0" y="143.7" stroke="none" data-name="Pptx" data-compartment="2">getUsedImages(): Promise&lt;PptxImage[]&gt;</text>
+<text x="0.0" y="159.9" stroke="none" data-name="Pptx" data-compartment="2">getOnePagerThemes(): Promise&lt;PptxTheme[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="PptxSlide">
+<g fill="lightblue" stroke="black" data-name="PptxSlide">
+<rect x="2456.0" y="56.5" height="137.0" width="198.0" data-name="PptxSlide"></rect>
+<path d="M2456.0 88.5 L2654.0 88.5" fill="none" data-name="PptxSlide"></path>
+<path d="M2456.0 185.5 L2654.0 185.5" fill="none" data-name="PptxSlide"></path>
+</g>
+<g transform="translate(2456, 56.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxSlide" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="PptxSlide" data-compartment="0">
+<a id="..\src\functions\validator\rules\Pptx.ts.PptxSlide" xlink:href="..\src\functions\validator\rules\Pptx.ts"><text x="91.0" y="14.1" stroke="none" text-anchor="middle" data-name="PptxSlide" data-compartment="0">PptxSlide</text></a>
+
+</g>
+</g>
+<g transform="translate(2456, 88.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxSlide" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PptxSlide" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="PptxSlide" data-compartment="1">isOnePager: boolean</text>
+<text x="0.0" y="30.3" stroke="none" data-name="PptxSlide" data-compartment="1">texts: string[]</text>
+<text x="0.0" y="46.5" stroke="none" data-name="PptxSlide" data-compartment="1">images: PptxImage[]</text>
+<text x="0.0" y="62.7" stroke="none" data-name="PptxSlide" data-compartment="1">usedLanguage?: Local</text>
+<text x="0.0" y="78.9" stroke="none" data-name="PptxSlide" data-compartment="1">theme: PptxTheme</text>
+
+</g>
+</g>
+<g transform="translate(2456, 185.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxSlide" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="PptxSlide" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="PptxTheme">
+<g fill="lightblue" stroke="black" data-name="PptxTheme">
+<rect x="2596.5" y="358.5" height="105.0" width="118.0" data-name="PptxTheme"></rect>
+<path d="M2596.5 390.5 L2714.5 390.5" fill="none" data-name="PptxTheme"></path>
+<path d="M2596.5 455.5 L2714.5 455.5" fill="none" data-name="PptxTheme"></path>
+</g>
+<g transform="translate(2596.5, 358.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxTheme" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="PptxTheme" data-compartment="0">
+<a id="..\src\functions\validator\rules\Pptx.ts.PptxTheme" xlink:href="..\src\functions\validator\rules\Pptx.ts"><text x="51.0" y="14.1" stroke="none" text-anchor="middle" data-name="PptxTheme" data-compartment="0">PptxTheme</text></a>
+
+</g>
+</g>
+<g transform="translate(2596.5, 390.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxTheme" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PptxTheme" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="PptxTheme" data-compartment="1">name: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="PptxTheme" data-compartment="1">path: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="PptxTheme" data-compartment="1">digest: string</text>
+
+</g>
+</g>
+<g transform="translate(2596.5, 455.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxTheme" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="PptxTheme" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="PptxImage">
+<g fill="lightblue" stroke="black" data-name="PptxImage">
+<rect x="2352.5" y="363.0" height="96.0" width="204.0" data-name="PptxImage"></rect>
+<path d="M2352.5 395.0 L2556.5 395.0" fill="none" data-name="PptxImage"></path>
+<path d="M2352.5 427.0 L2556.5 427.0" fill="none" data-name="PptxImage"></path>
+</g>
+<g transform="translate(2352.5, 363)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxImage" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="PptxImage" data-compartment="0">
+<a id="..\src\functions\validator\rules\Pptx.ts.PptxImage" xlink:href="..\src\functions\validator\rules\Pptx.ts"><text x="94.0" y="14.1" stroke="none" text-anchor="middle" data-name="PptxImage" data-compartment="0">PptxImage</text></a>
+
+</g>
+</g>
+<g transform="translate(2352.5, 395)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxImage" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PptxImage" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="PptxImage" data-compartment="1">path: string</text>
+
+</g>
+</g>
+<g transform="translate(2352.5, 427)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PptxImage" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PptxImage" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="PptxImage" data-compartment="2">data(): Promise&lt;Buffer&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="LocalFileValidationReporter">
+<g fill="lightgray" stroke="black" data-name="LocalFileValidationReporter">
+<rect x="3795.5" y="967.0" height="177.0" width="350.0" data-name="LocalFileValidationReporter"></rect>
+<path d="M3795.5 999.0 L4145.5 999.0" fill="none" data-name="LocalFileValidationReporter"></path>
+<path d="M3795.5 1047.0 L4145.5 1047.0" fill="none" data-name="LocalFileValidationReporter"></path>
+</g>
+<g transform="translate(3795.5, 967)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="LocalFileValidationReporter" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="LocalFileValidationReporter" data-compartment="0">
+<a id="..\src\functions\validator\adapter\localfile\LocalFileValidationReporter.ts.LocalFileValidationReporter" xlink:href="..\src\functions\validator\adapter\localfile\LocalFileValidationReporter.ts"><text x="167.0" y="14.1" stroke="none" text-anchor="middle" data-name="LocalFileValidationReporter" data-compartment="0">LocalFileValidationReporter</text></a>
+
+</g>
+</g>
+<g transform="translate(3795.5, 999)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="LocalFileValidationReporter" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="LocalFileValidationReporter" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="LocalFileValidationReporter" data-compartment="1">dataDir: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="LocalFileValidationReporter" data-compartment="1">logger: Logger</text>
+
+</g>
+</g>
+<g transform="translate(3795.5, 1047)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="LocalFileValidationReporter" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="LocalFileValidationReporter" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="LocalFileValidationReporter" data-compartment="2">validationFile(): string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="LocalFileValidationReporter" data-compartment="2">ensureDataDir(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="LocalFileValidationReporter" data-compartment="2">reportValid(): Promise&lt;void&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="LocalFileValidationReporter" data-compartment="2">reportErrors(): Promise&lt;void&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="LocalFileValidationReporter" data-compartment="2">getResultFor(): Promise&lt;ValidationError[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="MSMailAdapter">
+<g fill="lightgray" stroke="black" data-name="MSMailAdapter">
+<rect x="3223.5" y="999.5" height="112.0" width="226.0" data-name="MSMailAdapter"></rect>
+<path d="M3223.5 1031.5 L3449.5 1031.5" fill="none" data-name="MSMailAdapter"></path>
+<path d="M3223.5 1079.5 L3449.5 1079.5" fill="none" data-name="MSMailAdapter"></path>
+</g>
+<g transform="translate(3223.5, 999.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="MSMailAdapter" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="MSMailAdapter" data-compartment="0">
+<a id="..\src\functions\validator\adapter\mail\MSMailAdapter.ts.MSMailAdapter" xlink:href="..\src\functions\validator\adapter\mail\MSMailAdapter.ts"><text x="105.0" y="14.1" stroke="none" text-anchor="middle" data-name="MSMailAdapter" data-compartment="0">MSMailAdapter</text></a>
+
+</g>
+</g>
+<g transform="translate(3223.5, 1031.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MSMailAdapter" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MSMailAdapter" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MSMailAdapter" data-compartment="1">client: Client | undefined</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MSMailAdapter" data-compartment="1">logger: Logger</text>
+
+</g>
+</g>
+<g transform="translate(3223.5, 1079.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MSMailAdapter" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MSMailAdapter" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="MSMailAdapter" data-compartment="2">sendMail(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="InMemoryMailAdapter">
+<g fill="lightgray" stroke="black" data-name="InMemoryMailAdapter">
+<rect x="3489.5" y="1007.5" height="96.0" width="226.0" data-name="InMemoryMailAdapter"></rect>
+<path d="M3489.5 1039.5 L3715.5 1039.5" fill="none" data-name="InMemoryMailAdapter"></path>
+<path d="M3489.5 1071.5 L3715.5 1071.5" fill="none" data-name="InMemoryMailAdapter"></path>
+</g>
+<g transform="translate(3489.5, 1007.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="InMemoryMailAdapter" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="InMemoryMailAdapter" data-compartment="0">
+<a id="..\src\functions\validator\adapter\memory\InMemoryMailAdapter.ts.InMemoryMailAdapter" xlink:href="..\src\functions\validator\adapter\memory\InMemoryMailAdapter.ts"><text x="105.0" y="14.1" stroke="none" text-anchor="middle" data-name="InMemoryMailAdapter" data-compartment="0">InMemoryMailAdapter</text></a>
+
+</g>
+</g>
+<g transform="translate(3489.5, 1039.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="InMemoryMailAdapter" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="InMemoryMailAdapter" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="InMemoryMailAdapter" data-compartment="1">_mails: MailItem[]</text>
+
+</g>
+</g>
+<g transform="translate(3489.5, 1071.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="InMemoryMailAdapter" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="InMemoryMailAdapter" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="InMemoryMailAdapter" data-compartment="2">sendMail(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="MailItem">
+<g fill="lightgreen" stroke="black" data-name="MailItem">
+<rect x="3279.5" y="1241.0" height="105.0" width="177.0" data-name="MailItem"></rect>
+<path d="M3279.5 1273.0 L3456.5 1273.0" fill="none" data-name="MailItem"></path>
+<path d="M3279.5 1338.0 L3456.5 1338.0" fill="none" data-name="MailItem"></path>
+</g>
+<g transform="translate(3279.5, 1241)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailItem" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="MailItem" data-compartment="0">
+<a id="..\src\functions\validator\adapter\memory\InMemoryMailAdapter.ts.MailItem" xlink:href="..\src\functions\validator\adapter\memory\InMemoryMailAdapter.ts"><text x="80.5" y="14.1" stroke="none" text-anchor="middle" data-name="MailItem" data-compartment="0">MailItem</text></a>
+
+</g>
+</g>
+<g transform="translate(3279.5, 1273)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailItem" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MailItem" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MailItem" data-compartment="1">emailAddress: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MailItem" data-compartment="1">subject: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="MailItem" data-compartment="1">content: string</text>
+
+</g>
+</g>
+<g transform="translate(3279.5, 1338)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MailItem" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" data-name="MailItem" data-compartment="2">
+
+</g>
+</g>
+</g>
+<g data-name="InMemoryValidationReporter">
+<g fill="lightgray" stroke="black" data-name="InMemoryValidationReporter">
+<rect x="4185.5" y="966.5" height="178.0" width="502.0" data-name="InMemoryValidationReporter"></rect>
+<path d="M4185.5 998.5 L4687.5 998.5" fill="none" data-name="InMemoryValidationReporter"></path>
+<path d="M4185.5 1079.5 L4687.5 1079.5" fill="none" data-name="InMemoryValidationReporter"></path>
+</g>
+<g transform="translate(4185.5, 966.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="InMemoryValidationReporter" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="InMemoryValidationReporter" data-compartment="0">
+<a id="..\src\functions\validator\adapter\memory\InMemoryValidationReporter.ts.InMemoryValidationReporter" xlink:href="..\src\functions\validator\adapter\memory\InMemoryValidationReporter.ts"><text x="243.0" y="14.1" stroke="none" text-anchor="middle" data-name="InMemoryValidationReporter" data-compartment="0">InMemoryValidationReporter</text></a>
+
+</g>
+</g>
+<g transform="translate(4185.5, 998.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="InMemoryValidationReporter" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="InMemoryValidationReporter" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="InMemoryValidationReporter" data-compartment="1">logger: Logger</text>
+<text x="0.0" y="30.3" stroke="none" data-name="InMemoryValidationReporter" data-compartment="1">reports: Map&lt;`${number}`, { onePager: OnePager | undefined</text>
+<text x="0.0" y="46.5" stroke="none" data-name="InMemoryValidationReporter" data-compartment="1">errors?: ValidationError[] | undefined</text>
+<text x="0.0" y="62.7" stroke="none" data-name="InMemoryValidationReporter" data-compartment="1">}&gt;</text>
+
+</g>
+</g>
+<g transform="translate(4185.5, 1079.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="InMemoryValidationReporter" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="InMemoryValidationReporter" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="InMemoryValidationReporter" data-compartment="2">reportValid(): Promise&lt;void&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="InMemoryValidationReporter" data-compartment="2">reportErrors(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="InMemoryValidationReporter" data-compartment="2">getResultFor(): Promise&lt;ValidationError[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="MemoryFileSystem">
+<g fill="lightgray" stroke="black" data-name="MemoryFileSystem">
+<rect x="5618.8" y="1394.0" height="161.0" width="303.0" data-name="MemoryFileSystem"></rect>
+<path d="M5618.8 1426.0 L5921.8 1426.0" fill="none" data-name="MemoryFileSystem"></path>
+<path d="M5618.8 1458.0 L5921.8 1458.0" fill="none" data-name="MemoryFileSystem"></path>
+</g>
+<g transform="translate(5618.75, 1394)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="MemoryFileSystem" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="MemoryFileSystem" data-compartment="0">
+<a id="..\src\functions\validator\adapter\memory\MemoryFileSystem.ts.MemoryFileSystem" xlink:href="..\src\functions\validator\adapter\memory\MemoryFileSystem.ts"><text x="143.5" y="14.1" stroke="none" text-anchor="middle" data-name="MemoryFileSystem" data-compartment="0">MemoryFileSystem</text></a>
+
+</g>
+</g>
+<g transform="translate(5618.75, 1426)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MemoryFileSystem" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MemoryFileSystem" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="MemoryFileSystem" data-compartment="1">volume: FsPromisesApi</text>
+
+</g>
+</g>
+<g transform="translate(5618.75, 1458)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="MemoryFileSystem" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="MemoryFileSystem" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="MemoryFileSystem" data-compartment="2">readdir(): Promise&lt;string[]&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="MemoryFileSystem" data-compartment="2">mkdtemp(): Promise&lt;string&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="MemoryFileSystem" data-compartment="2">mkdir(): Promise&lt;string | undefined&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="MemoryFileSystem" data-compartment="2">writeFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="MemoryFileSystem" data-compartment="2">readFile(): Promise&lt;Buffer&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="PowerBIRepository">
+<g fill="lightgray" stroke="black" data-name="PowerBIRepository">
+<rect x="6073.5" y="958.5" height="194.0" width="497.0" data-name="PowerBIRepository"></rect>
+<path d="M6073.5 990.5 L6570.5 990.5" fill="none" data-name="PowerBIRepository"></path>
+<path d="M6073.5 1071.5 L6570.5 1071.5" fill="none" data-name="PowerBIRepository"></path>
+</g>
+<g transform="translate(6073.5, 958.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="PowerBIRepository" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="PowerBIRepository" data-compartment="0">
+<a id="..\src\functions\validator\adapter\powerbi\PowerBIRepository.ts.PowerBIRepository" xlink:href="..\src\functions\validator\adapter\powerbi\PowerBIRepository.ts"><text x="240.5" y="14.1" stroke="none" text-anchor="middle" data-name="PowerBIRepository" data-compartment="0">PowerBIRepository</text></a>
+
+</g>
+</g>
+<g transform="translate(6073.5, 990.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PowerBIRepository" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PowerBIRepository" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="PowerBIRepository" data-compartment="1">authProvider: AuthenticationProvider</text>
+<text x="0.0" y="30.3" stroke="none" data-name="PowerBIRepository" data-compartment="1">logger: Logger</text>
+<text x="0.0" y="46.5" stroke="none" data-name="PowerBIRepository" data-compartment="1">datasetID: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="PowerBIRepository" data-compartment="1">cache: NodeCache</text>
+
+</g>
+</g>
+<g transform="translate(6073.5, 1071.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="PowerBIRepository" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="PowerBIRepository" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="PowerBIRepository" data-compartment="2">getAllEmployees(): Promise&lt;`${number}`[]&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="PowerBIRepository" data-compartment="2">getDataForEmployee(): Promise&lt;EmployeeData | undefined&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="PowerBIRepository" data-compartment="2">getAllEmployeeData(): Promise&lt;EmployeeData[]&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="PowerBIRepository" data-compartment="2">fetchDataByQuery(): Promise&lt;EmployeeData[]&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="SharepointListValidationReporter">
+<g fill="lightgray" stroke="black" data-name="SharepointListValidationReporter">
+<rect x="4727.5" y="942.5" height="226.0" width="476.0" data-name="SharepointListValidationReporter"></rect>
+<path d="M4727.5 974.5 L5203.5 974.5" fill="none" data-name="SharepointListValidationReporter"></path>
+<path d="M4727.5 1055.5 L5203.5 1055.5" fill="none" data-name="SharepointListValidationReporter"></path>
+</g>
+<g transform="translate(4727.5, 942.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="SharepointListValidationReporter" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="SharepointListValidationReporter" data-compartment="0">
+<a id="..\src\functions\validator\adapter\sharepoint\SharepointListValidationReporter.ts.SharepointListValidationReporter" xlink:href="..\src\functions\validator\adapter\sharepoint\SharepointListValidationReporter.ts"><text x="230.0" y="14.1" stroke="none" text-anchor="middle" data-name="SharepointListValidationReporter" data-compartment="0">SharepointListValidationReporter</text></a>
+
+</g>
+</g>
+<g transform="translate(4727.5, 974.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SharepointListValidationReporter" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="SharepointListValidationReporter" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="SharepointListValidationReporter" data-compartment="1">listId: string</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SharepointListValidationReporter" data-compartment="1">client: Client</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SharepointListValidationReporter" data-compartment="1">siteId: string</text>
+<text x="0.0" y="62.7" stroke="none" data-name="SharepointListValidationReporter" data-compartment="1">logger: Logger</text>
+
+</g>
+</g>
+<g transform="translate(4727.5, 1055.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SharepointListValidationReporter" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="SharepointListValidationReporter" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="SharepointListValidationReporter" data-compartment="2">getInstance(): Promise&lt;SharepointListValidationReporter&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SharepointListValidationReporter" data-compartment="2">reportValid(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SharepointListValidationReporter" data-compartment="2">reportErrors(): Promise&lt;void&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="SharepointListValidationReporter" data-compartment="2">getResultFor(): Promise&lt;ValidationError[]&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="SharepointListValidationReporter" data-compartment="2">getItemIdOfEmployee(): Promise&lt;string | undefined&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="SharepointListValidationReporter" data-compartment="2">clearList(): Promise&lt;void&gt;</text>
+
+</g>
+</g>
+</g>
+<g data-name="SharepointStorageExplorer">
+<g fill="lightgray" stroke="black" data-name="SharepointStorageExplorer">
+<rect x="5564.5" y="942.5" height="226.0" width="429.0" data-name="SharepointStorageExplorer"></rect>
+<path d="M5564.5 974.5 L5993.5 974.5" fill="none" data-name="SharepointStorageExplorer"></path>
+<path d="M5564.5 1039.5 L5993.5 1039.5" fill="none" data-name="SharepointStorageExplorer"></path>
+</g>
+<g transform="translate(5564.5, 942.5)" font-family="Helvetica" font-size="12pt" font-weight="bold" font-style="normal" data-name="SharepointStorageExplorer" data-compartment="0">
+<g transform="translate(8, 8)" fill="black" text-align="center" data-name="SharepointStorageExplorer" data-compartment="0">
+<a id="..\src\functions\validator\adapter\sharepoint\SharepointStorageExplorer.ts.SharepointStorageExplorer" xlink:href="..\src\functions\validator\adapter\sharepoint\SharepointStorageExplorer.ts"><text x="206.5" y="14.1" stroke="none" text-anchor="middle" data-name="SharepointStorageExplorer" data-compartment="0">SharepointStorageExplorer</text></a>
+
+</g>
+</g>
+<g transform="translate(5564.5, 974.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SharepointStorageExplorer" data-compartment="1">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="SharepointStorageExplorer" data-compartment="1">
+<text x="0.0" y="14.1" stroke="none" data-name="SharepointStorageExplorer" data-compartment="1">client: Client</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SharepointStorageExplorer" data-compartment="1">driveId: string</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SharepointStorageExplorer" data-compartment="1">logger: Logger</text>
+
+</g>
+</g>
+<g transform="translate(5564.5, 1039.5)" font-family="Helvetica" font-size="12pt" font-weight="normal" font-style="normal" data-name="SharepointStorageExplorer" data-compartment="2">
+<g transform="translate(8, 8)" fill="black" text-align="left" data-name="SharepointStorageExplorer" data-compartment="2">
+<text x="0.0" y="14.1" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">getInstance(): Promise&lt;SharepointStorageExplorer&gt;</text>
+<text x="0.0" y="30.3" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">createFolder(): Promise&lt;void&gt;</text>
+<text x="0.0" y="46.5" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">folderExists(): Promise&lt;boolean&gt;</text>
+<text x="0.0" y="62.7" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">silenceNotFound(): Promise&lt;void&gt;</text>
+<text x="0.0" y="78.9" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">createFile(): Promise&lt;void&gt;</text>
+<text x="0.0" y="95.1" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">listFolders(): Promise&lt;string[]&gt;</text>
+<text x="0.0" y="111.3" stroke="none" data-name="SharepointStorageExplorer" data-compartment="2">listFiles(): Promise&lt;StorageFile[]&gt;</text>
+
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</svg>

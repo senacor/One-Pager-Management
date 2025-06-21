@@ -10,35 +10,28 @@ import {
     ValidationReporter,
 } from '../../DomainTypes';
 
-/**
- * The name of the SharePoint list field that stores the employee ID.
- */
-const COLUMN_MA_ID: string = 'MitarbeiterID';
-/**
- * The name of the SharePoint list field that stores the validation errors.
- */
-const COLUMN_VALIDATION_ERRORS: string = 'Festgestellte_Fehler';
-/**
- * The name of the SharePoint list field that stores the URL of the one-pager.
- */
-const COLUMN_URL: string = 'Location';
-
-const COLUMN_MA_NAME: string = 'Name';
-
-const COLUMN_MA_OFFICE: string = 'Office';
-
-const COLUMN_MA_EMAIL: string = 'EMail_Adresse';
-
-const COLUMN_MA_CURR_POSITION: string = 'Derzeitige_Position';
+const enum ListItemColumnNames {
+    MA_ID = 'MitarbeiterID',
+    VALIDATION_ERRORS = 'Festgestellte_Fehler',
+    URL = 'Location',
+    MA_NAME = 'Name',
+    MA_OFFICE = 'Office',
+    MA_EMAIL = 'E_Mail_Adresse',
+    MA_CURR_POSITION = 'Derzeitige_Position',
+    VALIDATION_DATE = 'Validierungsdatum',
+    LAST_MODIFIED_DATE = 'Aenderungsdatum',
+}
 
 type ListItemWithFields = {
-    [COLUMN_MA_ID]: string;
-    [COLUMN_VALIDATION_ERRORS]: string;
-    [COLUMN_URL]: string;
-    [COLUMN_MA_NAME]: string;
-    [COLUMN_MA_OFFICE]: string;
-    [COLUMN_MA_EMAIL]: string;
-    [COLUMN_MA_CURR_POSITION]: string | null;
+    [ListItemColumnNames.MA_ID]: string;
+    [ListItemColumnNames.VALIDATION_ERRORS]: string;
+    [ListItemColumnNames.URL]: string;
+    [ListItemColumnNames.MA_NAME]: string;
+    [ListItemColumnNames.MA_OFFICE]: string;
+    [ListItemColumnNames.MA_EMAIL]: string;
+    [ListItemColumnNames.MA_CURR_POSITION]: string | null;
+    [ListItemColumnNames.VALIDATION_DATE]: string;
+    [ListItemColumnNames.LAST_MODIFIED_DATE]: string | null;
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -46,20 +39,24 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
     }
     const record = item as { [key: string]: unknown };
     return (
-        COLUMN_MA_ID in record &&
-        typeof record[COLUMN_MA_ID] === 'string' &&
-        COLUMN_VALIDATION_ERRORS in record &&
-        typeof record[COLUMN_VALIDATION_ERRORS] === 'string' &&
-        COLUMN_URL in record &&
-        typeof record[COLUMN_URL] === 'string' &&
-        COLUMN_MA_NAME in record &&
-        typeof record[COLUMN_MA_NAME] === 'string' &&
-        COLUMN_MA_OFFICE in record &&
-        typeof record[COLUMN_MA_OFFICE] === 'string' &&
-        COLUMN_MA_EMAIL in record &&
-        typeof record[COLUMN_MA_EMAIL] === 'string' &&
-        COLUMN_MA_CURR_POSITION in record &&
-        ['string', 'null'].includes(typeof record[COLUMN_MA_CURR_POSITION])
+        ListItemColumnNames.MA_ID in record &&
+        typeof record[ListItemColumnNames.MA_ID] === 'string' &&
+        ListItemColumnNames.VALIDATION_ERRORS in record &&
+        typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string' &&
+        ListItemColumnNames.URL in record &&
+        typeof record[ListItemColumnNames.URL] === 'string' &&
+        ListItemColumnNames.MA_NAME in record &&
+        typeof record[ListItemColumnNames.MA_NAME] === 'string' &&
+        ListItemColumnNames.MA_OFFICE in record &&
+        typeof record[ListItemColumnNames.MA_OFFICE] === 'string' &&
+        ListItemColumnNames.MA_EMAIL in record &&
+        typeof record[ListItemColumnNames.MA_EMAIL] === 'string' &&
+        ListItemColumnNames.MA_CURR_POSITION in record &&
+        ['string', 'null'].includes(typeof record[ListItemColumnNames.MA_CURR_POSITION]) &&
+        ListItemColumnNames.VALIDATION_DATE in record &&
+        typeof record[ListItemColumnNames.VALIDATION_DATE] === 'string' &&
+        ['string', 'null'].includes(typeof record[ListItemColumnNames.LAST_MODIFIED_DATE]) &&
+        typeof record[ListItemColumnNames.LAST_MODIFIED_DATE] === 'string'
     );
 }
 
@@ -167,13 +164,16 @@ export class SharepointListValidationReporter implements ValidationReporter {
             this.logger.log(`Creating a new list entry for employee with ID "${id}"!`);
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
                 fields: {
-                    [COLUMN_MA_ID]: id,
-                    [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
-                    [COLUMN_URL]: onePagerUrl,
-                    [COLUMN_MA_NAME]: employee.name,
-                    [COLUMN_MA_OFFICE]: employee.office,
-                    [COLUMN_MA_EMAIL]: employee.email,
-                    [COLUMN_MA_CURR_POSITION]: employee.position_current || '',
+                    [ListItemColumnNames.MA_ID]: id,
+                    [ListItemColumnNames.VALIDATION_ERRORS]: errors.join('\n'),
+                    [ListItemColumnNames.URL]: onePagerUrl,
+                    [ListItemColumnNames.MA_NAME]: employee.name,
+                    [ListItemColumnNames.MA_OFFICE]: employee.office,
+                    [ListItemColumnNames.MA_EMAIL]: employee.email,
+                    [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
+                    [ListItemColumnNames.VALIDATION_DATE]: new Date().toLocaleDateString(),
+                    [ListItemColumnNames.LAST_MODIFIED_DATE]:
+                        onePager?.lastUpdateByEmployee.toLocaleDateString() || null,
                 },
             });
         } else {
@@ -181,8 +181,15 @@ export class SharepointListValidationReporter implements ValidationReporter {
             await this.client
                 .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
                 .patch({
-                    [COLUMN_VALIDATION_ERRORS]: errors.join('\n'),
-                    [COLUMN_URL]: onePagerUrl,
+                    [ListItemColumnNames.VALIDATION_ERRORS]: errors.join('\n'),
+                    [ListItemColumnNames.URL]: onePagerUrl,
+                    [ListItemColumnNames.MA_NAME]: employee.name,
+                    [ListItemColumnNames.MA_OFFICE]: employee.office,
+                    [ListItemColumnNames.MA_EMAIL]: employee.email,
+                    [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
+                    [ListItemColumnNames.VALIDATION_DATE]: new Date().toLocaleDateString(),
+                    [ListItemColumnNames.LAST_MODIFIED_DATE]:
+                        onePager?.lastUpdateByEmployee.toLocaleDateString() || null,
                 });
         }
     }
@@ -215,7 +222,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
         const itemFields: ListItemWithFields = item.fields;
 
-        return itemFields[COLUMN_VALIDATION_ERRORS]!.split('\n') as ValidationError[];
+        return itemFields[ListItemColumnNames.VALIDATION_ERRORS]!.split('\n') as ValidationError[];
     }
 
     /**

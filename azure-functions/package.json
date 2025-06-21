@@ -38,6 +38,7 @@
         "sharp": "^0.34.2",
         "template-file": "^6.0.1",
         "ts-node": "^10.9.2",
+        "tsuml2": "^0.17.1",
         "xml2js": "^0.6.2"
     },
     "devDependencies": {

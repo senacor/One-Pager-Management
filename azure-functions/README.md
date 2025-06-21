@@ -34,7 +34,7 @@ project:
 
 - [Azure CLI][azure-tools-install]
 - [Azure Functions Core Tools][core-tools-install]
-- Node v20
+- Node v22
 
 ## Deployment to Azure
 

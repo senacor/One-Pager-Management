@@ -1,4 +1,8 @@
-import { EmployeeID, LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
+import {
+    EmployeeID,
+    LoadedOnePager,
+    ValidationError,
+} from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
