@@ -8,7 +8,12 @@ import {
 import { LocalFileValidationReporter } from '../src/functions/validator/adapter/localfile/LocalFileValidationReporter';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter';
-import { EmployeeData, EmployeeID, OnePager, ValidationReporter } from '../src/functions/validator/DomainTypes';
+import {
+    EmployeeData,
+    EmployeeID,
+    OnePager,
+    ValidationReporter,
+} from '../src/functions/validator/DomainTypes';
 
 type ReporterFactory = () => Promise<ValidationReporter>;
 

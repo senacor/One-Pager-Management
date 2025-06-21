@@ -3,7 +3,7 @@ import { detectFaces, labelImage, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
 export function hasPhoto(logger: Logger = console): ValidationRule {
-    return async onePager  => {
+    return async onePager => {
         const usedImages = await onePager.pptx.getUsedImages();
 
         const withFaces = (

@@ -1,10 +1,5 @@
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
-import {
-    EmployeeData,
-    EmployeeID,
-    EmployeeRepository,
-    Logger,
-} from '../../DomainTypes';
+import { EmployeeData, EmployeeID, EmployeeRepository, Logger } from '../../DomainTypes';
 import NodeCache from 'node-cache';
 
 export type DatasetID = string;
