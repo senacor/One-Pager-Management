@@ -47,7 +47,10 @@ const FACE_DETECTION_IMG_SIZE = 640;
 
 export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face[]> {
     await initializeTensorFlow();
-    const small = sharp(imageData).resize(FACE_DETECTION_IMG_SIZE, FACE_DETECTION_IMG_SIZE, { fit: 'outside', kernel: 'lanczos3' });
+    const small = sharp(imageData).resize(FACE_DETECTION_IMG_SIZE, FACE_DETECTION_IMG_SIZE, {
+        fit: 'outside',
+        kernel: 'lanczos3',
+    });
     const img = await imageToTensor3D(small);
     return await (await detector()).estimateFaces(img);
 }

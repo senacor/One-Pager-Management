@@ -1,10 +1,18 @@
-import { EmployeeID, LoadedOnePager, ValidationError } from '../src/functions/validator/DomainTypes';
+import {
+    EmployeeID,
+    LoadedOnePager,
+    ValidationError,
+} from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
 import { Pptx } from '../src/functions/validator/rules/Pptx';
 import { readFile } from 'node:fs/promises';
-import { checkImages, QUALITY_THRESHOLD, scoreQuality } from '../src/functions/validator/rules/photo';
+import {
+    checkImages,
+    QUALITY_THRESHOLD,
+    scoreQuality,
+} from '../src/functions/validator/rules/photo';
 
 let _exampleOnePager: Promise<LoadedOnePager>;
 function exampleOnePager(): Promise<LoadedOnePager> {

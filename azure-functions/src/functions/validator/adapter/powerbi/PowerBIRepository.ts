@@ -1,10 +1,5 @@
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
-import {
-    Employee,
-    EmployeeID,
-    EmployeeRepository,
-    Logger,
-} from '../../DomainTypes';
+import { Employee, EmployeeID, EmployeeRepository, Logger } from '../../DomainTypes';
 import NodeCache from 'node-cache';
 import { HardenedFetch } from 'hardened-fetch';
 
@@ -45,7 +40,6 @@ const client = new HardenedFetch({
     rateLimitHeader: 'retry-after',
     resetFormat: 'seconds',
 });
-
 
 const cache = new NodeCache({
     stdTTL: 10 * 60, // 10 minutes
@@ -92,7 +86,7 @@ export class PowerBIRepository implements EmployeeRepository {
     }
 
     async getAllEmployeeData(): Promise<Employee[]> {
-        const prefix = "Mitarbeiter Professional Services";
+        const prefix = 'Mitarbeiter Professional Services';
         const query = `
 EVALUATE
 FILTER(

@@ -84,8 +84,8 @@ export class SharepointStorageExplorer implements StorageExplorer {
             .api(`/drives/${this.driveId}/root/children`)
             .top(100000)
             .get()) as {
-                value?: DriveItem[];
-            };
+            value?: DriveItem[];
+        };
 
         if (folders === undefined) {
             throw new Error(

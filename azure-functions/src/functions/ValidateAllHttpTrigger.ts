@@ -27,10 +27,7 @@ export async function ValidateAllHttpTrigger(
         context.log(`Http function processed request for url "${request.url}"!`);
 
         const config = await loadConfigFromEnv(context);
-        const onePagers = new FolderBasedOnePagers(
-            await config.explorer(),
-            context
-        );
+        const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
         const employeeRepository = config.employeeRepo() || onePagers;
         const ids = await employeeRepository.getAllEmployees();
 

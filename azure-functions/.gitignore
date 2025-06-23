@@ -5,3 +5,6 @@ reports/
 .azurite/
 .storage/
 experiments/*.csv
+experiments/*.mmd
+experiments/*.dsl
+experiments/*.svg
