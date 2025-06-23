@@ -1,6 +1,6 @@
 import { loadConfigFromEnv } from "../src/functions/configuration/AppConfiguration";
 import { FolderBasedOnePagers } from "../src/functions/validator/FolderBasedOnePagers";
-import { EmployeeData, EmployeeID } from "../src/functions/validator/DomainTypes";
+import { Employee, EmployeeID } from "../src/functions/validator/DomainTypes";
 import { stringify } from "csv-stringify";
 import * as fs from 'node:fs';
 import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/PowerBIRepository";
@@ -46,13 +46,13 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
 
     const mismatchIDsList = new Array<MisMatchEntry>();
     await Promise.all(folderIDs.map(async (id: EmployeeID): Promise<void> => {
-        const employeeData: EmployeeData | undefined = await folderRepo.getDataForEmployee(id);
+        const employeeData: Employee | undefined = await folderRepo.getEmployee(id);
         if (!powerBIIDs.includes(id)) {
             const firstname = employeeData?.name.split('_')[0];
             const lastname = employeeData?.name.split('_')[1];
-            let possibleMatchesList: EmployeeData[] = [];
+            let possibleMatchesList: Employee[] = [];
             if (!!firstname && !!lastname) {
-                possibleMatchesList = allPowerBIEmployeeData.filter((employee: EmployeeData) => {
+                possibleMatchesList = allPowerBIEmployeeData.filter((employee: Employee) => {
                     return replaceExtraChars(employee.name).indexOf(replaceExtraChars(firstname)) > -1 &&
                         replaceExtraChars(employee.name).indexOf(replaceExtraChars(lastname)) > -1;
                 });
@@ -60,7 +60,7 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
             possibleMatchesList.forEach((el) => {
                 matchedIDs.push(el.id);
             });
-            const possibleMatches = possibleMatchesList.map((el: EmployeeData) => {return el.name + " " + el.id}).join('; ');
+            const possibleMatches = possibleMatchesList.map((el: Employee) => {return el.name + " " + el.id}).join('; ');
             mismatchIDsList.push({folderID: id, powerBIID: null, name: employeeData?.name || null, possibleMatches: possibleMatches, matched: null});
         }
     }));
@@ -75,7 +75,7 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
 
     await Promise.all(powerBIIDs.map(async (id: EmployeeID): Promise<void> => {
         if (!folderIDs.includes(id)) {
-            const employeeData: EmployeeData | undefined = await employeeRepo?.getDataForEmployee(id);
+            const employeeData: Employee | undefined = await employeeRepo?.getEmployee(id);
             if (!!employeeData && !(!employeeData?.resource_type_current) && !peopleWithOnePagers.includes(employeeData?.resource_type_current)) {
                 return;
             }

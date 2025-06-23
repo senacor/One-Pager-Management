@@ -145,7 +145,7 @@ function getSharepointConfig(
     const onePagerDriveName = opts.SHAREPOINT_ONE_PAGER_DRIVE_NAME || '01_OnePager';
     const validationSiteName = opts.SHAREPOINT_VALIDATION_SITE_NAME || onePagerSiteName;
     const validationResultListName =
-        opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'onepager-status';
+        opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'OnePager_Status';
 
     if (!opts.POWERBI_DATASET_ID || !isDatasetID(opts.POWERBI_DATASET_ID)) {
         throw new Error('Missing or invalid Power BI Dataset ID!');

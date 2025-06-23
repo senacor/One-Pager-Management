@@ -11,23 +11,21 @@ import {
 } from '../../DomainTypes';
 
 const enum ListItemColumnNames {
-    MA_ID = 'MitarbeiterID',
-    VALIDATION_ERRORS = 'Festgestellte_Fehler',
-    URL = 'Location',
+    MA_ID = 'Employee_ID',
     MA_NAME = 'Name',
-    MA_OFFICE = 'Office',
-    MA_EMAIL = 'E_Mail_Adresse',
-    MA_CURR_POSITION = 'Derzeitige_Position',
-    VALIDATION_DATE = 'Validierungsdatum',
-    LAST_MODIFIED_DATE = 'Aenderungsdatum',
+    MA_CURR_POSITION = 'Current_Position',
+    MA_EMAIL = 'E_Mail_Address',
+    VALIDATION_ERRORS = 'Errors',
+    VALIDATION_DATE = 'Validation_Date',
+    LAST_MODIFIED_DATE = 'Date_of_Last_Change',
+    URL = 'Links',
 }
 
 type ListItemWithFields = {
-    [ListItemColumnNames.MA_ID]: string;
+    [ListItemColumnNames.MA_ID]: string | number;
     [ListItemColumnNames.VALIDATION_ERRORS]: string;
     [ListItemColumnNames.URL]: string;
     [ListItemColumnNames.MA_NAME]: string;
-    [ListItemColumnNames.MA_OFFICE]: string;
     [ListItemColumnNames.MA_EMAIL]: string;
     [ListItemColumnNames.MA_CURR_POSITION]: string | null;
     [ListItemColumnNames.VALIDATION_DATE]: string;
@@ -40,15 +38,13 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
     const record = item as { [key: string]: unknown };
     return (
         ListItemColumnNames.MA_ID in record &&
-        typeof record[ListItemColumnNames.MA_ID] === 'string' &&
+        ['string', 'number'].includes(typeof record[ListItemColumnNames.MA_ID]) &&
         ListItemColumnNames.VALIDATION_ERRORS in record &&
         typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string' &&
         ListItemColumnNames.URL in record &&
         typeof record[ListItemColumnNames.URL] === 'string' &&
         ListItemColumnNames.MA_NAME in record &&
         typeof record[ListItemColumnNames.MA_NAME] === 'string' &&
-        ListItemColumnNames.MA_OFFICE in record &&
-        typeof record[ListItemColumnNames.MA_OFFICE] === 'string' &&
         ListItemColumnNames.MA_EMAIL in record &&
         typeof record[ListItemColumnNames.MA_EMAIL] === 'string' &&
         ListItemColumnNames.MA_CURR_POSITION in record &&
@@ -83,6 +79,14 @@ export class SharepointListValidationReporter implements ValidationReporter {
         this.listId = listId;
         this.siteId = siteId;
         this.logger = logger;
+    }
+
+    private dateToEnglishFormat(date: Date | undefined): string | undefined {
+        if (date === undefined) {
+            return undefined;
+        }
+
+        return `${(date.getUTCMonth()+1).toString().padStart(2, '0')}/${date.getUTCDate().toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
     }
 
     /**
@@ -166,14 +170,13 @@ export class SharepointListValidationReporter implements ValidationReporter {
                 fields: {
                     [ListItemColumnNames.MA_ID]: id,
                     [ListItemColumnNames.VALIDATION_ERRORS]: errors.join('\n'),
-                    [ListItemColumnNames.URL]: onePagerUrl,
+                    [ListItemColumnNames.URL]: `<a href="${onePagerUrl}">Link zum OnePager</a>`,
                     [ListItemColumnNames.MA_NAME]: employee.name,
-                    [ListItemColumnNames.MA_OFFICE]: employee.office,
-                    [ListItemColumnNames.MA_EMAIL]: employee.email,
+                    [ListItemColumnNames.MA_EMAIL]: `<a href="mailto: ${employee.email}">${employee.email}</a>`,
                     [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
-                    [ListItemColumnNames.VALIDATION_DATE]: new Date().toLocaleDateString(),
+                    [ListItemColumnNames.VALIDATION_DATE]: this.dateToEnglishFormat(new Date()),
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
-                        onePager?.lastUpdateByEmployee.toLocaleDateString() || null,
+                        this.dateToEnglishFormat(onePager?.lastUpdateByEmployee) || null,
                 },
             });
         } else {
@@ -182,14 +185,13 @@ export class SharepointListValidationReporter implements ValidationReporter {
                 .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
                 .patch({
                     [ListItemColumnNames.VALIDATION_ERRORS]: errors.join('\n'),
-                    [ListItemColumnNames.URL]: onePagerUrl,
+                    [ListItemColumnNames.URL]: `<a href="${onePagerUrl}">Link zum OnePager</a>`,
                     [ListItemColumnNames.MA_NAME]: employee.name,
-                    [ListItemColumnNames.MA_OFFICE]: employee.office,
-                    [ListItemColumnNames.MA_EMAIL]: employee.email,
+                    [ListItemColumnNames.MA_EMAIL]: `<a href="mailto: ${employee.email}">${employee.email}</a>`,
                     [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
-                    [ListItemColumnNames.VALIDATION_DATE]: new Date().toLocaleDateString(),
+                    [ListItemColumnNames.VALIDATION_DATE]: this.dateToEnglishFormat(new Date()),
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
-                        onePager?.lastUpdateByEmployee.toLocaleDateString() || null,
+                        this.dateToEnglishFormat(onePager?.lastUpdateByEmployee) || null,
                 });
         }
     }
@@ -236,7 +238,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
         const { value: entries } = (await this.client
             .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
             .headers(FORCE_REFRESH)
-            .filter(`fields/MitarbeiterID eq '${id}'`)
+            .filter(`fields/${ListItemColumnNames.MA_ID} eq '${id}'`)
             .get()) as { value?: ListItem[] };
         const [entry] = entries || [];
         return entry?.id;
