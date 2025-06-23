@@ -1,5 +1,5 @@
 import {
-    EmployeeData,
+    Employee,
     EmployeeID,
     EmployeeRepository,
     isEmployeeId,
@@ -32,7 +32,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         this.logger = logger;
     }
 
-    async getDataForEmployee(employeeId: EmployeeID): Promise<EmployeeData | undefined> {
+    async getEmployee(employeeId: EmployeeID): Promise<Employee | undefined> {
         if (!(await this.getAllEmployees()).includes(employeeId)) {
             return undefined;
         }

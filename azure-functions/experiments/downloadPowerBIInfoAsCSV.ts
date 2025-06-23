@@ -1,6 +1,6 @@
 import { loadConfigFromEnv } from "../src/functions/configuration/AppConfiguration";
 import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/PowerBIRepository";
-import { EmployeeData, EmployeeRepository } from "../src/functions/validator/DomainTypes";
+import { Employee, EmployeeRepository } from "../src/functions/validator/DomainTypes";
 import { stringify } from "csv-stringify";
 import * as fs from 'node:fs';
 
@@ -16,12 +16,12 @@ import * as fs from 'node:fs';
     const employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
 
     if (employeeRepo instanceof PowerBIRepository) {
-        const employeeData: EmployeeData[] = await employeeRepo.getAllEmployeeData();
+        await employeeRepo.getAllEmployeeData();
+        const employeeData: Employee[] = await employeeRepo.getAllEmployeeData();
         stringify(employeeData, {
             delimiter: ";",
             header: true
         }, function (err, output) {
-            console.log(output);
             fs.writeFileSync('./experiments/employeeData.csv', output, 'utf8');
         });
     }

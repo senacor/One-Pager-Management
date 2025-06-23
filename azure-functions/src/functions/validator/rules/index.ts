@@ -1,7 +1,7 @@
 import { Logger, ValidationRule } from '../DomainTypes';
-import { hasPhoto, hasQualityPhoto } from './photo';
 import { usesCurrentTemplate } from './template';
 import config from '../../../../app_config/config.json';
+import { checkImages } from './photo';
 
 export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
 
@@ -34,8 +34,7 @@ export function allRules(log: Logger = console): ValidationRule {
         lastModifiedRule,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
-        hasPhoto(log),
-        //hasQualityPhoto(log) uses to much memory, so we disable it for now
+        checkImages(log)
     );
 }
 

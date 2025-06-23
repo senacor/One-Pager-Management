@@ -8,7 +8,7 @@ import {
 import { LocalFileValidationReporter } from '../src/functions/validator/adapter/localfile/LocalFileValidationReporter';
 import { InMemoryValidationReporter } from '../src/functions/validator/adapter/memory/InMemoryValidationReporter';
 import { SharepointListValidationReporter } from '../src/functions/validator/adapter/sharepoint/SharepointListValidationReporter';
-import { EmployeeData, EmployeeID, OnePager, ValidationReporter } from '../src/functions/validator/DomainTypes';
+import { Employee, EmployeeID, OnePager, ValidationReporter } from '../src/functions/validator/DomainTypes';
 
 type ReporterFactory = () => Promise<ValidationReporter>;
 
@@ -18,7 +18,7 @@ const someOnePager: OnePager = {
     webLocation: new URL('https://example.com/onepager/web'),
 };
 
-const someEmployeeData: EmployeeData = {
+const someEmployeeData: Employee = {
     id: '111' as EmployeeID,
     name: 'Mustermann, Max',
     email: 'max.mustermann@senacor.com', //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln

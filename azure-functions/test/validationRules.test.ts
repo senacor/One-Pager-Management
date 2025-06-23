@@ -2,9 +2,9 @@ import { EmployeeID, LoadedOnePager, ValidationError } from '../src/functions/va
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
 import { usesCurrentTemplate } from '../src/functions/validator/rules/template';
-import { hasLowQuality, hasPhoto } from '../src/functions/validator/rules/photo';
 import { Pptx } from '../src/functions/validator/rules/Pptx';
 import { readFile } from 'node:fs/promises';
+import { checkImages, QUALITY_THRESHOLD, scoreQuality } from '../src/functions/validator/rules/photo';
 
 let _exampleOnePager: Promise<LoadedOnePager>;
 function exampleOnePager(): Promise<LoadedOnePager> {
@@ -122,7 +122,7 @@ describe('validationRules', () => {
                 ),
             };
 
-            const errors = hasPhoto()(onePagerWithoutPhoto, employeeData);
+            const errors = checkImages()(onePagerWithoutPhoto, employeeData);
 
             await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
         });
@@ -130,7 +130,7 @@ describe('validationRules', () => {
         it('should report no error if photo is found', async () => {
             const onePagerWithPhoto = await exampleOnePager();
 
-            const errors = hasPhoto()(onePagerWithPhoto, employeeData);
+            const errors = checkImages()(onePagerWithPhoto, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
@@ -143,9 +143,9 @@ describe('validationRules', () => {
                 data: () => promises.readFile('test/resources/photos/bad.jpg'),
             };
 
-            const isLow = hasLowQuality(badPhoto);
+            const isLow = scoreQuality(badPhoto);
 
-            await expect(isLow).resolves.toEqual(true);
+            await expect(isLow).resolves.toBeLessThan(QUALITY_THRESHOLD);
         });
 
         it('should report no error if photo is good', async () => {
@@ -154,9 +154,9 @@ describe('validationRules', () => {
                 data: () => promises.readFile('test/resources/photos/good.jpg'),
             };
 
-            const isLow = hasLowQuality(goodPhoto);
+            const isLow = scoreQuality(goodPhoto);
 
-            await expect(isLow).resolves.toEqual(false);
+            await expect(isLow).resolves.toBeGreaterThan(QUALITY_THRESHOLD);
         });
     });
 

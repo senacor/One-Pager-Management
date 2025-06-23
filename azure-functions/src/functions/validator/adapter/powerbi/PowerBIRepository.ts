@@ -1,6 +1,6 @@
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
 import {
-    EmployeeData,
+    Employee,
     EmployeeID,
     EmployeeRepository,
     Logger,
@@ -37,12 +37,19 @@ type PowerBIOutput = {
 };
 
 const client = new HardenedFetch({
+    maxConcurrency: 1,
     // Retry options
     maxRetries: 3,
     doNotRetry: [400, 401, 403, 404, 422, 451],
     // Rate limit options
     rateLimitHeader: 'retry-after',
     resetFormat: 'seconds',
+});
+
+
+const cache = new NodeCache({
+    stdTTL: 10 * 60, // 10 minutes
+    useClones: false,
 });
 
 /**
@@ -52,11 +59,6 @@ export class PowerBIRepository implements EmployeeRepository {
     private readonly authProvider: AuthenticationProvider;
     private readonly logger: Logger;
     private readonly datasetID: string;
-
-    private readonly cache = new NodeCache({
-        stdTTL: 10 * 60, // 10 minutes
-        useClones: false,
-    });
 
     /**
      * This constructor is private to enforce the use of the static `getInstance` method for instantiation.
@@ -84,23 +86,31 @@ export class PowerBIRepository implements EmployeeRepository {
         return data.map(e => e.id);
     }
 
-    async getDataForEmployee(id: EmployeeID): Promise<EmployeeData | undefined> {
+    async getEmployee(id: EmployeeID): Promise<Employee | undefined> {
         const data = await this.getAllEmployeeData();
         return data.find(e => e.id === id);
     }
 
-    async getAllEmployeeData(): Promise<EmployeeData[]> {
-        return await this.fetchDataByQuery(`EVALUATE VALUES('current employee')`);
+    async getAllEmployeeData(): Promise<Employee[]> {
+        const prefix = "Mitarbeiter Professional Services";
+        const query = `
+EVALUATE
+FILTER(
+    'current employee',
+    LEFT('current employee'[resource_type_current], LEN("${prefix}")) = "${prefix}"
+)
+`;
+        return await this.fetchDataByQuery(query);
     }
 
-    private async fetchDataByQuery(query: string): Promise<EmployeeData[]> {
-        const result = this.cache.get<EmployeeData[]>(query);
+    private async fetchDataByQuery(query: string): Promise<Employee[]> {
+        const result = cache.get<Employee[]>(query);
         if (result) {
             this.logger.log(`Cache hit for query: ${query}`);
             return result;
         }
 
-        this.logger.log(`Cache miss for query: ${query}`);
+        this.logger.log(`Cache miss for query: ${query}.`);
 
         const token = await this.authProvider.getAccessToken();
         const resHandle = await client.fetch(
@@ -129,16 +139,18 @@ export class PowerBIRepository implements EmployeeRepository {
             this.logger.error('Fetching data from Power BI failed!', resHandle);
             throw new Error('Fetching data from Power BI failed!');
         }
+
         const output: PowerBIOutput = await resHandle.json();
         const data = output.results[0].tables[0].rows.map(convertPowerBIRowToEmployeeData);
 
-        this.cache.set(query, data);
+        this.logger.log(`Fetched ${data.length} employee records from Power BI. storing in cache.`);
+        cache.set(query, data);
         return data;
     }
 }
 
 function convertPowerBIRowToEmployeeData(data: PowerBITableRow) {
-    const employeeData: EmployeeData = {
+    const employeeData: Employee = {
         id: data['current employee[fis_id_first]'],
         name: data['current employee[name]'],
         email: data['current employee[email]'],

@@ -11,8 +11,8 @@ import { franc } from 'franc-min';
 let tfInitialized = false;
 async function initializeTensorFlow() {
     if (!tfInitialized) {
-        await tf.ready();
         await tf.setBackend('wasm');
+        await tf.ready();
         tfInitialized = true;
     }
 }
@@ -42,16 +42,14 @@ const detector = async () => {
     return await _detector;
 };
 
+// we need to scale down the image to avoid OOM errors
+const FACE_DETECTION_IMG_SIZE = 640;
+
 export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face[]> {
     await initializeTensorFlow();
-
-    const img = await imageToTensor3D(imageData);
-
-    try {
-        return await (await detector()).estimateFaces(img);
-    } finally {
-        img.dispose();
-    }
+    const small = sharp(imageData).resize(FACE_DETECTION_IMG_SIZE, FACE_DETECTION_IMG_SIZE, { fit: 'outside', kernel: 'lanczos3' });
+    const img = await imageToTensor3D(small);
+    return await (await detector()).estimateFaces(img);
 }
 
 export interface PhotoLabels {
@@ -64,9 +62,8 @@ export interface PhotoLabels {
 
 export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
     await initializeTensorFlow();
-    const input = (await imageToTensor3D(imageData, intelligentCenterCropAndResize))
-        .toFloat()
-        .div(tf.scalar(255.0));
+    const img = await intelligentCenterCropAndResize(sharp(imageData));
+    const input = (await imageToTensor3D(img)).div(tf.scalar(255.0));
     const batched = input.expandDims(0); // Add batch dimension: [1, height, width, 3]
 
     try {
@@ -100,16 +97,9 @@ export async function detectLanguage(text: string): Promise<Local | undefined> {
     return LOCAL_MAPPINGS[francResp.toLocaleUpperCase()];
 }
 
-async function imageToTensor3D(
-    imageData: Buffer,
-    transform: (img: sharp.Sharp) => Promise<sharp.Sharp> = async i => i
-): Promise<tf.Tensor3D> {
-    const img = await transform(sharp(imageData));
+async function imageToTensor3D(img: sharp.Sharp): Promise<tf.Tensor3D> {
     const { data, info } = await img.removeAlpha().raw().toBuffer({ resolveWithObject: true });
-
-    // Convert Buffer to number[] using readUInt8
-    const arr: number[] = Array.from({ length: data.length }, (_, i) => data.readUInt8(i));
-    return tf.tensor3d(arr, [info.height, info.width, info.channels], 'int32');
+    return tf.tensor3d(new Uint8Array(data), [info.height, info.width, info.channels], 'float32');
 }
 
 async function intelligentCenterCropAndResize(

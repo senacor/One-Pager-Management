@@ -42,6 +42,7 @@ export type ValidationError =
     | 'MISSING_DE_VERSION' // employee has no one-pager in German
     | 'MISSING_EN_VERSION' // employee has no one-pager in English
     | 'MISSING_PHOTO' // one-pager has no photo of the employee
+    | 'OTHER_IMAGES' // one-pager containes other images that do not belong
     | 'LOW_QUALITY_PHOTO' // one-pager has a photo of the employee, but it is of low quality
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
@@ -53,7 +54,7 @@ export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
 
 export type ValidationRule = (
     onePager: LoadedOnePager,
-    employeeData: EmployeeData
+    employeeData: Employee
 ) => Promise<ValidationError[]>;
 
 export interface OnePagerRepository {
@@ -74,7 +75,7 @@ export interface EmployeeRepository {
      */
     getAllEmployees(): Promise<EmployeeID[]>;
 
-    getDataForEmployee(id: EmployeeID): Promise<EmployeeData | undefined>;
+    getEmployee(id: EmployeeID): Promise<Employee | undefined>;
 }
 
 /**
@@ -98,7 +99,7 @@ export interface ValidationReporter {
         id: EmployeeID,
         onePager: OnePager | undefined,
         errors: ValidationError[],
-        employee: EmployeeData
+        employee: Employee
     ): Promise<void>;
 
     /**
@@ -163,7 +164,7 @@ export type MSScope =
     | 'https://graph.microsoft.com/.default'
     | 'https://analysis.windows.net/powerbi/api/.default';
 
-export type EmployeeData = {
+export type Employee = {
     id: EmployeeID;
     name: string;
     email: string; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
