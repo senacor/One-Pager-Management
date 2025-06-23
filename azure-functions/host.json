@@ -18,7 +18,7 @@
                 "type": "AzureStorage"
             },
             "queues": {
-                "batchSize": 1
+                "batchSize": 20
             }
         }
     }

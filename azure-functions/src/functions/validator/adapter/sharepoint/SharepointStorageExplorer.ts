@@ -142,16 +142,17 @@ export class SharepointStorageExplorer implements StorageExplorer {
     }
 }
 
-const fetchUrl = (url: string, logger: Logger) => async () => {
-    const client = new HardenedFetch({
-        // Retry options
-        maxRetries: 3,
-        doNotRetry: [400, 401, 403, 404, 422, 451],
-        // Rate limit options
-        rateLimitHeader: 'retry-after',
-        resetFormat: 'seconds',
-    });
+const client = new HardenedFetch({
+    maxConcurrency: 1,
+    // Retry options
+    maxRetries: 3,
+    doNotRetry: [400, 401, 403, 404, 422, 451],
+    // Rate limit options
+    rateLimitHeader: 'retry-after',
+    resetFormat: 'seconds',
+});
 
+const fetchUrl = (url: string, logger: Logger) => async () => {
     logger.log(`Fetching file from URL: ${url}`);
     const response = await client.fetch(url);
     if (response.status !== 200) {

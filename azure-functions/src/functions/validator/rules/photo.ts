@@ -1,58 +1,42 @@
-import { Logger, ValidationRule } from '../DomainTypes';
+import { ValidationError, ValidationRule } from '../DomainTypes';
 import { detectFaces, labelImage, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
-export function hasPhoto(logger: Logger = console): ValidationRule {
-    return async onePager => {
-        const usedImages = await onePager.pptx.getUsedImages();
-
-        const withFaces = (
-            await Promise.all(
-                usedImages.map(async img => {
-                    try {
-                        const faces = await detectFaces(await img.data());
-
-                        if (faces.length > 0) {
-                            return img;
-                        }
-                    } catch (err) {
-                        logger.error(`Error processing image ${img.path}:`, err);
-                    }
-                })
-            )
-        ).filter(Boolean);
-
-        return withFaces.length === 0 ? ['MISSING_PHOTO'] : [];
-    };
-}
-
 export const QUALITY_THRESHOLD = 0.2;
 
-export function hasQualityPhoto(logger: Logger = console): ValidationRule {
-    return async onePager => {
-        const usedImages = await onePager.pptx.getUsedImages();
+export const checkImages: ValidationRule = async onePager => {
+    const usedImages = await onePager.pptx.getUsedImages();
 
-        const scored = await Promise.all(
-            usedImages.map(async img => ((await hasLowQuality(img)) ? [img] : []))
-        );
+    const withFaces = (
+        await Promise.all(
+            usedImages.map(async img => {
+                const faces = await detectFaces(await img.data());
 
-        const lowQualityPhotos = scored.flat();
-        if (lowQualityPhotos.length === 0) {
-            logger.log(`One-pager ${onePager.webLocation.toString()} has no low quality photos.`);
-            return [];
-        }
+                return faces.length > 0 ? [img] : [];
+            })
+        )
+    ).flat();
 
-        logger.warn(
-            `One-pager ${onePager.webLocation.toString()} has ${lowQualityPhotos.length} low quality photos!`
-        );
-        return ['LOW_QUALITY_PHOTO'];
-    };
-}
+    const errors: ValidationError[] = [];
 
-export async function hasLowQuality(img: PptxImage): Promise<boolean> {
+    if (withFaces.length !== usedImages.length) {
+        errors.push('OTHER_IMAGES');
+    }
+    if (withFaces.length === 0) {
+        errors.push('MISSING_PHOTO');
+    }
+
+    const scored = await Promise.all(withFaces.map(scoreQuality));
+    if (scored.some(score => score < QUALITY_THRESHOLD)) {
+        errors.push('LOW_QUALITY_PHOTO');
+    }
+
+    return errors;
+};
+
+export async function scoreQuality(img: PptxImage): Promise<number> {
     const labels = await labelImage(await img.data());
-    const score = scorePhotoLabels(labels);
-    return score < QUALITY_THRESHOLD;
+    return scorePhotoLabels(labels);
 }
 
 function scorePhotoLabels(labels: PhotoLabels): number {

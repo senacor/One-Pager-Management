@@ -40,7 +40,7 @@ export class EMailNotification {
     }
 
     async notifyEmployee(employeeId: EmployeeID): Promise<void> {
-        const employee = await this.employeeRepo.getDataForEmployee(employeeId);
+        const employee = await this.employeeRepo.getEmployee(employeeId);
         if (!employee) {
             this.logger.error(`Employee ${employeeId} does not exist.`);
             return;

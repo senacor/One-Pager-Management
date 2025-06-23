@@ -2,7 +2,7 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
 import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
 import {
-    EmployeeData,
+    Employee,
     EmployeeID,
     Logger,
     OnePager,
@@ -151,7 +151,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
         id: EmployeeID,
         onePager: OnePager | undefined,
         errors: ValidationError[],
-        employee: EmployeeData
+        employee: Employee
     ): Promise<void> {
         const itemId = await this.getItemIdOfEmployee(id);
 

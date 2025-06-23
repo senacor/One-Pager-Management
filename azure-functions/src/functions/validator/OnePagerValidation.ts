@@ -50,7 +50,7 @@ export class OnePagerValidation {
      * @param id The employee ID to validate one-pagers for.
      */
     async validateOnePagersOfEmployee(id: EmployeeID): Promise<void> {
-        const employeeData = await this.employees.getDataForEmployee(id);
+        const employeeData = await this.employees.getEmployee(id);
         if (!employeeData) {
             this.logger.error(`Employee ${id} does not exist.`);
             return;

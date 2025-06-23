@@ -27,26 +27,17 @@ export async function ValidateAllHttpTrigger(
     try {
         context.log(`Http function processed request for url "${request.url}"!`);
 
-        const config = loadConfigFromEnv(context);
-
-        const onePagers = new FolderBasedOnePagers(
-            await config.explorer(),
-            context
-        );
-
-        let employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
-        if (!employeeRepo) {
-            employeeRepo = onePagers;
-        }
-
-        const employees: EmployeeID[] = await employeeRepo.getAllEmployees();
+        const config = await loadConfigFromEnv(context);
+        const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
+        const employeeRepository = config.employeeRepo() || onePagers;
+        const ids = await employeeRepository.getAllEmployees();
 
         context.extraOutputs.set(
             queueOutput,
-            employees.map(id => ({ employeeId: id }))
+            ids.map(id => ({ employeeId: id }))
         );
 
-        return { body: `Triggered validation for ${employees.length} employees.` };
+        return { body: `Triggered validation for ${ids.length} employees.` };
     } catch (error) {
         context.error(`Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };
