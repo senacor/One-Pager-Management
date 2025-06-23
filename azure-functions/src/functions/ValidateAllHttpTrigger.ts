@@ -3,6 +3,7 @@ import { onepagerValidationRequests } from './FileChangeQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { printError } from './ErrorHandling';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
+import { EmployeeID, EmployeeRepository } from './validator/DomainTypes';
 
 /**
  * Azure Queue used to store One Pager validation requests.
@@ -26,18 +27,26 @@ export async function ValidateAllHttpTrigger(
     try {
         context.log(`Http function processed request for url "${request.url}"!`);
 
+        const config = loadConfigFromEnv(context);
+
         const onePagers = new FolderBasedOnePagers(
-            await loadConfigFromEnv(context).explorer(),
+            await config.explorer(),
             context
         );
-        const ids = await onePagers.getAllEmployees();
+
+        let employeeRepo: EmployeeRepository | undefined = config.employeeRepo();
+        if (!employeeRepo) {
+            employeeRepo = onePagers;
+        }
+
+        const employees: EmployeeID[] = await employeeRepo.getAllEmployees();
 
         context.extraOutputs.set(
             queueOutput,
-            ids.map(id => ({ employeeId: id }))
+            employees.map(id => ({ employeeId: id }))
         );
 
-        return { body: `Triggered validation for ${ids.length} employees.` };
+        return { body: `Triggered validation for ${employees.length} employees.` };
     } catch (error) {
         context.error(`Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };

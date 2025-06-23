@@ -37,10 +37,15 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
             return undefined;
         }
 
+        const folders = await this.explorer.listFolders();
+        const folderOfEmployee = folders.filter((folderName: string) => folderName.endsWith(`_${employeeId}`));
+
+
+
         // TODO: Determine at least some data from one pager names for testing purposes
         return {
             id: employeeId,
-            name: '',
+            name: folderOfEmployee.length > 0 ? folderOfEmployee[0] : '',
             email: '',
             entry_date: '',
             office: '',
