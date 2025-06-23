@@ -1,45 +1,38 @@
-import { Logger, ValidationError, ValidationRule } from '../DomainTypes';
+import { ValidationError, ValidationRule } from '../DomainTypes';
 import { detectFaces, labelImage, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
 export const QUALITY_THRESHOLD = 0.2;
 
-export function checkImages(logger: Logger = console): ValidationRule {
-    return async onePager => {
-        const usedImages = await onePager.pptx.getUsedImages();
+export const checkImages: ValidationRule = async onePager => {
+    const usedImages = await onePager.pptx.getUsedImages();
 
-        const withFaces = (
-            await Promise.all(
-                usedImages.map(async img => {
-                    try {
-                        const faces = await detectFaces(await img.data());
+    const withFaces = (
+        await Promise.all(
+            usedImages.map(async img => {
+                const faces = await detectFaces(await img.data());
 
-                        return faces.length > 0 ? [img] : [];
-                    } catch (err) {
-                        logger.error(`Error processing image ${img.path}:`, err);
-                        return [];
-                    }
-                })
-            )
-        ).flat();
+                return faces.length > 0 ? [img] : [];
+            })
+        )
+    ).flat();
 
-        const errors: ValidationError[] = [];
+    const errors: ValidationError[] = [];
 
-        if (withFaces.length !== usedImages.length) {
-            errors.push('OTHER_IMAGES');
-        }
-        if (withFaces.length === 0) {
-            errors.push('MISSING_PHOTO');
-        }
+    if (withFaces.length !== usedImages.length) {
+        errors.push('OTHER_IMAGES');
+    }
+    if (withFaces.length === 0) {
+        errors.push('MISSING_PHOTO');
+    }
 
-        const scored = await Promise.all(withFaces.map(scoreQuality));
-        if (scored.some(score => score < QUALITY_THRESHOLD)) {
-            errors.push('LOW_QUALITY_PHOTO');
-        }
+    const scored = await Promise.all(withFaces.map(scoreQuality));
+    if (scored.some(score => score < QUALITY_THRESHOLD)) {
+        errors.push('LOW_QUALITY_PHOTO');
+    }
 
-        return errors;
-    };
-}
+    return errors;
+};
 
 export async function scoreQuality(img: PptxImage): Promise<number> {
     const labels = await labelImage(await img.data());

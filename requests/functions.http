@@ -24,8 +24,7 @@ POST {{host}}/api/validate/2391
 x-functions-key: {{functions_key}}
 
 ###
-
-POST {{host}}/api/validate/9412
+POST {{host}}/api/validate/7526
 x-functions-key: {{functions_key}}
 
 ###

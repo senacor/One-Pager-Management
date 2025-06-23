@@ -52,7 +52,11 @@ export async function detectFaces(imageData: Buffer): Promise<faceDetection.Face
         kernel: 'lanczos3',
     });
     const img = await imageToTensor3D(small);
-    return await (await detector()).estimateFaces(img);
+    try {
+        return await (await detector()).estimateFaces(img);
+    } finally {
+        img.dispose();
+    }
 }
 
 export interface PhotoLabels {

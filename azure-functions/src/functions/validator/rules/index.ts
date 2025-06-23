@@ -34,7 +34,7 @@ export function allRules(log: Logger = console): ValidationRule {
         lastModifiedRule,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
-        checkImages(log)
+        checkImages
     );
 }
 
