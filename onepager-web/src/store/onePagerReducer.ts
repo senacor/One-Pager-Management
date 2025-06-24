@@ -1,11 +1,12 @@
 import type { OnePagerData, OnePagerAction, BasicInfo } from '../types/onepager';
+import { createDefaultPhotoData } from '../types/onepager';
 
 // Create initial state
 export const createInitialState = (): OnePagerData => ({
   basicInfo: {
     fullName: 'Lisa Musterfrau',
     position: 'Senior Developer',
-    profilePhoto: '/public/lisa_musterfrau.png',
+    profilePhoto: createDefaultPhotoData('./lisa_musterfrau.png'),
   },
   focusAreas: [
     "Über 12 Jahre Erfahrung in der Architektur-beratung",

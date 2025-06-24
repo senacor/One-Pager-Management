@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.10",
+    "@types/croppie": "^2.6.4",
+    "croppie": "^2.6.5",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.2.0",
     "react": "^19.1.0",

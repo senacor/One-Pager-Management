@@ -2,8 +2,10 @@
   "steps": {
     "basicInfo": {
       "title": "Mitarbeiterinformationen",
-      "fullNamePlaceholder": "Vollständiger Name",
-      "positionPlaceholder": "Position",
+      "fullNameLabel": "Vollständiger Name",
+      "fullNamePlaceholder": "Geben Sie Ihren vollständigen Namen ein",
+      "positionLabel": "Position",
+      "positionPlaceholder": "Wählen Sie Ihre Position",
       "profilePhotoLabel": "Profilfoto"
     },
     "focus": {
@@ -27,5 +29,29 @@
     "addEntry": "Eintrag hinzufügen",
     "remove": "Entfernen",
     "maxItemsReached": "Maximum von {{max}} Einträgen erreicht"
+  },
+  "fileUpload": {
+    "defaultPhotoName": "Standard-Profilfoto",
+    "croppedPhoto": "Zugeschnittenes Foto",
+    "uploadedPhoto": "Hochgeladenes Foto",
+    "changePhoto": "Foto ändern",
+    "editCrop": "Zuschnitt bearbeiten",
+    "removePhoto": "Foto entfernen",
+    "clickToUpload": "Klicken zum Hochladen",
+    "dragAndDrop": "oder per Drag & Drop",
+    "fileTypes": "PNG, JPG, GIF bis zu 10MB",
+    "loading": "Lädt...",
+    "failedToLoad": "Fehler beim Laden des Bildes",
+    "invalidFileType": "Bitte wählen Sie eine gültige Bilddatei (JPG, PNG, GIF oder WebP)",
+    "fileTooLarge": "Dateigröße muss kleiner als 10MB sein"
+  },
+  "imageCropper": {
+    "title": "Profilfoto zuschneiden",
+    "description": "Ziehen Sie zum Repositionieren und verwenden Sie den Schieberegler zum Zoomen. Das Bild wird quadratisch zugeschnitten.",
+    "rotateLeft": "Nach links drehen",
+    "rotateRight": "Nach rechts drehen",
+    "cancel": "Abbrechen",
+    "applyCrop": "Zuschnitt anwenden",
+    "cropping": "Wird zugeschnitten..."
   }
 }

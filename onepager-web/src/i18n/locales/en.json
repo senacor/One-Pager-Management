@@ -2,8 +2,10 @@
   "steps": {
     "basicInfo": {
       "title": "Employee Information",
-      "fullNamePlaceholder": "Full Name",
-      "positionPlaceholder": "Position",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "positionLabel": "Position",
+      "positionPlaceholder": "Select your position",
       "profilePhotoLabel": "Profile Photo"
     },
     "focus": {
@@ -27,5 +29,29 @@
     "addEntry": "Add Entry",
     "remove": "Remove",
     "maxItemsReached": "Maximum of {{max}} entries reached"
+  },
+  "fileUpload": {
+    "defaultPhotoName": "Default profile photo",
+    "croppedPhoto": "Cropped photo",
+    "uploadedPhoto": "Uploaded photo",
+    "changePhoto": "Change photo",
+    "editCrop": "Edit crop",
+    "removePhoto": "Remove photo",
+    "clickToUpload": "Click to upload",
+    "dragAndDrop": "or drag and drop",
+    "fileTypes": "PNG, JPG, GIF up to 10MB",
+    "loading": "Loading...",
+    "failedToLoad": "Failed to load image",
+    "invalidFileType": "Please select a valid image file (JPG, PNG, GIF, or WebP)",
+    "fileTooLarge": "File size must be less than 10MB"
+  },
+  "imageCropper": {
+    "title": "Crop your profile photo",
+    "description": "Drag to reposition and use the slider to zoom. The image will be cropped to a square.",
+    "rotateLeft": "Rotate left",
+    "rotateRight": "Rotate right",
+    "cancel": "Cancel",
+    "applyCrop": "Apply Crop",
+    "cropping": "Cropping..."
   }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Step } from './Step';
+import { FileUpload } from './FileUpload';
 import { useBasicInfo } from '../hooks/useOnePager';
 import { Position, type PositionType } from '../types/onepager';
 
@@ -76,22 +77,14 @@ export const StepBasicInfo: React.FC<StepBasicInfoProps> = ({ onNext }) => {
           ))}
         </div>
         
-        <div className="mt-8">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t('steps.basicInfo.profilePhotoLabel')}
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                updateBasicInfo({ profilePhoto: file });
-              }
-            }}
-            className="block w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer transition-colors duration-300 bg-white hover:border-brand-blue focus:outline-none focus:border-brand-blue"
-          />
-        </div>
+        <FileUpload
+          value={basicInfo.profilePhoto}
+          onChange={(photoData) => updateBasicInfo({ profilePhoto: photoData || undefined })}
+          label={t('steps.basicInfo.profilePhotoLabel')}
+          showPreview
+          enableCropping
+          error={errors.filter(e => e.includes('profilePhoto')).join(', ') || undefined}
+        />
         
         {/* Show overall validation status */}
         {!isValid && errors.length > 0 && (

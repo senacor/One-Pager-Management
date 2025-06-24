@@ -6,3 +6,6 @@ export { StepExperience } from './StepExperience';
 export { StepProjects } from './StepProjects';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { DebugPanel } from './DebugPanel';
+export { TextInput } from './TextInput';
+export { FileUpload } from './FileUpload';
+export { ImageCropper } from './ImageCropper';

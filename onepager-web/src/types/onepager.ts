@@ -20,10 +20,34 @@ export const Position = {
 
 export type PositionType = typeof Position[keyof typeof Position];
 
+// Photo with crop metadata
+export interface PhotoData {
+  originalFile?: File | string;
+  croppedImageUrl?: string;
+  cropMetadata?: {
+    x: number;      // Top-left X coordinate in original image pixels
+    y: number;      // Top-left Y coordinate in original image pixels
+    width: number;  // Crop width in original image pixels
+    height: number; // Crop height in original image pixels
+  };
+}
+
+// Helper function to create PhotoData from default image
+export const createDefaultPhotoData = (imagePath: string): PhotoData => ({
+  originalFile: imagePath,
+  croppedImageUrl: imagePath,
+  cropMetadata: {
+    x: 0,
+    y: 0,
+    width: 300,
+    height: 300
+  }
+});
+
 export interface BasicInfo {
   fullName: string;
   position: PositionType | '';
-  profilePhoto?: File | string;
+  profilePhoto?: PhotoData;
 }
 
 export interface StepCompletionStatus {

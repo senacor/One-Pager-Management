@@ -29,3 +29,12 @@ plugins:
 
 exclude:
   - app/
+  - vendor/
+  - .bundle/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - .git/
+  - .github/
+  - .gitignore
+  - README.md

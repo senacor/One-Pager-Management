@@ -100,7 +100,7 @@ export const ProgressNav: React.FC<ProgressNavProps> = ({ currentStep, onStepCli
       {/* Company logo at the bottom */}
       <div className="flex justify-center pb-2">
         <img 
-          src="/senacor-logo.svg" 
+          src="./senacor-logo.svg" 
           alt="Senacor Technologies" 
           className="h-8 w-auto transition-opacity duration-300 filter invert brightness-0 invert"
         />
