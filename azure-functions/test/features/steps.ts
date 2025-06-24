@@ -18,6 +18,7 @@ import { OnePagerExemplars } from '../OnePagerExemplars';
 import { MemoryFileSystem } from '../../src/functions/validator/adapter/memory/MemoryFileSystem';
 import { FileSystemStorageExplorer } from '../../src/functions/validator/adapter/FileSystemStorageExplorer';
 import { allRules } from '../../src/functions/validator/rules';
+import * as system from 'os';
 
 type OnePagerExemplar = {
     Name: string;
@@ -46,7 +47,7 @@ type DataTable<T> = {
 
 Before(async function (this: Context) {
     this.reporter = new InMemoryValidationReporter();
-    const explorer = new FileSystemStorageExplorer('/', new MemoryFileSystem());
+    const explorer = new FileSystemStorageExplorer(system.type().startsWith('Windows') ? 'C:/' : '/', new MemoryFileSystem());
     this.repo = new FolderBasedOnePagers(explorer);
     this.exemplars = new OnePagerExemplars(explorer);
     this.service = new OnePagerValidation(this.repo, this.repo, this.reporter, allRules());
