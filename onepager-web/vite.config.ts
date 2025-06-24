@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: '/One-Pager-Management/app/', // GitHub Pages base path for the app
   build: {
-    outDir: '../docs/app', // Build directly into docs/app folder
+    outDir: '../docs/_site/app', // Build directly into docs/app folder
     emptyOutDir: true,
   },
 })

@@ -3,13 +3,32 @@ import type { OnePagerData, OnePagerAction, BasicInfo } from '../types/onepager'
 // Create initial state
 export const createInitialState = (): OnePagerData => ({
   basicInfo: {
-    fullName: '',
-    position: '',
-    profilePhoto: undefined,
+    fullName: 'Lisa Musterfrau',
+    position: 'Senior Developer',
+    profilePhoto: '/public/lisa_musterfrau.png',
   },
-  focusAreas: [],
-  experience: [],
-  projects: [],
+  focusAreas: [
+    "Über 12 Jahre Erfahrung in der Architektur-beratung",
+    "und im Entwicklungsmanagement",
+    "Full-Stack Applikationsentwicklung",
+    "Agile Softwareentwicklung mit Scrum",
+    "Java, Java Script, Java EE, React, Redux, Spring, Angular JS",
+    "Branchenfokus: Banking & Versicherung"
+  ],
+  experience: [
+    "Senior Developer, Senacor Technologies AG (seit 2017)",
+    "Systems Engineer, MusterTec AG (2015-2017)",
+    "Software Developer, MySoftware AG (2012-2015)",
+    "M.Sc. in Informatik, RWTH Aachen (2012)",
+    "B.Sc. in Informatik, TU Berlin (2010)"
+  ],
+  projects: [
+    "Deutsche Retailbank: Neuimplementierung des bestandsführenden Systems auf Basis von Angular JS (Developer)",
+    "Deutsche Versicherung: Entwicklung im Java EE Frontend und Backend einer Konzerninternen Plattform für die In-House-Beratung (Developer)",
+    "Deutsche Versicherung: Einführung von Microservices für ein gemeinsames Kundenportal (Developer). Anforderungserhebung, Erweiterung bestehender Funktionalität sowie Umsetzung und Qualitätssicherung",
+    "Europaweit führende Universalbank: Erweiterung und Migration eines Fillialfrontends (Developer). Anforderungserhebung, Erweiterung bestehender Funktionalität sowie Umsetzung neuer Anforderungen, Qualitätssicherung",
+    "Internationaler Dienstleister für Informations- und Kommunikationstechnologie: Modellierung interner Geschäftsprozesse (Systems Engineer)"
+  ],
   metadata: {
     lastUpdated: new Date(),
     version: '1.0.0',
@@ -95,7 +114,7 @@ export const onePagerReducer = (
       } else {
         delete newErrors[field];
       }
-      
+
       return {
         ...newState,
         validation: {
