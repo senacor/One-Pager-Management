@@ -35,11 +35,11 @@ export function usesCurrentTemplate(logger: Logger = console): ValidationRule {
         );
 
         logger.warn(`
-        Content uses themes not part of the template.
-        Content themes:  ${JSON.stringify(contentThemes)}
-        Template themes: ${JSON.stringify(templateThemes)}
-        ${contentThemesWithSameDigest.length} themes with same digest and ${contentThemesWithSameName.length} themes with same name found.
-    `);
+            Content uses themes not part of the template.
+            Content themes:  ${JSON.stringify(contentThemes)}
+            Template themes: ${JSON.stringify(templateThemes)}
+            ${contentThemesWithSameDigest.length} themes with same digest and ${contentThemesWithSameName.length} themes with same name found.
+        `);
 
         // if we detect at least one theme of the template we consider the current one-pager based on it
         const error: ValidationError[] = [

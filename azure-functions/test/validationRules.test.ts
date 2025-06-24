@@ -130,7 +130,7 @@ describe('validationRules', () => {
                 ),
             };
 
-            const errors = checkImages()(onePagerWithoutPhoto, employeeData);
+            const errors = checkImages(onePagerWithoutPhoto, employeeData);
 
             await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
         });
@@ -138,7 +138,7 @@ describe('validationRules', () => {
         it('should report no error if photo is found', async () => {
             const onePagerWithPhoto = await exampleOnePager();
 
-            const errors = checkImages()(onePagerWithPhoto, employeeData);
+            const errors = checkImages(onePagerWithPhoto, employeeData);
 
             await expect(errors).resolves.toEqual([]);
         });
