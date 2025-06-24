@@ -72,9 +72,9 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     
     if (allEntries.length === 0) {
       return [
-        'Lead development of web application',
-        'Managed cross-functional team',
-        'Implemented cloud infrastructure'
+        'Led development of scalable web application',
+        'Managed cross-functional team of 8 members',
+        'Implemented cloud infrastructure reducing costs by 30%'
       ];
     }
     
@@ -130,7 +130,7 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     const filledEntries = existingEntries.filter(entry => entry.trim().length > 0);
     
     if (filledEntries.length === 0) {
-      return baseDescription || '';
+      return baseDescription || `<ul><li>Start by adding your most impactful experiences or skills</li><li>Include specific achievements with measurable results</li><li>Think about what makes you unique in your field</li></ul>`;
     }
     
     // Analyze entries to provide contextual guidance
@@ -372,21 +372,9 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     }
   }, [enableAISuggestions, getNewEntrySuggestions, items]);
 
-  // Update suggestions when items change
-  useEffect(() => {
-    if (enableAISuggestions) {
-      // Debounce to avoid too many API calls
-      const timeoutId = setTimeout(() => {
-        getNewEntrySuggestions(items);
-      }, 500);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [items, enableAISuggestions, getNewEntrySuggestions]);
-
   // Load initial contextual description
   useEffect(() => {
-    if (enableContextualDescription && items.length > 0) {
+    if (enableContextualDescription) {
       updateContextualDescription(items);
     }
   }, [enableContextualDescription, updateContextualDescription, items]);
@@ -592,6 +580,35 @@ export const DynamicList: React.FC<DynamicListProps> = ({
             </button>
           </div>
           
+          {/* Contextual Description - Smart Suggestions */}
+          {enableContextualDescription && (contextualDescription || loadingContextualDescription) && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-medium text-amber-800 mb-2">
+                    💡 Smart Suggestions
+                  </h4>
+                  {loadingContextualDescription ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-amber-600 border-t-transparent"></div>
+                      <span className="text-sm text-amber-700">Analyzing your entries...</span>
+                    </div>
+                  ) : (
+                    <div 
+                      className="text-sm text-amber-700 prose prose-sm max-w-none prose-ul:my-2 prose-li:my-0"
+                      dangerouslySetInnerHTML={{ __html: contextualDescription }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* New Entry AI Suggestions */}
           {enableAISuggestions && (loadingNewEntrySuggestions || newEntrySuggestions.length > 0) && (
             <div className="space-y-2">
@@ -632,35 +649,6 @@ export const DynamicList: React.FC<DynamicListProps> = ({
         <p className="text-sm text-gray-500 italic">
           {t('common.maxItemsReached', { max: maxItems })}
         </p>
-      )}
-      
-      {/* Contextual Description */}
-      {enableContextualDescription && (contextualDescription || loadingContextualDescription) && (
-        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-amber-800 mb-2">
-                💡 Smart Suggestions
-              </h4>
-              {loadingContextualDescription ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-amber-600 border-t-transparent"></div>
-                  <span className="text-sm text-amber-700">Analyzing your entries...</span>
-                </div>
-              ) : (
-                <div 
-                  className="text-sm text-amber-700 prose prose-sm max-w-none prose-ul:my-2 prose-li:my-0"
-                  dangerouslySetInnerHTML={{ __html: contextualDescription }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
