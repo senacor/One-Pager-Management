@@ -1,3 +1,9 @@
+---
+layout: default
+title: Getting Started
+nav_order: 2
+---
+
 # Prerequisites
 - For communication, we use a slack channel called "intermission-onepager-automations" and a miro board. To get invited to the slack channel, please contact Maxi Lorenz or any other active team member. The miro board and all other useful links can be found on the canvas called 'OnePager Automations'.
 - For development, we NodeJS. The version can be found in ".github/workflows/ci.yml" as an environment variable called `NODE_VERSION`. Please install this version of NodeJS on your computer. 

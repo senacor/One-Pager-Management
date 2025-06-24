@@ -1,3 +1,9 @@
+---
+layout: default
+title: Development Guide
+nav_order: 3
+---
+
 # Architectural Overview
 On a global scale, the architecture of this project looks like this:
 
