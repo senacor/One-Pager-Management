@@ -3,7 +3,7 @@ import { onepagerValidationRequests } from './FileChangeQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { printError } from './ErrorHandling';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
-import { EmployeeRepository } from './validator/DomainTypes';
+import { EmployeeRepository, EmployeeID } from './validator/DomainTypes';
 
 /**
  * Azure Queue used to store One Pager validation requests.
@@ -29,8 +29,8 @@ export async function ValidateAllHttpTrigger(
 
         const config = await loadConfigFromEnv(context);
         const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
-        const employeeRepository = config.employeeRepo() || onePagers;
-        const ids = await employeeRepository.getAllEmployees();
+        const employeeRepository: EmployeeRepository = config.employeeRepo() || onePagers;
+        const ids: EmployeeID[] = await employeeRepository.getAllEmployees();
 
         context.extraOutputs.set(
             queueOutput,
