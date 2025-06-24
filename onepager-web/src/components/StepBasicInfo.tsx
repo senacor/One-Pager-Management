@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Step } from './Step';
 import { useBasicInfo } from '../hooks/useOnePager';
+import { Position, type PositionType } from '../types/onepager';
 
 interface StepBasicInfoProps {
   onNext: () => void;
@@ -38,17 +39,38 @@ export const StepBasicInfo: React.FC<StepBasicInfoProps> = ({ onNext }) => {
         </div>
         
         <div>
-          <input
-            type="text"
-            placeholder={t('steps.basicInfo.positionPlaceholder')}
+          <select
             value={basicInfo.position}
-            onChange={(e) => updateBasicInfo({ position: e.target.value })}
+            onChange={(e) => updateBasicInfo({ position: e.target.value as PositionType | '' })}
             className={`block w-full p-4 border-2 rounded-lg text-base bg-gray-50 transition-all duration-300 focus:outline-none focus:bg-white ${
               errors.some(e => e.includes('position')) 
                 ? 'border-red-300 focus:border-red-500' 
                 : 'border-gray-200 focus:border-brand-blue'
             }`}
-          />
+          >
+            <option value="">{t('steps.basicInfo.positionPlaceholder')}</option>
+            
+            {/* Junior Level */}
+            <optgroup label="Junior">
+              <option value={Position.JUNIOR_CONSULTANT}>{Position.JUNIOR_CONSULTANT}</option>
+              <option value={Position.JUNIOR_DEVELOPER}>{Position.JUNIOR_DEVELOPER}</option>
+            </optgroup>
+            
+            {/* Senior Level */}
+            <optgroup label="Senior">
+              <option value={Position.SENIOR_CONSULTANT}>{Position.SENIOR_CONSULTANT}</option>
+              <option value={Position.SENIOR_DEVELOPER}>{Position.SENIOR_DEVELOPER}</option>
+            </optgroup>
+            
+            {/* Leads and Experts Level */}
+            <optgroup label="Leads and Experts">
+              <option value={Position.MANAGING_CONSULTANT}>{Position.MANAGING_CONSULTANT}</option>
+              <option value={Position.DELIVERY_MANAGER}>{Position.DELIVERY_MANAGER}</option>
+              <option value={Position.ARCHITECT}>{Position.ARCHITECT}</option>
+              <option value={Position.LEAD_DEVELOPER}>{Position.LEAD_DEVELOPER}</option>
+              <option value={Position.TECHNICAL_EXPERT}>{Position.TECHNICAL_EXPERT}</option>
+            </optgroup>
+          </select>
           {errors.filter(e => e.includes('position')).map((error, index) => (
             <p key={index} className="text-red-500 text-sm mt-1">{error}</p>
           ))}

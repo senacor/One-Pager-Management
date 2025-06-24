@@ -1,7 +1,28 @@
 // Types and interfaces for OnePager data management
+
+// Position constants based on company hierarchy
+export const Position = {
+  // Junior Level
+  JUNIOR_CONSULTANT: 'Consultant',
+  JUNIOR_DEVELOPER: 'Developer',
+  
+  // Senior Level
+  SENIOR_CONSULTANT: 'Senior Consultant',
+  SENIOR_DEVELOPER: 'Senior Developer',
+  
+  // Leads and Experts Level
+  MANAGING_CONSULTANT: 'Managing Consultant',
+  DELIVERY_MANAGER: 'Delivery Manager',
+  ARCHITECT: 'Architect',
+  LEAD_DEVELOPER: 'Lead Developer',
+  TECHNICAL_EXPERT: 'Technical Expert'
+} as const;
+
+export type PositionType = typeof Position[keyof typeof Position];
+
 export interface BasicInfo {
   fullName: string;
-  position: string;
+  position: PositionType | '';
   profilePhoto?: File | string;
 }
 
