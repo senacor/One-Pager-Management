@@ -1,0 +1,31 @@
+{
+  "steps": {
+    "basicInfo": {
+      "title": "Mitarbeiterinformationen",
+      "fullNamePlaceholder": "Vollständiger Name",
+      "positionPlaceholder": "Position",
+      "profilePhotoLabel": "Profilfoto"
+    },
+    "focus": {
+      "title": "Fokus",
+      "description": "<ul><li>Maximal fünf Bulletpoints zu deinen Erfahrungsschwerpunkten, fachlicher Expertise oder Technologien</li><li>Als <strong>Absolvent</strong> ohne Berufserfahrung: relevante Schwerpunkte und Fähigkeiten aus dem Studium, Praktika oder anderen studentischen Tätigkeiten eintragen und nach den ersten Wochen, bei einem Projektwechsel, aber spätestens sechs Monate nach Eintritt bei Senacor aktualisieren</li><li>Als Berufserfahrener:<ul><li>Erster Bulletpoint: Ein zusammenfassender Satz deiner Erfahrung</li><li>Letzter Bulletpoint: Branchenfokus</li></ul></li></ul>",
+      "placeholder": "Listen Sie Schwerpunktbereiche auf, einen pro Zeile"
+    },
+    "experience": {
+      "title": "Ausbildung und Berufliche Erfahrung",
+      "description": "<ul><li>Erster Bulletpoint : aktuelle Position bei Senacor inkl. Startjahr</li><li>Weitere Bulletpoints in antichronologischer Reihenfolge:<ul><li>orbeschäftigungen mit Beschäftigungszeitraum und namentlicher Erwähnung von Vorarbeitgebern (Beispiel: Systems Engineer, MusterTec AG (2015-2017))</li><li>Berufs-/FH -/Uni-Abschlüsse mit Abschlussjahr und Nennung der akademischen Einrichtung (Beispiel: M.Sc. in Wirtschaftsinformatik, Universität Ulm (2020))</li><li>Optional: berufliche Zertifizierungen/ Veröffentlichungen/ Patente/ etc. (Beispiel: Zertifizierter SCRUM Master (2017))</li></ul></li><li>Wenn nicht alle Beschäftigungen/ Abschlüsse in das Feld passen, kann die Folie für Ergänzungen genutzt werden.</li></ul>",
+      "placeholder": "Listen Sie Erfahrungen oder Zertifikate auf, eines pro Zeile"
+    },
+    "projects": {
+      "title": "Projekterfahrungen",
+      "description": "<ul><li>Auflisten der Projekte in absteigender Priorität in Bezug auf die im Fokus genannten Erfahrungsschwerpunkte</li><li>Als <strong>Absolvent</strong> ohne Projekterfahrung: Erfahrungen aus studienbegleitender Tätigkeit, Abschlussarbeit, Praktika o.ä.</li><li>Als <strong>Berufserfahrener</strong>: relevanteste Projekte</li><li>Bei zusätzlicher <strong>Erfahrung aus Linienposition</strong>: Linienposition anführen, falls diese zum Profil beiträgt. Die Linientätigkeit sowie ggf. den Verantwortungsumfang explizit anführen.</li></ul>",
+      "placeholder": "Projektzusammenfassung"
+    }
+  },
+  "common": {
+    "stepGuide": "Anleitung",
+    "addEntry": "Eintrag hinzufügen",
+    "remove": "Entfernen",
+    "maxItemsReached": "Maximum von {{max}} Einträgen erreicht"
+  }
+}

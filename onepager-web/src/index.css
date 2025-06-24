@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #7192C7;
+  --color-dark-nav: #323232;
+  --font-family-sans: Arial, Helvetica, sans-serif;
+}
