@@ -9,11 +9,12 @@ import { FileSystemStorageExplorer } from '../src/functions/validator/adapter/Fi
 import { fs as memfs } from 'memfs';
 import { toTreeSync } from 'memfs/lib/print';
 import { CURRENT_TEMPLATE_PATH } from '../src/functions/validator/rules';
+import * as system from 'os';
 
 export async function initInMemoryOnePagers(
     data: Record<EmployeeID, { lastUpdateByEmployee: Date; local?: Local }[]>
 ): Promise<FolderBasedOnePagers> {
-    const explorer = new FileSystemStorageExplorer('/', new MemoryFileSystem());
+    const explorer = new FileSystemStorageExplorer(system.type().startsWith('Windows') ? 'C:/' : '/', new MemoryFileSystem());
 
     const exemplars = new OnePagerExemplars(explorer);
     await Promise.all(
