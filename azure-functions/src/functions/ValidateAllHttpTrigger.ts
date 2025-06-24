@@ -3,7 +3,7 @@ import { onepagerValidationRequests } from './FileChangeQueueTrigger';
 import { loadConfigFromEnv } from './configuration/AppConfiguration';
 import { printError } from './ErrorHandling';
 import { FolderBasedOnePagers } from './validator/FolderBasedOnePagers';
-import { EmployeeID, EmployeeRepository } from './validator/DomainTypes';
+import { EmployeeRepository } from './validator/DomainTypes';
 
 /**
  * Azure Queue used to store One Pager validation requests.
