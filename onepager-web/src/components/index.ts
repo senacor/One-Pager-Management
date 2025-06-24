@@ -5,3 +5,4 @@ export { StepFocus } from './StepFocus';
 export { StepExperience } from './StepExperience';
 export { StepProjects } from './StepProjects';
 export { LanguageSwitcher } from './LanguageSwitcher';
+export { DebugPanel } from './DebugPanel';

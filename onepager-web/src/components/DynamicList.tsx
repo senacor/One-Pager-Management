@@ -11,6 +11,10 @@ interface DynamicListProps {
   enableContextualDescription?: boolean;
   onGetContextualDescription?: (entries: string[]) => Promise<string> | string;
   baseDescription?: string;
+  // New prop to specify the AI context for service layer
+  aiContext?: 'focusAreas' | 'experience' | 'projects';
+  // New prop to control when AI suggestions should be fetched
+  isActive?: boolean;
 }
 
 export const DynamicList: React.FC<DynamicListProps> = ({ 
@@ -22,9 +26,14 @@ export const DynamicList: React.FC<DynamicListProps> = ({
   onGetSuggestion,
   enableContextualDescription = false,
   onGetContextualDescription,
-  baseDescription
+  baseDescription,
+  aiContext, // TODO: Implement AI service integration in Phase 3
+  isActive = true // Default to true for backward compatibility
 }) => {
   const { t } = useTranslation();
+  
+  // TODO: Use aiContext for AI service integration in Phase 3
+  void aiContext;
   const [items, setItems] = useState<string[]>(initialValues);
   const [newEntryText, setNewEntryText] = useState<string>('');
   const [suggestions, setSuggestions] = useState<{ [key: number]: string }>({});
@@ -62,145 +71,36 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     return `Enhanced version: ${text} with measurable impact and specific outcomes`;
   }, []);
 
-  // Mock function to get new entry suggestions based on existing entries
-  const getMockNewEntrySuggestions = useCallback(async (existingEntries: string[]): Promise<string[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+  // Function to update contextual description when entries change
+  const updateContextualDescription = useCallback(async (entries: string[]) => {
+    if (!enableContextualDescription || !onGetContextualDescription || !isActive) return;
     
-    // Generate suggestions based on context
-    const allEntries = existingEntries.filter(entry => entry.trim().length > 0);
-    
-    if (allEntries.length === 0) {
-      return [
+    try {
+      setLoadingContextualDescription(true);
+      const description = await onGetContextualDescription(entries);
+      setContextualDescription(description);
+    } catch (error) {
+      console.error('Error getting contextual description:', error);
+      setContextualDescription(baseDescription || 'Add entries to get contextual suggestions');
+    } finally {
+      setLoadingContextualDescription(false);
+    }
+  }, [enableContextualDescription, onGetContextualDescription, baseDescription, isActive]);
+
+  // Function to get new entry suggestions based on existing entries
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getNewEntrySuggestions = useCallback(async (_existingEntries: string[]) => {
+    if (!enableAISuggestions || !isActive) return;
+
+    try {
+      setLoadingNewEntrySuggestions(true);
+      // For now, provide simple fallback suggestions
+      // TODO: This should be replaced with AI service integration in Phase 3
+      const suggestions = [
         'Led development of scalable web application',
         'Managed cross-functional team of 8 members',
         'Implemented cloud infrastructure reducing costs by 30%'
       ];
-    }
-    
-    // Analyze existing entries and suggest related ones
-    const hasProject = allEntries.some(entry => 
-      entry.toLowerCase().includes('project') || 
-      entry.toLowerCase().includes('development') ||
-      entry.toLowerCase().includes('implement')
-    );
-    
-    const hasManagement = allEntries.some(entry => 
-      entry.toLowerCase().includes('manage') || 
-      entry.toLowerCase().includes('lead') ||
-      entry.toLowerCase().includes('team')
-    );
-    
-    const hasConsulting = allEntries.some(entry => 
-      entry.toLowerCase().includes('consult') || 
-      entry.toLowerCase().includes('advise') ||
-      entry.toLowerCase().includes('client')
-    );
-    
-    const suggestions: string[] = [];
-    
-    if (hasProject && !hasManagement) {
-      suggestions.push('Led team of 5 developers in agile environment');
-    }
-    if (hasManagement && !hasProject) {
-      suggestions.push('Architected scalable microservices solution');
-    }
-    if (hasConsulting) {
-      suggestions.push('Delivered training workshops for technical teams');
-    }
-    if (!hasConsulting && allEntries.length > 1) {
-      suggestions.push('Provided strategic consulting to enterprise clients');
-    }
-    
-    // Add some generic suggestions
-    suggestions.push(
-      'Optimized system performance resulting in 40% improvement',
-      'Collaborated with stakeholders to define requirements',
-      'Mentored junior developers and conducted code reviews'
-    );
-    
-    return suggestions.slice(0, 3); // Return max 3 suggestions
-  }, []);
-
-  // Mock function to generate contextual descriptions based on existing entries
-  const getMockContextualDescription = useCallback(async (existingEntries: string[]): Promise<string> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const filledEntries = existingEntries.filter(entry => entry.trim().length > 0);
-    
-    if (filledEntries.length === 0) {
-      return baseDescription || `<ul><li>Start by adding your most impactful experiences or skills</li><li>Include specific achievements with measurable results</li><li>Think about what makes you unique in your field</li></ul>`;
-    }
-    
-    // Analyze entries to provide contextual guidance
-    const hasManagement = filledEntries.some(entry => 
-      entry.toLowerCase().includes('manage') || 
-      entry.toLowerCase().includes('lead') ||
-      entry.toLowerCase().includes('team')
-    );
-    
-    const hasTechnical = filledEntries.some(entry => 
-      entry.toLowerCase().includes('develop') || 
-      entry.toLowerCase().includes('implement') ||
-      entry.toLowerCase().includes('architect') ||
-      entry.toLowerCase().includes('code')
-    );
-    
-    const hasConsulting = filledEntries.some(entry => 
-      entry.toLowerCase().includes('consult') || 
-      entry.toLowerCase().includes('advise') ||
-      entry.toLowerCase().includes('client')
-    );
-    
-    // Generate contextual descriptions based on detected patterns
-    if (hasManagement && hasTechnical) {
-      return `<ul><li>You're showing both technical and leadership experience - consider adding entries that highlight your ability to bridge technical and business domains</li><li>Consider including metrics and team sizes to quantify your impact</li><li>Add entries that show progression in responsibility</li></ul>`;
-    }
-    
-    if (hasManagement) {
-      return `<ul><li>Strong leadership profile emerging - consider adding technical depth to show your hands-on capabilities</li><li>Include specific team sizes and project outcomes</li><li>Consider adding entries about stakeholder management and strategic planning</li></ul>`;
-    }
-    
-    if (hasTechnical) {
-      return `<ul><li>Great technical foundation - consider adding leadership or mentoring experiences</li><li>Include business impact and metrics where possible</li><li>Consider adding collaborative and cross-functional experiences</li></ul>`;
-    }
-    
-    if (hasConsulting) {
-      return `<ul><li>Consulting experience is valuable - consider adding implementation details</li><li>Include client outcomes and business value delivered</li><li>Consider adding industry or domain expertise</li></ul>`;
-    }
-    
-    // Generic guidance based on entry count
-    if (filledEntries.length < 2) {
-      return `<ul><li>Great start! Consider adding more entries to showcase the breadth of your experience</li><li>Include both technical and soft skills</li><li>Think about different types of experiences: project work, leadership, innovation, etc.</li></ul>`;
-    }
-    
-    return `<ul><li>Good variety of experiences! Consider ensuring each entry has measurable outcomes</li><li>Balance different types of activities: individual contributor work, collaboration, and leadership</li><li>Consider organizing by impact or relevance to target roles</li></ul>`;
-  }, [baseDescription]);
-
-  // Function to update contextual description when entries change
-  const updateContextualDescription = useCallback(async (entries: string[]) => {
-    if (!enableContextualDescription || !onGetContextualDescription) return;
-    
-    try {
-      setLoadingContextualDescription(true);
-      const description = await (onGetContextualDescription(entries) || getMockContextualDescription(entries));
-      setContextualDescription(description);
-    } catch (error) {
-      console.error('Error getting contextual description:', error);
-      setContextualDescription(baseDescription || '');
-    } finally {
-      setLoadingContextualDescription(false);
-    }
-  }, [enableContextualDescription, onGetContextualDescription, baseDescription, getMockContextualDescription]);
-
-  // Function to get new entry suggestions based on existing entries
-  const getNewEntrySuggestions = useCallback(async (existingEntries: string[]) => {
-    if (!enableAISuggestions) return;
-
-    try {
-      setLoadingNewEntrySuggestions(true);
-      const suggestions = await getMockNewEntrySuggestions(existingEntries);
       setNewEntrySuggestions(suggestions);
     } catch (error) {
       console.error('Error getting new entry suggestions:', error);
@@ -208,7 +108,7 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     } finally {
       setLoadingNewEntrySuggestions(false);
     }
-  }, [enableAISuggestions, getMockNewEntrySuggestions]);
+  }, [enableAISuggestions, isActive]);
 
   // Update item at specific index
   const updateItem = (index: number, value: string) => {
@@ -302,7 +202,7 @@ export const DynamicList: React.FC<DynamicListProps> = ({
 
   // Get AI suggestion for specific item
   const getSuggestionForItem = async (index: number, text: string) => {
-    if (!enableAISuggestions || !text.trim()) return;
+    if (!enableAISuggestions || !text.trim() || !isActive) return;
 
     try {
       setLoadingSuggestions(prev => ({ ...prev, [index]: true }));
@@ -372,12 +272,20 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     }
   }, [enableAISuggestions, getNewEntrySuggestions, items]);
 
-  // Load initial contextual description
+  // Load initial contextual description and new entry suggestions when step becomes active
   useEffect(() => {
-    if (enableContextualDescription) {
-      updateContextualDescription(items);
+    if (isActive) {
+      if (enableContextualDescription) {
+        updateContextualDescription(items);
+      }
+      if (enableAISuggestions && items.length > 0) {
+        // Small delay to avoid rushing API calls
+        setTimeout(() => {
+          getNewEntrySuggestions(items);
+        }, 500);
+      }
     }
-  }, [enableContextualDescription, updateContextualDescription, items]);
+  }, [isActive, enableContextualDescription, enableAISuggestions, updateContextualDescription, getNewEntrySuggestions, items]);
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
