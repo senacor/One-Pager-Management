@@ -42,14 +42,14 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
         return el.replace(/ä/g, "ae").replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ß/g, "ss").replace(/[\W]/g, "?");
     };
 
-    const matchedIDs: EmployeeID[] = [];
+    const matchedIDs: {folderID: EmployeeID | null; powerBIID: EmployeeID | null}[] = [];
 
     const mismatchIDsList = new Array<MisMatchEntry>();
     await Promise.all(folderIDs.map(async (id: EmployeeID): Promise<void> => {
         const employeeData: Employee | undefined = await folderRepo.getEmployee(id);
         if (!powerBIIDs.includes(id)) {
-            const firstname = employeeData?.name.split('_')[0];
-            const lastname = employeeData?.name.split('_')[1];
+            const firstname = employeeData?.name.split(' ')[0];
+            const lastname = employeeData?.name.split(' ').pop();
             let possibleMatchesList: Employee[] = [];
             if (!!firstname && !!lastname) {
                 possibleMatchesList = allPowerBIEmployeeData.filter((employee: Employee) => {
@@ -58,7 +58,7 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
                 });
             }
             possibleMatchesList.forEach((el) => {
-                matchedIDs.push(el.id);
+                matchedIDs.push({folderID: id, powerBIID: el.id});
             });
             const possibleMatches = possibleMatchesList.map((el: Employee) => {return el.name + " " + el.id}).join('; ');
             mismatchIDsList.push({folderID: id, powerBIID: null, name: employeeData?.name || null, possibleMatches: possibleMatches, matched: null});
@@ -79,8 +79,9 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
             if (!!employeeData && !(!employeeData?.resource_type_current) && !peopleWithOnePagers.includes(employeeData?.resource_type_current)) {
                 return;
             }
+            const matches = matchedIDs.filter((el) => el.powerBIID === id).map((el) => el.folderID).join(', ');
 
-            mismatchIDsList.push({folderID: null, powerBIID: id, name: employeeData?.name || null, possibleMatches: null, matched: matchedIDs.includes(id) ? "MATCHED" : employeeData?.position_current === null ? 'NON_MATCHED_NEWJOINER': null});
+            mismatchIDsList.push({folderID: null, powerBIID: id, name: employeeData?.name || null, possibleMatches: matches, matched: matchedIDs.filter((el) => el.powerBIID === id).length > 0 ? "MATCHED" : employeeData?.position_current === null ? 'NON_MATCHED_NEWJOINER': null});
         }
     }));
     stringify(mismatchIDsList, {
