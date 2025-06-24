@@ -20,7 +20,8 @@
 
 title: OnePager Management
 baseurl: "/One-Pager-Management"
-url: "https://senacor.github.io" 
+url: "https://senacor.github.io"
+repository: senacor/One-Pager-Management 
 
 # Build settings
 theme: minima
