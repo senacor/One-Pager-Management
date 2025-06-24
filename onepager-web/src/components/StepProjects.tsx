@@ -14,12 +14,17 @@ export const StepProjects: React.FC = () => {
   
   // AI-powered contextual description function
   const getContextualDescription = useCallback(async (entries: string[]): Promise<string> => {
-    const result = await ai.getDescription(entries, {
-      baseDescription: "Showcase projects that demonstrate your key skills and impact"
-    });
-    
-    return result?.description || `<ul><li>Showcase projects that demonstrate your key skills</li><li>Include both independent and collaborative work</li><li>Focus on business impact and technical challenges overcome</li></ul>`;
-  }, [ai]);
+    try {
+      const result = await ai.getDescription(entries, {
+        baseDescription: "Showcase projects that demonstrate your key skills and impact"
+      });
+      
+      return result?.description || `<ul><li>Showcase projects that demonstrate your key skills</li><li>Include both independent and collaborative work</li><li>Focus on business impact and technical challenges overcome</li></ul>`;
+    } catch (error) {
+      console.error('Error getting contextual description:', error);
+      return `<ul><li>Showcase projects that demonstrate your key skills</li><li>Include both independent and collaborative work</li><li>Focus on business impact and technical challenges overcome</li></ul>`;
+    }
+  }, [ai]); // Include the AI service object as dependency
   
   return (
     <Step

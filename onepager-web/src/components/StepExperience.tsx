@@ -14,12 +14,17 @@ export const StepExperience: React.FC = () => {
 
   // AI-powered contextual description function
   const getContextualDescription = useCallback(async (entries: string[]): Promise<string> => {
-    const result = await ai.getDescription(entries, {
-      baseDescription: "Showcase your professional experience and achievements"
-    });
-    
-    return result?.description || `<ul><li>Experience entries should highlight your career progression and achievements</li><li>Include both technical contributions and business impact</li><li>Focus on measurable outcomes and specific technologies</li></ul>`;
-  }, [ai]);
+    try {
+      const result = await ai.getDescription(entries, {
+        baseDescription: "Showcase your professional experience and achievements"
+      });
+      
+      return result?.description || `<ul><li>Experience entries should highlight your career progression and achievements</li><li>Include both technical contributions and business impact</li><li>Focus on measurable outcomes and specific technologies</li></ul>`;
+    } catch (error) {
+      console.error('Error getting contextual description:', error);
+      return `<ul><li>Experience entries should highlight your career progression and achievements</li><li>Include both technical contributions and business impact</li><li>Focus on measurable outcomes and specific technologies</li></ul>`;
+    }
+  }, [ai]); // Include the AI service object as dependency
 
   return (
     <Step

@@ -200,19 +200,20 @@ export function useAIForContext(context: OnePagerContext) {
   const getSuggestion = useCallback((
     text: string,
     options?: Parameters<typeof suggestion.getSuggestion>[2]
-  ) => suggestion.getSuggestion(text, context, options), [suggestion.getSuggestion, context]);
+  ) => suggestion.getSuggestion(text, context, options), [suggestion, context]);
 
   const getDescription = useCallback((
     entries: string[],
     options?: Parameters<typeof description.getDescription>[2]
-  ) => description.getDescription(entries, context, options), [description.getDescription, context]);
+  ) => description.getDescription(entries, context, options), [description, context]);
 
   const getSuggestions = useCallback((
     existingEntries: string[],
     options?: Parameters<typeof newEntries.getSuggestions>[2]
-  ) => newEntries.getSuggestions(existingEntries, context, options), [newEntries.getSuggestions, context]);
+  ) => newEntries.getSuggestions(existingEntries, context, options), [newEntries, context]);
 
-  return {
+  // Memoize the return object to ensure stable references
+  return useMemo(() => ({
     // Individual functions
     getSuggestion,
     getDescription,
@@ -236,5 +237,12 @@ export function useAIForContext(context: OnePagerContext) {
       description.clearError();
       newEntries.clearError();
     }
-  };
+  }), [
+    getSuggestion,
+    getDescription,
+    getSuggestions,
+    suggestion,
+    description,
+    newEntries
+  ]);
 }

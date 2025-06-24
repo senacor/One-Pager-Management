@@ -14,12 +14,17 @@ export const StepFocus: React.FC = () => {
   
   // AI-powered contextual description function
   const getContextualDescription = useCallback(async (entries: string[]): Promise<string> => {
-    const result = await ai.getDescription(entries, {
-      baseDescription: "Define your key areas of expertise and focus"
-    });
-    
-    return result?.description || `<ul><li>Focus areas help potential clients understand your expertise</li><li>Include both technical skills and domain knowledge</li><li>Consider current market trends and demands</li></ul>`;
-  }, [ai]);
+    try {
+      const result = await ai.getDescription(entries, {
+        baseDescription: "Define your key areas of expertise and focus"
+      });
+      
+      return result?.description || `<ul><li>Focus areas help potential clients understand your expertise</li><li>Include both technical skills and domain knowledge</li><li>Consider current market trends and demands</li></ul>`;
+    } catch (error) {
+      console.error('Error getting contextual description:', error);
+      return `<ul><li>Focus areas help potential clients understand your expertise</li><li>Include both technical skills and domain knowledge</li><li>Consider current market trends and demands</li></ul>`;
+    }
+  }, [ai]); // Include the AI service object as dependency
   
   return (
     <Step

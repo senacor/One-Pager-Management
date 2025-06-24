@@ -73,7 +73,10 @@ export const DynamicList: React.FC<DynamicListProps> = ({
 
   // Function to update contextual description when entries change
   const updateContextualDescription = useCallback(async (entries: string[]) => {
-    if (!enableContextualDescription || !onGetContextualDescription || !isActive) return;
+    if (!enableContextualDescription || !onGetContextualDescription) return;
+    
+    // Check isActive inside the function instead of as a dependency
+    if (!isActive) return;
     
     try {
       setLoadingContextualDescription(true);
@@ -85,7 +88,7 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     } finally {
       setLoadingContextualDescription(false);
     }
-  }, [enableContextualDescription, onGetContextualDescription, baseDescription, isActive]);
+  }, [enableContextualDescription, onGetContextualDescription, baseDescription]); // Removed isActive dependency
 
   // Function to get new entry suggestions based on existing entries
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -128,10 +131,11 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     }
 
     // Update contextual description and new entry suggestions when items change
-    if (enableContextualDescription) {
-      updateContextualDescription(newItems);
+    if (enableContextualDescription && isActive) {
+      // Debounce contextual description to avoid rapid calls
+      setTimeout(() => updateContextualDescription(newItems), 300);
     }
-    if (enableAISuggestions) {
+    if (enableAISuggestions && isActive) {
       // Debounce new entry suggestions to avoid too many API calls
       setTimeout(() => getNewEntrySuggestions(newItems), 500);
     }
@@ -146,8 +150,8 @@ export const DynamicList: React.FC<DynamicListProps> = ({
       setNewEntryText('');
       
       // Update contextual description when new item is added
-      if (enableContextualDescription) {
-        updateContextualDescription(newItems);
+      if (enableContextualDescription && isActive) {
+        setTimeout(() => updateContextualDescription(newItems), 300);
       }
       
       // Get AI suggestion for the new item if enabled
@@ -192,11 +196,11 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     setSuggestions(newSuggestions);
 
     // Update contextual description and new entry suggestions when items change
-    if (enableContextualDescription) {
-      updateContextualDescription(newItems);
+    if (enableContextualDescription && isActive) {
+      setTimeout(() => updateContextualDescription(newItems), 300);
     }
-    if (enableAISuggestions) {
-      getNewEntrySuggestions(newItems);
+    if (enableAISuggestions && isActive) {
+      setTimeout(() => getNewEntrySuggestions(newItems), 500);
     }
   };
 
@@ -247,45 +251,41 @@ export const DynamicList: React.FC<DynamicListProps> = ({
     onChange?.(newItems);
     
     // Update contextual description when new item is added
-    if (enableContextualDescription) {
-      updateContextualDescription(newItems);
+    if (enableContextualDescription && isActive) {
+      setTimeout(() => updateContextualDescription(newItems), 300);
     }
     
     // Get AI suggestion for the new item if enabled
-    if (enableAISuggestions && suggestion.length > 10) {
+    if (enableAISuggestions && suggestion.length > 10 && isActive) {
       getSuggestionForItem(newItems.length - 1, suggestion);
     }
     
     // Get new suggestions based on updated items
-    if (enableAISuggestions) {
-      getNewEntrySuggestions(newItems);
+    if (enableAISuggestions && isActive) {
+      setTimeout(() => getNewEntrySuggestions(newItems), 500);
     }
   };
 
-  // Load initial suggestions when component mounts and AI is enabled
+  // Load initial contextual description when step becomes active (only once per activation)
   useEffect(() => {
-    if (enableAISuggestions) {
-      // Small delay to let component render first
-      setTimeout(() => {
+    if (isActive && enableContextualDescription && items.length === 0) {
+      // Only load initial description when there are no items to avoid loops
+      updateContextualDescription(items);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, enableContextualDescription]);
+
+  // Load initial suggestions when component mounts and AI is enabled (only once)
+  useEffect(() => {
+    if (enableAISuggestions && isActive && items.length === 0) {
+      // Only load when there are no items to avoid loops
+      const timeoutId = setTimeout(() => {
         getNewEntrySuggestions(items);
       }, 1000);
+      return () => clearTimeout(timeoutId);
     }
-  }, [enableAISuggestions, getNewEntrySuggestions, items]);
-
-  // Load initial contextual description and new entry suggestions when step becomes active
-  useEffect(() => {
-    if (isActive) {
-      if (enableContextualDescription) {
-        updateContextualDescription(items);
-      }
-      if (enableAISuggestions && items.length > 0) {
-        // Small delay to avoid rushing API calls
-        setTimeout(() => {
-          getNewEntrySuggestions(items);
-        }, 500);
-      }
-    }
-  }, [isActive, enableContextualDescription, enableAISuggestions, updateContextualDescription, getNewEntrySuggestions, items]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableAISuggestions, isActive]);
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
