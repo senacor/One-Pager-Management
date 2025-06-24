@@ -1,5 +1,5 @@
 import { ValidationError, ValidationRule } from '../DomainTypes';
-import { detectFaces, labelImage, PhotoLabels } from './ai';
+import { detectFaces, labelImage, labelImageAvailable, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
 export const QUALITY_THRESHOLD = 0.2;
@@ -26,11 +26,12 @@ export const checkImages: ValidationRule = async onePager => {
         errors.push('MISSING_PHOTO');
     }
 
-    const scored = await Promise.all(withFaces.map(scoreQuality));
-    if (scored.some(score => score < QUALITY_THRESHOLD)) {
-        errors.push('LOW_QUALITY_PHOTO');
+    if (labelImageAvailable()) {
+        const scored = await Promise.all(withFaces.map(scoreQuality));
+        if (scored.some(score => score < QUALITY_THRESHOLD)) {
+            errors.push('LOW_QUALITY_PHOTO');
+        }
     }
-
     return errors;
 };
 

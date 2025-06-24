@@ -3,7 +3,7 @@
 
 import { validateField, validateStep } from '../utils/validation';
 import { createInitialState } from '../store/onePagerReducer';
-import { VALIDATION_RULES } from '../types/onepager';
+import { VALIDATION_RULES, Position } from '../types/onepager';
 
 // Simple test framework
 function test(description: string, fn: () => void) {
@@ -95,7 +95,7 @@ test('validateStep should validate basicInfo step', () => {
   
   // Complete data should be valid
   data.basicInfo.fullName = 'John Doe';
-  data.basicInfo.position = 'Software Engineer';
+  data.basicInfo.position = Position.SENIOR_DEVELOPER;
   
   const result2 = validateStep(data, 'basicInfo');
   expect(result2.isValid).toBe(true);

@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { fileSystem } from './node_file_system';
 import { Local } from '../DomainTypes';
 import { franc } from 'franc-min';
+import * as fs from 'fs';
 
 // Initialize TensorFlow.js for Node.js environment
 let tfInitialized = false;
@@ -65,6 +66,10 @@ export interface PhotoLabels {
     whiteShirt: number;
     highQuality: number;
     businessAttire: number;
+}
+
+export function labelImageAvailable() {
+    return fs.existsSync(qualityModelPath);
 }
 
 export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {

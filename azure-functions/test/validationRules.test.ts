@@ -13,6 +13,7 @@ import {
     QUALITY_THRESHOLD,
     scoreQuality,
 } from '../src/functions/validator/rules/photo';
+import { labelImageAvailable } from '../src/functions/validator/rules/ai';
 
 let _exampleOnePager: Promise<LoadedOnePager>;
 function exampleOnePager(): Promise<LoadedOnePager> {
@@ -144,29 +145,31 @@ describe('validationRules', () => {
         });
     });
 
-    describe('hasQualityPhoto', () => {
-        it('should report an error if photo does not fit our criteria', async () => {
-            const badPhoto = {
-                path: 'bad.jpg',
-                data: () => promises.readFile('test/resources/photos/bad.jpg'),
-            };
+    if (labelImageAvailable()) {
+        describe('hasQualityPhoto', () => {
+            it('should report an error if photo does not fit our criteria', async () => {
+                const badPhoto = {
+                    path: 'bad.jpg',
+                    data: () => promises.readFile('test/resources/photos/bad.jpg'),
+                };
 
-            const isLow = scoreQuality(badPhoto);
+                const isLow = scoreQuality(badPhoto);
 
-            await expect(isLow).resolves.toBeLessThan(QUALITY_THRESHOLD);
+                await expect(isLow).resolves.toBeLessThan(QUALITY_THRESHOLD);
+            });
+
+            it('should report no error if photo is good', async () => {
+                const goodPhoto = {
+                    path: 'good.jpg',
+                    data: () => promises.readFile('test/resources/photos/good.jpg'),
+                };
+
+                const isLow = scoreQuality(goodPhoto);
+
+                await expect(isLow).resolves.toBeGreaterThan(QUALITY_THRESHOLD);
+            });
         });
-
-        it('should report no error if photo is good', async () => {
-            const goodPhoto = {
-                path: 'good.jpg',
-                data: () => promises.readFile('test/resources/photos/good.jpg'),
-            };
-
-            const isLow = scoreQuality(goodPhoto);
-
-            await expect(isLow).resolves.toBeGreaterThan(QUALITY_THRESHOLD);
-        });
-    });
+    }
 
     describe('combineRules', () => {
         it('combines multiple rules and flattens errors', async () => {

@@ -6,7 +6,7 @@ export const DebugPanel: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [importText, setImportText] = useState('');
   const { data, exportData, importData, resetData, clearStorage } = useOnePagerContext();
-  const { serviceInfo, useMockService, refreshServiceInfo, isRealServiceAvailable } = useAIServiceProvider();
+  const { serviceInfo, refreshServiceInfo, isRealServiceAvailable } = useAIServiceProvider();
 
   const handleExport = () => {
     const exported = exportData();
