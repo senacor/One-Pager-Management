@@ -146,6 +146,22 @@ export class OnePagerApiService {
 
     return response.blob();
   }
+
+  /**
+   * Fetch a photo blob from a URL with proper authentication
+   */
+  async fetchPhotoBlob(photoUrl: string): Promise<Blob> {
+    // Ensure we have authentication if needed
+    await this.ensureAuthentication();
+
+    const response = await this.makeRequest(photoUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to load image: ${response.status} ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
 }
 // Export a default instance using the app configuration
 export const onePagerApiService = new OnePagerApiService();

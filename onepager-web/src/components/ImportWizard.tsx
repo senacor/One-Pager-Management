@@ -99,13 +99,8 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
     try {
       const data = await onePagerApiService.getOnePagerData(selectedEmployee.id, file.fileName);
       
-      // Download the actual image to convert it to a blob URL
-      const imageResponse = await fetch(data.photo);
-      if (!imageResponse.ok) {
-        throw new Error(`Failed to load image: ${imageResponse.status} ${imageResponse.statusText}`);
-      }
-      
-      const imageBlob = await imageResponse.blob();
+      // Download the actual image using the authenticated service method
+      const imageBlob = await onePagerApiService.fetchPhotoBlob(data.photo);
       const blobUrl = URL.createObjectURL(imageBlob);
       setPhotoUrl(blobUrl);
       setCurrentStep('preview');
@@ -256,6 +251,7 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
                 <button
                   onClick={handleBack}
                   className="text-blue-600 hover:text-blue-800"
+                  disabled={isLoading}
                 >
                   ← {t('import.back')}
                 </button>
@@ -264,7 +260,14 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
                 {t('import.selectOnePager')} - {selectedEmployee?.name}
               </h3>
               
-              {onePagerFiles.length > 0 && (
+              {isLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">{t('import.loading')}</span>
+                </div>
+              )}
+              
+              {!isLoading && onePagerFiles.length > 0 && (
                 <div className="space-y-2 max-h-60 overflow-auto">
                   {onePagerFiles.map((file) => (
                     <div
