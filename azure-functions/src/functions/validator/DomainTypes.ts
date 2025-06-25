@@ -29,6 +29,7 @@ export type OnePager = {
     local?: Local;
     data: () => Promise<Buffer>;
     webLocation: URL;
+    name: string; // optional name of the one-pager file
 };
 
 /**
@@ -47,9 +48,14 @@ export type ValidationError =
     | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
     | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
 
-export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
+export type LoadedOnePager = {
+    onePager: OnePager;
     pptx: Pptx;
     contentLanguages: Local[];
+};
+export type ValidatedOnePager = {
+    onePager: OnePager | undefined;
+    errors: ValidationError[];
 };
 
 export type ValidationRule = (
@@ -97,8 +103,7 @@ export interface ValidationReporter {
      */
     reportErrors(
         id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[],
+        validatedOnePagers: ValidatedOnePager[],
         employee: Employee
     ): Promise<void>;
 
@@ -106,7 +111,7 @@ export interface ValidationReporter {
      * Fetches the latest validation results for the given employee ID.
      * @param id The ID of the employee whose validation results should be fetched.
      */
-    getResultFor(id: EmployeeID): Promise<ValidationError[]>;
+    getResultFor(id: EmployeeID): Promise<ValidatedOnePager[]>;
 }
 
 export type StorageFile = {

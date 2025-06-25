@@ -9,8 +9,11 @@ import {
     ValidationError,
     ValidationReporter,
     ValidationRule,
+    ValidatedOnePager
 } from './DomainTypes';
 import { Pptx } from './rules/Pptx';
+
+
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -64,18 +67,18 @@ export class OnePagerValidation {
         const candidates = this.selectNewestOnePagers(onePagers);
         this.logger.log(`Identified ${candidates.length} candidate one-pagers for validation.`);
 
-        const loadedCandidates = (
+        const loadedCandidates: LoadedOnePager[] = (
             await Promise.all(candidates.map(c => this.loadOnePager(c)))
         ).flat();
 
         const selectedCandidates = Object.values(
             loadedCandidates.reduce(
                 (acc, current) => {
-                    const langs = [current.local || current.contentLanguages].flat();
+                    const langs = [current.onePager.local || current.contentLanguages].flat();
                     for (const lang of langs) {
                         if (
                             acc[lang] === undefined ||
-                            acc[lang].lastUpdateByEmployee < current.lastUpdateByEmployee
+                            acc[lang].onePager.lastUpdateByEmployee < current.onePager.lastUpdateByEmployee
                         ) {
                             acc[lang] = current;
                         }
@@ -87,18 +90,16 @@ export class OnePagerValidation {
         ).filter(uniq);
 
         this.logger.log(
-            `Selected one-pagers for validation based on language and last update: ${selectedCandidates.map(op => `${op.local || op.contentLanguages.join('+')} (${op.webLocation})`).join(', ')}`
+            `Selected one-pagers for validation based on language and last update: ${selectedCandidates.map(op => `${op.onePager.local || op.contentLanguages.join('+')} (${op.onePager.webLocation})`).join(', ')}`
         );
 
-        const validationResults = await Promise.all(
-            selectedCandidates.map(async op => ({
-                onePager: op,
-                errors: await this.validationRule(op, employeeData),
-            }))
-        );
+        const validatedOnePagers: ValidatedOnePager[] = await Promise.all(selectedCandidates.map(async op => {
+            return { onePager: op.onePager, errors: await this.validationRule(op, employeeData) };
+        }));
 
-        const results = [
-            ...validationResults,
+
+        const results: ValidatedOnePager[] = [
+            ...validatedOnePagers,
             ...this.validateRequiredVersions(selectedCandidates),
         ];
 
@@ -109,13 +110,13 @@ export class OnePagerValidation {
             await this.reporter.reportValid(id);
         } else {
             this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
-            await this.reporter.reportErrors(id, candidates[0], errors, employeeData);
+            await this.reporter.reportErrors(id, results, employeeData);
         }
     }
 
     validateRequiredVersions(
         candidates: LoadedOnePager[]
-    ): { onePager: undefined; errors: ValidationError[] }[] {
+    ): ValidatedOnePager[] {
         if (candidates.length === 0) {
             return [
                 {
@@ -129,7 +130,7 @@ export class OnePagerValidation {
             ];
         } else if (candidates.length === 1 && candidates[0].contentLanguages.length === 1) {
             const missingLang =
-                (candidates[0].local || candidates[0].contentLanguages[0]) === 'DE' ? 'EN' : 'DE';
+                (candidates[0].onePager.local || candidates[0].contentLanguages[0]) === 'DE' ? 'EN' : 'DE';
             return [
                 {
                     onePager: undefined,
@@ -191,7 +192,7 @@ export class OnePagerValidation {
         this.logger.log(`Loading one-pager from ${onePager.webLocation}`);
         const pptx = await onePager.data().then(data => Pptx.load(data, this.logger));
         return {
-            ...onePager,
+            onePager: onePager,
             pptx,
             contentLanguages: await pptx.getContentLanguages(),
         };

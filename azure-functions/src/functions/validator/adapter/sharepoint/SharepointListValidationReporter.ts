@@ -6,30 +6,31 @@ import {
     EmployeeID,
     Logger,
     OnePager,
+    ValidatedOnePager,
     ValidationError,
     ValidationReporter,
 } from '../../DomainTypes';
 
 const enum ListItemColumnNames {
-    MA_ID = 'Employee_ID',
-    MA_NAME = 'Name',
-    MA_CURR_POSITION = 'Current_Position',
-    MA_EMAIL = 'E_Mail_Address',
-    VALIDATION_ERRORS = 'Errors',
-    VALIDATION_DATE = 'Validation_Date',
-    LAST_MODIFIED_DATE = 'Date_of_Last_Change',
-    URL = 'Links',
+    MA_ID = 'Employee_ID', // number
+    MA_NAME = 'Name', // text field, 1-line
+    MA_CURR_POSITION = 'Current_Position', // text field, 1-line
+    MA_EMAIL = 'E_Mail_Address', // text field, multiline, richtext
+    VALIDATION_ERRORS = 'Errors', // text field, multiline, richtext
+    VALIDATION_DATE = 'Validation_Date', // text field, 1-line, date format MM/DD/YYYY
+    LAST_MODIFIED_DATE = 'Date_of_Last_Change', // text field, 1-line, date format MM/DD/YYYY
+    // URL = 'Links', // text field, 1-line, URL
 }
 
 type ListItemWithFields = {
     [ListItemColumnNames.MA_ID]: string | number;
     [ListItemColumnNames.VALIDATION_ERRORS]: string;
-    [ListItemColumnNames.URL]: string;
+    // [ListItemColumnNames.URL]: string;
     [ListItemColumnNames.MA_NAME]: string;
     [ListItemColumnNames.MA_EMAIL]: string;
-    [ListItemColumnNames.MA_CURR_POSITION]: string | null;
+    [ListItemColumnNames.MA_CURR_POSITION]: string; // 'NO_POSITION' if no value since '' and ' ' do not work well with sharepoint
     [ListItemColumnNames.VALIDATION_DATE]: string;
-    [ListItemColumnNames.LAST_MODIFIED_DATE]: string | null;
+    [ListItemColumnNames.LAST_MODIFIED_DATE]: string; // 'NO_DATE' if no value since '' and ' ' do not work well with sharepoint
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -41,18 +42,18 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
         ['string', 'number'].includes(typeof record[ListItemColumnNames.MA_ID]) &&
         ListItemColumnNames.VALIDATION_ERRORS in record &&
         typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string' &&
-        ListItemColumnNames.URL in record &&
-        typeof record[ListItemColumnNames.URL] === 'string' &&
+        // ListItemColumnNames.URL in record &&
+        // typeof record[ListItemColumnNames.URL] === 'string' &&
         ListItemColumnNames.MA_NAME in record &&
         typeof record[ListItemColumnNames.MA_NAME] === 'string' &&
         ListItemColumnNames.MA_EMAIL in record &&
         typeof record[ListItemColumnNames.MA_EMAIL] === 'string' &&
         ListItemColumnNames.MA_CURR_POSITION in record &&
-        ['string', 'null'].includes(typeof record[ListItemColumnNames.MA_CURR_POSITION]) &&
+        ['string'].includes(typeof record[ListItemColumnNames.MA_CURR_POSITION]) &&
         ListItemColumnNames.VALIDATION_DATE in record &&
         typeof record[ListItemColumnNames.VALIDATION_DATE] === 'string' &&
-        ['string', 'null'].includes(typeof record[ListItemColumnNames.LAST_MODIFIED_DATE]) &&
-        typeof record[ListItemColumnNames.LAST_MODIFIED_DATE] === 'string'
+        ListItemColumnNames.LAST_MODIFIED_DATE in record &&
+        ['string'].includes(typeof record[ListItemColumnNames.LAST_MODIFIED_DATE])
     );
 }
 
@@ -145,6 +146,54 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
     }
 
+
+    private formatOnePagerErrorOutput(validatedOnePagers: ValidatedOnePager[]): string {
+        const onePagers: (ValidatedOnePager & {onePager: OnePager})[] = validatedOnePagers.filter((op: ValidatedOnePager) => op.onePager !== undefined) as (ValidatedOnePager & {onePager: OnePager})[];
+        const generalErrors: string = validatedOnePagers.filter((op: ValidatedOnePager) => op.onePager === undefined).map((op) => op.errors.join('<br>')).join('<br>');
+
+        const onePagerErrors: string = onePagers.map((op: ValidatedOnePager & {onePager: OnePager}) => {
+                return `<a href="${op.onePager.webLocation}">${op.onePager.name}</a>: ${op.errors.join(', ')}`;
+            }).join('<br>')
+        const output: string =
+            `${generalErrors}${onePagerErrors !== '' ? `<br>${onePagerErrors}` : ''}`;
+
+        return output;
+    }
+
+    private parseOnePagerErrorOutput(
+        output: string
+    ): ValidatedOnePager[] {
+        const onePagers: ValidatedOnePager[] = [];
+        const contentMatch = output.match(/<div class="[^"]+">(.+)<\/div>/);
+
+        if (!contentMatch || contentMatch.length < 2) {
+            return onePagers; // Return empty array if no content found
+        }
+
+        const lines = contentMatch[1].split('<br>');
+        for (const line of lines) {
+            const match = line.match(/<div class="[^"]+"><a href="([^"]+)">([^<]+)<\/a>: (.+)<\/div>/);
+            if (match) {
+                const [, url, name, errors] = match;
+                onePagers.push({
+                    onePager: {
+                        webLocation: new URL(url),
+                        name,
+                        lastUpdateByEmployee: new Date(), // Placeholder, as we don't have the actual date here
+                        local: undefined, // Placeholder, as we don't have the actual language here
+                        data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
+                    },
+                    errors: errors.split(', ') as ValidationError[],
+                });
+            } else if (line.trim() !== '') {
+                // Handle general errors without a one-pager link
+                onePagers.push({ onePager: undefined, errors: [line as ValidationError] });
+            }
+        }
+        return onePagers;
+    }
+
+
     /**
      * This function reports validation errors for a given employee's one-pager.
      * @param id The employee ID for which a given one-pager has errors.
@@ -153,30 +202,37 @@ export class SharepointListValidationReporter implements ValidationReporter {
      */
     async reportErrors(
         id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[],
+        validatedOnePagers: ValidatedOnePager[],
         employee: Employee
     ): Promise<void> {
         const itemId = await this.getItemIdOfEmployee(id);
 
         this.logger.log(
-            `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`
+            `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(validatedOnePagers)}: ${JSON.stringify(validatedOnePagers.flatMap((op) => op.errors))}`
         );
 
-        const onePagerUrl = onePager?.webLocation ? onePager.webLocation.toString() : '';
+        const loadedOnePagers: (ValidatedOnePager & {onePager: OnePager})[] = validatedOnePagers.filter((op: ValidatedOnePager) => op.onePager !== undefined) as (ValidatedOnePager & {onePager: OnePager})[];
+        const newestLoadedOnePager: ValidatedOnePager | undefined = loadedOnePagers.reduce((prev: ValidatedOnePager, curr: ValidatedOnePager & {onePager: OnePager}) => {
+            if (!prev.onePager) {
+                return curr;
+            }
+            return curr.onePager.lastUpdateByEmployee > prev.onePager.lastUpdateByEmployee ? curr : prev;
+        }, {onePager: undefined, errors: []} as ValidatedOnePager);
+
+        // const onePagerUrls: string[] = onePagers.map((op: ValidatedOnePager & {onePager: OnePager}) => op.onePager?.webLocation.toString());
         if (itemId === undefined) {
             this.logger.log(`Creating a new list entry for employee with ID "${id}"!`);
             await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
                 fields: {
                     [ListItemColumnNames.MA_ID]: id,
-                    [ListItemColumnNames.VALIDATION_ERRORS]: errors.join('\n'),
-                    [ListItemColumnNames.URL]: `<a href="${onePagerUrl}">Link zum OnePager</a>`,
+                    [ListItemColumnNames.VALIDATION_ERRORS]: this.formatOnePagerErrorOutput(validatedOnePagers),
+                    // [ListItemColumnNames.URL]: onePagerUrls.map((opURL: string) => `<a href="${opURL}">Link zum OnePager</a>`).join('\n'),
                     [ListItemColumnNames.MA_NAME]: employee.name,
                     [ListItemColumnNames.MA_EMAIL]: `<a href="mailto: ${employee.email}">${employee.email}</a>`,
-                    [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
+                    [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || 'NO_POSITION',
                     [ListItemColumnNames.VALIDATION_DATE]: this.dateToEnglishFormat(new Date()),
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
-                        this.dateToEnglishFormat(onePager?.lastUpdateByEmployee) || null,
+                        this.dateToEnglishFormat(newestLoadedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                 },
             });
         } else {
@@ -184,14 +240,14 @@ export class SharepointListValidationReporter implements ValidationReporter {
             await this.client
                 .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
                 .patch({
-                    [ListItemColumnNames.VALIDATION_ERRORS]: errors.join('\n'),
-                    [ListItemColumnNames.URL]: `<a href="${onePagerUrl}">Link zum OnePager</a>`,
+                    [ListItemColumnNames.VALIDATION_ERRORS]: this.formatOnePagerErrorOutput(validatedOnePagers),
+                    // [ListItemColumnNames.URL]: onePagerUrls.map((opURL: string) => `<a href="${opURL}">Link zum OnePager</a>`).join('\n'),
                     [ListItemColumnNames.MA_NAME]: employee.name,
                     [ListItemColumnNames.MA_EMAIL]: `<a href="mailto: ${employee.email}">${employee.email}</a>`,
-                    [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || '',
+                    [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || 'NO_POSITION',
                     [ListItemColumnNames.VALIDATION_DATE]: this.dateToEnglishFormat(new Date()),
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
-                        this.dateToEnglishFormat(onePager?.lastUpdateByEmployee) || null,
+                        this.dateToEnglishFormat(newestLoadedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                 });
         }
     }
@@ -201,7 +257,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * @param id The employee ID for which to get the validation results.
      * @returns An array of validation errors for the specified employee.
      */
-    async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
+    async getResultFor(id: EmployeeID): Promise<ValidatedOnePager[]> {
         this.logger.log(`Getting results for employee with id "${id}"!`);
 
         const itemId = await this.getItemIdOfEmployee(id);
@@ -216,6 +272,10 @@ export class SharepointListValidationReporter implements ValidationReporter {
             .select('fields')
             .get()) as ListItem;
 
+        this.logger.log(
+            `Retrieved item fields for employee with ID "${id}": ${JSON.stringify(item.fields)}`
+        );
+
         if (!item.fields || !isListItemWithFields(item.fields)) {
             this.logger.error(
                 `Item with ID "${itemId}" does not have the expected fields structure!`
@@ -224,7 +284,11 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
         const itemFields: ListItemWithFields = item.fields;
 
-        return itemFields[ListItemColumnNames.VALIDATION_ERRORS]!.split('\n') as ValidationError[];
+        this.logger.log(
+            `Parsed item fields for employee with ID "${id}": ${JSON.stringify(this.parseOnePagerErrorOutput(itemFields[ListItemColumnNames.VALIDATION_ERRORS]))}`
+        );
+
+        return this.parseOnePagerErrorOutput(itemFields[ListItemColumnNames.VALIDATION_ERRORS]);
     }
 
     /**

@@ -1,7 +1,7 @@
 import {
     EmployeeID,
     LoadedOnePager,
-    ValidationError,
+    ValidationError
 } from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
@@ -19,12 +19,17 @@ function exampleOnePager(): Promise<LoadedOnePager> {
     if (!_exampleOnePager) {
         _exampleOnePager = readFile('test/resources/onepager/example-2024-DE.pptx').then(
             async data => ({
-                lastUpdateByEmployee: new Date(),
-                local: 'DE',
+                onePager: {
+                    lastUpdateByEmployee: new Date(),
+                    local: 'DE',
+                    data: () => Promise.resolve(data),
+                    webLocation: new URL('https://example.com/onepager.pptx'),
+                    name: 'Mustermann, Max_DE_240209.pptx',
+                },
                 contentLanguages: ['DE'],
                 pptx: await Pptx.load(data),
-                webLocation: new URL('https://example.com/onepager.pptx'),
-            })
+                errors: [],
+                })
         );
     }
     return _exampleOnePager;

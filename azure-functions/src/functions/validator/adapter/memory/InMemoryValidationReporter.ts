@@ -1,8 +1,7 @@
 import {
     EmployeeID,
     Logger,
-    OnePager,
-    ValidationError,
+    ValidatedOnePager,
     ValidationReporter,
 } from '../../DomainTypes';
 
@@ -15,7 +14,7 @@ export class InMemoryValidationReporter implements ValidationReporter {
     private readonly logger: Logger;
     private readonly reports: Map<
         EmployeeID,
-        { onePager: OnePager | undefined; errors?: ValidationError[] }
+        ValidatedOnePager[]
     > = new Map();
 
     /**
@@ -43,13 +42,12 @@ export class InMemoryValidationReporter implements ValidationReporter {
      */
     async reportErrors(
         id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[]
+        validatedOnePagers: ValidatedOnePager[],
     ): Promise<void> {
         this.logger.log(
-            `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(onePager)}: ${JSON.stringify(errors)}`
+            `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(validatedOnePagers)}: ${JSON.stringify(validatedOnePagers.flatMap((op) => op.errors))}`
         );
-        this.reports.set(id, { onePager, errors });
+        this.reports.set(id, validatedOnePagers);
     }
 
     /**
@@ -57,8 +55,8 @@ export class InMemoryValidationReporter implements ValidationReporter {
      * @param id The employee ID for which to get the validation results.
      * @returns A promise that resolves to an array of validation errors for the specified employee.
      */
-    async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
+    async getResultFor(id: EmployeeID): Promise<ValidatedOnePager[]> {
         this.logger.log(`Getting results for employee with id "${id}"!`);
-        return this.reports.get(id)?.errors || [];
+        return this.reports.get(id) || [];
     }
 }

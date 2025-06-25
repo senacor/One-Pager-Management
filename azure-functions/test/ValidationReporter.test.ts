@@ -12,6 +12,7 @@ import {
     Employee,
     EmployeeID,
     OnePager,
+    ValidatedOnePager,
     ValidationReporter,
 } from '../src/functions/validator/DomainTypes';
 
@@ -21,6 +22,7 @@ const someOnePager: OnePager = {
     lastUpdateByEmployee: new Date(),
     data: async () => Buffer.from('This is a test one-pager.'),
     webLocation: new URL('https://example.com/onepager/web'),
+    name: 'Mustermann, Max_DE_240209.pptx',
 };
 
 const someEmployeeData: Employee = {
@@ -49,10 +51,19 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should return errors when reported', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: ['OLDER_THAN_SIX_MONTHS'],
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: ['MISSING_DE_VERSION'],
+            };
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION'],
+                [someValidatedOnePager, anotherValidatedOnePager],
                 someEmployeeData
             );
 
@@ -65,10 +76,14 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should clean up errors when valid is reported', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: ['OLDER_THAN_SIX_MONTHS'],
+            };
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS'],
+                [someValidatedOnePager],
                 someEmployeeData
             );
             await reporter.reportValid('111');
@@ -79,10 +94,19 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should not return errors of other employee', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: ['OLDER_THAN_SIX_MONTHS'],
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: ['MISSING_DE_VERSION'],
+            };
+
             await reporter.reportErrors(
                 '000',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION'],
+                [someValidatedOnePager, anotherValidatedOnePager],
                 someEmployeeData
             );
 
@@ -92,10 +116,14 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should not clean up errors when valid is reported for other employee', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: ['OLDER_THAN_SIX_MONTHS'],
+            };
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS'],
+                [someValidatedOnePager],
                 someEmployeeData
             );
             await reporter.reportValid('000');
@@ -106,16 +134,24 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
         it('should replace previous error with new ones', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: ['OLDER_THAN_SIX_MONTHS'],
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: ['MISSING_DE_VERSION'],
+            };
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS'],
+                [someValidatedOnePager],
                 someEmployeeData
             );
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['MISSING_DE_VERSION'],
+                [anotherValidatedOnePager],
                 someEmployeeData
             );
 

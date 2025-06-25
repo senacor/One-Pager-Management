@@ -16,6 +16,7 @@ function OnePager(local?: Local, lastUpdateByEmployee: Date = new Date()): OnePa
         lastUpdateByEmployee,
         webLocation: new URL('file:///example.pptx'),
         data: async () => Buffer.from(''),
+        name: 'Mustermann, Max_DE_240209.pptx',
     };
 }
 
@@ -99,7 +100,7 @@ describe('OnePagerValidation', () => {
             ],
         });
         const validation = new OnePagerValidation(repo, repo, reporter, async op =>
-            !op || op.lastUpdateByEmployee < new Date('2010-01-01') ? ['OLDER_THAN_SIX_MONTHS'] : []
+            !op.onePager || op.onePager.lastUpdateByEmployee < new Date('2010-01-01') ? ['OLDER_THAN_SIX_MONTHS'] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -217,11 +218,15 @@ describe('OnePagerValidation', () => {
 
         function LoadedOnePager(local?: Local, contentLanguages?: [Local]): LoadedOnePager {
             return {
-                local,
+                onePager: {
+                    local,
+                    lastUpdateByEmployee: new Date(),
+                    data: async () => Buffer.from(''),
+                    webLocation: new URL('file:///example.pptx'),
+                    name: 'Example OnePager',
+                },
                 contentLanguages: contentLanguages || (local ? [local] : []),
-                lastUpdateByEmployee: new Date(),
                 pptx: undefined as never as Pptx,
-                webLocation: new URL('file:///example.pptx'),
             };
         }
 

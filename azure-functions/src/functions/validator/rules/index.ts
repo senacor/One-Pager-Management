@@ -8,7 +8,7 @@ export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
 export const lastModifiedRule: ValidationRule = async onePager => {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    return onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
+    return onePager.onePager.lastUpdateByEmployee < sixMonthsAgo ? ['OLDER_THAN_SIX_MONTHS'] : [];
 };
 
 export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
@@ -16,7 +16,7 @@ export const contentLanguageIsIndicatedInName: ValidationRule = async onePager =
         return ['MIXED_LANGUAGE_VERSION'];
     }
 
-    switch (onePager.local) {
+    switch (onePager.onePager.local) {
         case undefined:
             return ['MISSING_LANGUAGE_INDICATOR_IN_NAME'];
         case onePager.contentLanguages[0]:

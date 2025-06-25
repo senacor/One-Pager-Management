@@ -3,8 +3,7 @@ import path from 'path';
 import {
     EmployeeID,
     Logger,
-    OnePager,
-    ValidationError,
+    ValidatedOnePager,
     ValidationReporter,
 } from '../../DomainTypes';
 
@@ -57,11 +56,10 @@ export class LocalFileValidationReporter implements ValidationReporter {
      */
     async reportErrors(
         id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[]
+        validatedOnePagers: ValidatedOnePager[],
     ): Promise<void> {
         await this.ensureDataDir();
-        await fs.writeFile(this.validationFile(id), JSON.stringify(errors));
+        await fs.writeFile(this.validationFile(id), JSON.stringify(validatedOnePagers));
     }
 
     /**
@@ -69,11 +67,11 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * @param id The employee ID for which to retrieve the validation result.
      * @returns The result resolves to validation errors found for the employee's one-pager, or an empty array if no errors are found.
      */
-    async getResultFor(id: EmployeeID): Promise<ValidationError[]> {
+    async getResultFor(id: EmployeeID): Promise<ValidatedOnePager[]> {
         await this.ensureDataDir();
         try {
             const file = await fs.readFile(this.validationFile(id), 'utf-8');
-            return JSON.parse(file) as ValidationError[];
+            return JSON.parse(file) as ValidatedOnePager[];
         } catch {
             return [];
         }
