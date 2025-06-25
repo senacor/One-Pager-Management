@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { ProgressNav, StepBasicInfo, StepFocus, StepExperience, StepProjects, LanguageSwitcher } from './components';
+import { useEffect, useState } from 'react';
+import { ProgressNav, StepBasicInfo, StepFocus, StepExperience, StepProjects, LanguageSwitcher, ImportWizard } from './components';
 import { DebugPanel } from './components/DebugPanel';
 import { OnePagerProvider } from './context/OnePagerContext';
 import { ActiveStepProvider } from './context/ActiveStepContext.tsx';
@@ -11,6 +11,7 @@ const sectionIds = ['basic-info', 'focus', 'experience', 'projects'];
 
 function App() {
   const activeIndex = useScrollSpy(sectionIds);
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
 
   // Initialize AI service on app startup
   useEffect(() => {
@@ -40,12 +41,18 @@ function App() {
     <OnePagerProvider>
       <ActiveStepProvider activeStepIndex={activeIndex} sectionIds={sectionIds}>
         <div className="bg-gray-50 min-h-screen">
-          {/* Language Switcher */}
-          <LanguageSwitcher />
+          {/* Language Switcher positioned at top-right */}
+          <div className="fixed top-4 right-4 z-30">
+            <LanguageSwitcher />
+          </div>
           
-          {/* Progress Navigation - hidden only on very small screens */}
+          {/* Progress Navigation - with import button integrated */}
           <div className="hidden lg:block">
-            <ProgressNav currentStep={activeIndex} onStepClick={handleStepClick} />
+            <ProgressNav 
+              currentStep={activeIndex} 
+              onStepClick={handleStepClick}
+              onImportClick={() => setIsImportWizardOpen(true)}
+            />
           </div>
 
           {/* Main Content */}
@@ -60,6 +67,12 @@ function App() {
 
           {/* Debug Panel for Development */}
           <DebugPanel />
+
+          {/* Import Wizard */}
+          <ImportWizard
+            isOpen={isImportWizardOpen}
+            onClose={() => setIsImportWizardOpen(false)}
+          />
         </div>
       </ActiveStepProvider>
     </OnePagerProvider>

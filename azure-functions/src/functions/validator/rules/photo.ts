@@ -1,21 +1,13 @@
 import { ValidationError, ValidationRule } from '../DomainTypes';
 import { detectFaces, labelImage, labelImageAvailable, PhotoLabels } from './ai';
-import { PptxImage } from './Pptx';
+import { Pptx, PptxImage } from './Pptx';
 
 export const QUALITY_THRESHOLD = 0.2;
 
 export const checkImages: ValidationRule = async onePager => {
     const usedImages = await onePager.pptx.getUsedImages();
 
-    const withFaces = (
-        await Promise.all(
-            usedImages.map(async img => {
-                const faces = await detectFaces(await img.data());
-
-                return faces.length > 0 ? [img] : [];
-            })
-        )
-    ).flat();
+    const withFaces = await extractPhotosWithFaces(usedImages);
 
     const errors: ValidationError[] = [];
 
@@ -34,6 +26,18 @@ export const checkImages: ValidationRule = async onePager => {
     }
     return errors;
 };
+
+export async function extractPhotosWithFaces(images: PptxImage[]): Promise<PptxImage[]> {
+    return (
+        await Promise.all(
+            images.map(async img => {
+                const faces = await detectFaces(await img.data());
+
+                return faces.length > 0 ? [img] : [];
+            })
+        )
+    ).flat();
+}
 
 export async function scoreQuality(img: PptxImage): Promise<number> {
     const labels = await labelImage(await img.data());

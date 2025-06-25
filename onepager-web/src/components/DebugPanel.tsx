@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useOnePagerContext } from '../hooks/useOnePager';
 import { useAIServiceProvider } from '../services';
+import { ConfigPanel } from './ConfigPanel';
+import { RuntimeConfigPanel } from './RuntimeConfigPanel';
 
 export const DebugPanel: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [importText, setImportText] = useState('');
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+  const [isRuntimeConfigOpen, setIsRuntimeConfigOpen] = useState(false);
   const { data, exportData, importData, resetData, clearStorage } = useOnePagerContext();
   const { serviceInfo, refreshServiceInfo, isRealServiceAvailable } = useAIServiceProvider();
 
@@ -156,6 +160,21 @@ export const DebugPanel: React.FC = () => {
           </button>
         </div>
 
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsConfigPanelOpen(true)}
+            className="flex-1 bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600"
+          >
+            ⚙️ API Config
+          </button>
+          <button
+            onClick={() => setIsRuntimeConfigOpen(true)}
+            className="flex-1 bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600"
+          >
+            🔧 Runtime Config
+          </button>
+        </div>
+
         {/* Import */}
         <div>
           <textarea
@@ -178,6 +197,18 @@ export const DebugPanel: React.FC = () => {
       <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
         Last updated: {data.metadata.lastUpdated.toLocaleString()}
       </div>
+
+      {/* Config Panel */}
+      <ConfigPanel
+        isOpen={isConfigPanelOpen}
+        onClose={() => setIsConfigPanelOpen(false)}
+      />
+
+      {/* Runtime Config Panel */}
+      <RuntimeConfigPanel
+        isOpen={isRuntimeConfigOpen}
+        onClose={() => setIsRuntimeConfigOpen(false)}
+      />
     </div>
   );
 };

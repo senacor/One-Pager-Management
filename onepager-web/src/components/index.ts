@@ -9,3 +9,5 @@ export { DebugPanel } from './DebugPanel';
 export { TextInput } from './TextInput';
 export { FileUpload } from './FileUpload';
 export { ImageCropper } from './ImageCropper';
+export { ImportWizard } from './ImportWizard';
+export { ConfigPanel } from './ConfigPanel';

@@ -27,6 +27,8 @@ export {
 
 // Service implementations
 export { MockAIService } from './MockAIService';
+export { OnePagerApiService, onePagerApiService } from './OnePagerApiService';
+export type { Employee, OnePagerFile, OnePagerData } from './OnePagerApiService';
 
 // Service provider
 export { AIServiceProvider, aiServiceProvider, isAIServiceError } from './AIServiceProvider';

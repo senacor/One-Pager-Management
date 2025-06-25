@@ -5,9 +5,10 @@ import { useFormCompletion } from '../hooks/useOnePager';
 interface ProgressNavProps {
   currentStep: number;
   onStepClick: (step: number) => void;
+  onImportClick?: () => void;
 }
 
-export const ProgressNav: React.FC<ProgressNavProps> = ({ currentStep, onStepClick }) => {
+export const ProgressNav: React.FC<ProgressNavProps> = ({ currentStep, onStepClick, onImportClick }) => {
   const { t } = useTranslation();
   const { stepCompletionStatus, completionPercentage } = useFormCompletion();
   
@@ -20,7 +21,19 @@ export const ProgressNav: React.FC<ProgressNavProps> = ({ currentStep, onStepCli
   
   return (
     <nav className="fixed top-0 bottom-0 left-0 w-64 bg-dark-nav p-5 flex flex-col z-10 shadow-lg">
-      {/* Progress indicator at the top */}
+      {/* Import Button at the top */}
+      {onImportClick && (
+        <div className="mb-4">
+          <button
+            onClick={onImportClick}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            {t('import.title')}
+          </button>
+        </div>
+      )}
+      
+      {/* Progress indicator */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-white text-sm mb-2">
           <span>Progress</span>
