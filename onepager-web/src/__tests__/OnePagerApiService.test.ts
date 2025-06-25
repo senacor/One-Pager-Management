@@ -8,7 +8,7 @@ describe('OnePagerApiService', () => {
   let apiService: OnePagerApiService;
 
   beforeEach(() => {
-    apiService = new OnePagerApiService('http://test-api');
+    apiService = new OnePagerApiService();
     mockFetch.mockClear();
   });
 
