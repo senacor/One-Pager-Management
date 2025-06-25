@@ -42,14 +42,6 @@ jobs:
           cd onepager-web
           npm ci
 
-      - name: Build Vite app
-        run: |
-          cd onepager-web
-          npm run build
-        env:
-          VITE_API_BASE_URL: https://poc-one-pager.azurewebsites.net
-          VITE_ENVIRONMENT: production
-
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -66,6 +58,14 @@ jobs:
           bundle exec jekyll build --destination _site
         env:
           JEKYLL_ENV: production
+
+      - name: Build Vite app
+        run: |
+          cd onepager-web
+          npm run build
+        env:
+          VITE_API_BASE_URL: https://poc-one-pager.azurewebsites.net
+          VITE_ENVIRONMENT: production
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
