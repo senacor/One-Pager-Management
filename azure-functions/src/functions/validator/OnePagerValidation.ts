@@ -140,11 +140,11 @@ export class OnePagerValidation {
     //         return [
     //             {
     //                 onePager: undefined,
-    //                 errors: ['MISSING_DE_VERSION'] as ValidationError[],
+    //                 errors: [ValidationErrorEnum.MISSING_DE_VERSION] as ValidationError[],
     //             },
     //             {
     //                 onePager: undefined,
-    //                 errors: ['MISSING_EN_VERSION'] as ValidationError[],
+    //                 errors: [ValidationErrorEnum.MISSING_EN_VERSION] as ValidationError[],
     //             },
     //         ];
     //     } else if (candidates.length === 1 && (candidates[0].contentLanguages.length === 1 || candidates[0].onePager.local)) {

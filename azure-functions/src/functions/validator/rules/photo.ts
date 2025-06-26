@@ -1,4 +1,4 @@
-import { ValidationError, ValidationRule } from '../DomainTypes';
+import { ValidationError, ValidationErrorEnum, ValidationRule } from '../DomainTypes';
 import { detectFaces, labelImage, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
@@ -20,15 +20,15 @@ export const checkImages: ValidationRule = async onePager => {
     const errors: ValidationError[] = [];
 
     if (withFaces.length !== usedImages.length) {
-        errors.push('OTHER_IMAGES');
+        errors.push(ValidationErrorEnum.OTHER_IMAGES);
     }
     if (withFaces.length === 0) {
-        errors.push('MISSING_PHOTO');
+        errors.push(ValidationErrorEnum.MISSING_PHOTO);
     }
 
     const scored = await Promise.all(withFaces.map(scoreQuality));
     if (scored.some(score => score < QUALITY_THRESHOLD)) {
-        errors.push('LOW_QUALITY_PHOTO');
+        errors.push(ValidationErrorEnum.LOW_QUALITY_PHOTO);
     }
 
     return errors;

@@ -2,7 +2,8 @@ import {
     EmployeeID,
     LoadedOnePager,
     LocalEnum,
-    ValidationError
+    ValidationError,
+    ValidationErrorEnum
 } from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
@@ -76,7 +77,7 @@ describe('validationRules', () => {
 
             const errors = lastModifiedRule(old, employeeData);
 
-            await expect(errors).resolves.toEqual(['OLDER_THAN_SIX_MONTHS']);
+            await expect(errors).resolves.toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
         });
     });
 
@@ -106,7 +107,7 @@ describe('validationRules', () => {
 
                 const errors = usesCurrentTemplate()(oldTemplate, employeeData);
 
-                await expect(errors).resolves.toEqual(['USING_UNKNOWN_TEMPLATE']);
+                await expect(errors).resolves.toEqual([ValidationErrorEnum.USING_UNKNOWN_TEMPLATE]);
             }
         );
 
@@ -124,7 +125,7 @@ describe('validationRules', () => {
 
             const errors = usesCurrentTemplate()(nonExact, employeeData);
 
-            await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
+            await expect(errors).resolves.toEqual([ValidationErrorEnum.USING_MODIFIED_TEMPLATE]);
         });
     });
 
@@ -139,7 +140,7 @@ describe('validationRules', () => {
 
             const errors = checkImages(onePagerWithoutPhoto, employeeData);
 
-            await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
+            await expect(errors).resolves.toEqual(expect.arrayContaining([ValidationErrorEnum.MISSING_EN_VERSION]));
         });
 
         it('should report no error if photo is found', async () => {
@@ -178,12 +179,12 @@ describe('validationRules', () => {
     describe('combineRules', () => {
         it('combines multiple rules and flattens errors', async () => {
             const rule1 = async () => ['MISSING_ONE_PAGER' as ValidationError];
-            const rule2 = async () => ['OLDER_THAN_SIX_MONTHS' as ValidationError];
+            const rule2 = async () => [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS as ValidationError];
             const combined = combineRules(rule1, rule2);
 
             const errors = combined(await exampleOnePager(), employeeData);
 
-            await expect(errors).resolves.toEqual(['MISSING_ONE_PAGER', 'OLDER_THAN_SIX_MONTHS']);
+            await expect(errors).resolves.toEqual(['MISSING_ONE_PAGER', ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
         });
     });
 });

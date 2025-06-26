@@ -14,6 +14,7 @@ import {
     LocalEnum,
     OnePager,
     ValidatedOnePager,
+    ValidationErrorEnum,
     ValidationReporter,
 } from '../src/functions/validator/DomainTypes';
 
@@ -56,12 +57,12 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
-                errors: ['OLDER_THAN_SIX_MONTHS'],
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
             }; // EN
 
             const anotherValidatedOnePager: ValidatedOnePager = {
                 onePager: undefined,
-                errors: ['MISSING_DE_VERSION'],
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
             }; // DE
 
             await reporter.reportErrors(
@@ -80,10 +81,10 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const result = await reporter.getResultFor('111');
 
             expect(result[LocalEnum.DE].errors).toEqual([
-                'MISSING_DE_VERSION',
+                ValidationErrorEnum.MISSING_DE_VERSION,
             ]);
             expect(result[LocalEnum.EN].errors).toEqual([
-                'OLDER_THAN_SIX_MONTHS',
+                ValidationErrorEnum.OLDER_THAN_SIX_MONTHS,
             ]);
         });
 
@@ -92,7 +93,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
-                errors: ['OLDER_THAN_SIX_MONTHS'],
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
             };
 
             await reporter.reportErrors(
@@ -114,12 +115,12 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
-                errors: ['OLDER_THAN_SIX_MONTHS'],
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
             };
 
             const anotherValidatedOnePager: ValidatedOnePager = {
                 onePager: undefined,
-                errors: ['MISSING_DE_VERSION'],
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
             };
 
             await reporter.reportErrors(
@@ -146,7 +147,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
-                errors: ['OLDER_THAN_SIX_MONTHS'],
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
             };
 
             await reporter.reportErrors(
@@ -158,7 +159,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             await reporter.reportValid('000', LocalEnum.EN);
             const result = await reporter.getResultFor('111');
 
-            expect(result[LocalEnum.EN].errors).toEqual(['OLDER_THAN_SIX_MONTHS']);
+            expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
         });
 
         it('should replace previous error with new ones', async () => {
@@ -166,12 +167,12 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
-                errors: ['OLDER_THAN_SIX_MONTHS'],
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
             };
 
             const anotherValidatedOnePager: ValidatedOnePager = {
                 onePager: undefined,
-                errors: ['MISSING_DE_VERSION'],
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
             };
 
             await reporter.reportErrors(
@@ -187,7 +188,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
                 someEmployeeData
             );
             const result = await reporter.getResultFor('111');
-            expect(result[LocalEnum.EN].errors).toEqual(['MISSING_DE_VERSION']);
+            expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.MISSING_DE_VERSION]);
         });
     });
 };

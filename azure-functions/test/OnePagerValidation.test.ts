@@ -3,6 +3,7 @@ import {
     LocalEnum,
     OnePager,
     ValidationError,
+    ValidationErrorEnum,
     ValidationReporter,
 } from '../src/functions/validator/DomainTypes';
 import { OnePagerValidation } from '../src/functions/validator/OnePagerValidation';
@@ -29,7 +30,7 @@ describe('OnePagerValidation', () => {
     it('should not report errors for unknown employee', async () => {
         const repo = await initInMemoryOnePagers({});
         const validation = new OnePagerValidation(repo, repo, reporter, async () => [
-            'USING_UNKNOWN_TEMPLATE',
+            ValidationErrorEnum.USING_UNKNOWN_TEMPLATE,
         ]);
 
         await validation.validateOnePagersOfEmployee('000');
@@ -44,14 +45,14 @@ describe('OnePagerValidation', () => {
         const id = '111';
         const repo = await initInMemoryOnePagers({ [id]: [] });
         const validation = new OnePagerValidation(repo, repo, reporter, async op =>
-            op === undefined ? ['USING_UNKNOWN_TEMPLATE'] : []
+            op === undefined ? [ValidationErrorEnum.USING_UNKNOWN_TEMPLATE] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
 
         const result = await reporter.getResultFor(id);
-        expect(result[LocalEnum.DE].errors).toEqual(['MISSING_DE_VERSION']);
-        expect(result[LocalEnum.EN].errors).toEqual(['MISSING_EN_VERSION']);
+        expect(result[LocalEnum.DE].errors).toEqual([ValidationErrorEnum.MISSING_DE_VERSION]);
+        expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.MISSING_EN_VERSION]);
 
     });
 
@@ -64,14 +65,14 @@ describe('OnePagerValidation', () => {
             ],
         });
         const validation = new OnePagerValidation(repo, repo, reporter, async op =>
-            op !== undefined ? ['OLDER_THAN_SIX_MONTHS'] : []
+            op !== undefined ? [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
 
         const result = await reporter.getResultFor(id);
-        expect(result[LocalEnum.DE].errors).toEqual(['OLDER_THAN_SIX_MONTHS']);
-        expect(result[LocalEnum.EN].errors).toEqual(['OLDER_THAN_SIX_MONTHS']);
+        expect(result[LocalEnum.DE].errors).toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
+        expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
     });
 
     it('should clean errors for employee when one-pager becomes valid', async () => {
@@ -84,7 +85,7 @@ describe('OnePagerValidation', () => {
         });
         let callCounter = 0;
         const statefulValidator = async () =>
-            callCounter++ === 0 ? (['OLDER_THAN_SIX_MONTHS'] as ValidationError[]) : [];
+            callCounter++ === 0 ? ([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS] as ValidationError[]) : [];
         const validation = new OnePagerValidation(repo, repo, reporter, statefulValidator);
 
         await validation.validateOnePagersOfEmployee(id);
@@ -107,7 +108,7 @@ describe('OnePagerValidation', () => {
             ],
         });
         const validation = new OnePagerValidation(repo, repo, reporter, async op =>
-            !op.onePager || op.onePager.lastUpdateByEmployee < new Date('2010-01-01') ? ['OLDER_THAN_SIX_MONTHS'] : []
+            !op.onePager || op.onePager.lastUpdateByEmployee < new Date('2010-01-01') ? [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS] : []
         );
 
         await validation.validateOnePagersOfEmployee(id);
@@ -183,9 +184,9 @@ describe('OnePagerValidation', () => {
         });
 
         it('should select one without language if newer than only one with language', async () => {
-            const de = OnePager('DE', new Date('2023-01-01'));
+            const de = OnePager(LocalEnum.DE, new Date('2023-01-01'));
             const withoutLang = OnePager(undefined, new Date('2024-01-01'));
-            const en = OnePager('EN', new Date('2025-01-01'));
+            const en = OnePager(LocalEnum.EN, new Date('2025-01-01'));
             const withoutLangNewer = OnePager(undefined, new Date('2024-02-01'));
 
             const result = (await validation()).selectNewestOnePagers([
@@ -220,8 +221,8 @@ describe('OnePagerValidation', () => {
     //         const result = (await validation()).validateRequiredVersions([]);
 
     //         assertSameItems(result, [
-    //             { onePager: undefined, errors: ['MISSING_DE_VERSION'], local: LocalEnum.DE },
-    //             { onePager: undefined, errors: ['MISSING_EN_VERSION'], local: LocalEnum.EN },
+    //             { onePager: undefined, errors: [ValidationErrorEnum.MISSING_DE_VERSION], local: LocalEnum.DE },
+    //             { onePager: undefined, errors: [ValidationErrorEnum.MISSING_EN_VERSION], local: LocalEnum.EN },
     //         ]);
     //     });
 
@@ -267,8 +268,8 @@ describe('OnePagerValidation', () => {
     //     });
 
     //     it.each([
-    //         { lang: LocalEnum.EN, error: 'MISSING_DE_VERSION' },
-    //         { lang: LocalEnum.DE, error: 'MISSING_EN_VERSION' },
+    //         { lang: LocalEnum.EN, error: ValidationErrorEnum.MISSING_DE_VERSION },
+    //         { lang: LocalEnum.DE, error: ValidationErrorEnum.MISSING_EN_VERSION },
     //     ])('should report missing DE version', async ({ lang, error }) => {
     //         const result = (await validation()).validateRequiredVersions([LoadedOnePager(lang)]);
 
