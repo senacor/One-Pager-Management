@@ -58,6 +58,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
             position_future: '',
             resource_type_future: '',
             staffing_pool_future: '',
+            isGerman: true,
         };
     }
 
@@ -153,8 +154,10 @@ function isOnePagerFile(fileName: string): fileName is OnePagerFile {
         return false;
     }
 
-    return Boolean(fileName.match(/.+, .+?((?<![A-Z])[A-Z]{2})?_(\d{6})\.pptx$/));
+    return Boolean(fileName.match(/.+\.pptx$/));
+    // return Boolean(fileName.match(/.+, .+?((?<![A-Z])[A-Z]{2})?_(\d{6})\.pptx$/));
 }
+// }
 
 export function extractLanguageCode(name: string): Local | undefined {
     const match = name.match(/((?<![A-Z])[A-Z]{2})_/i);

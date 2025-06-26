@@ -1,6 +1,7 @@
 import {
     EmployeeID,
     LoadedOnePager,
+    LocalEnum,
     ValidationError
 } from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
@@ -21,12 +22,12 @@ function exampleOnePager(): Promise<LoadedOnePager> {
             async data => ({
                 onePager: {
                     lastUpdateByEmployee: new Date(),
-                    local: 'DE',
+                    local: LocalEnum.DE,
                     data: () => Promise.resolve(data),
                     webLocation: new URL('https://example.com/onepager.pptx'),
                     name: 'Mustermann, Max_DE_240209.pptx',
                 },
-                contentLanguages: ['DE'],
+                contentLanguages: [LocalEnum.DE],
                 pptx: await Pptx.load(data),
                 errors: [],
                 })
@@ -48,6 +49,7 @@ const employeeData = {
     position_future: '',
     resource_type_future: '',
     staffing_pool_future: '',
+    isGerman: true,
 };
 
 describe('validationRules', () => {
@@ -69,8 +71,8 @@ describe('validationRules', () => {
             olderThenSixMonths.setMonth(olderThenSixMonths.getMonth() - 7);
             const old = {
                 ...(await exampleOnePager()),
-                lastUpdateByEmployee: olderThenSixMonths,
             };
+            old.onePager.lastUpdateByEmployee = olderThenSixMonths;
 
             const errors = lastModifiedRule(old, employeeData);
 

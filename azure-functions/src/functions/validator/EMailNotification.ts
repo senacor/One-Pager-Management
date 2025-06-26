@@ -50,15 +50,15 @@ export class EMailNotification {
 
         const validationErrorArr = await this.reporter.getResultFor(employeeId);
 
-        const templateData = {
-            errors: validationErrorArr.join('\n'),
-        };
+        // const templateData = {
+        //     errors: validationErrorArr.join('\n'),
+        // };
 
-        const mailContent = render(mailTemplate.content, templateData);
+        // const mailContent = render(mailTemplate.content, templateData);
 
-        this.logger.log(employee.email, mailTemplate.subject, mailContent);
+        // this.logger.log(employee.email, mailTemplate.subject, mailContent);
 
-        await this.mailAdapter.sendMail(employee.email, mailTemplate.subject, mailContent);
+        // await this.mailAdapter.sendMail(employee.email, mailTemplate.subject, mailContent);
     }
 
     private async loadEMailTemplate(): Promise<MailTemplate> {

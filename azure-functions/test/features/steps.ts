@@ -3,6 +3,11 @@ import { OnePagerValidation } from '../../src/functions/validator/OnePagerValida
 import {
     EmployeeID,
     EmployeeRepository,
+    isLocal,
+    isValidationError,
+    Local,
+    LocalEnum,
+    LocalToValidatedOnePager,
     OnePagerRepository,
     ValidationReporter,
 } from '../../src/functions/validator/DomainTypes';
@@ -19,6 +24,7 @@ import { MemoryFileSystem } from '../../src/functions/validator/adapter/memory/M
 import { FileSystemStorageExplorer } from '../../src/functions/validator/adapter/FileSystemStorageExplorer';
 import { allRules } from '../../src/functions/validator/rules';
 import * as system from 'os';
+import { ValidationError } from 'xml2js';
 
 type OnePagerExemplar = {
     Name: string;
@@ -30,6 +36,7 @@ type EmployeeExemplar = {
     Id: EmployeeID;
     Name: string;
     FamilyName: string;
+    Language: Local;
 };
 
 type Context = {
@@ -44,6 +51,8 @@ type Context = {
 type DataTable<T> = {
     hashes: () => T[];
 };
+
+type ValidationErrorObject = {[local in Local]: ValidationError[]};
 
 Before(async function (this: Context) {
     this.reporter = new InMemoryValidationReporter();
@@ -127,32 +136,50 @@ When('we validate the OnePagers of {string}', async function (this: Context, emp
 });
 
 Then('{string} OnePagers have no validation errors', function (this: Context, employee: string) {
-    return checkErrors.call(this, employee);
+    return checkErrors.call(this, employee, Object.assign({}, ...Object.values(LocalEnum).map((lang) => ({[lang]: []}))));
 });
 
 Then(
-    '{string} OnePagers have the validation error {string}',
-    function (this: Context, employee: string, error: string) {
-        return checkErrors.call(this, employee, error);
-    }
-);
+    '{string} OnePagers have the validation errors:',
+    async function (this: Context, employee: string, data: DataTable<{ Version: Local; Error: string }>) {
+        const errorObj: ValidationErrorObject = data.hashes().reduce((acc, curr) => {
+            const local = curr.Version as Local;
+            if (!isLocal(local)) {
+                throw new Error(`Invalid local ${local} in data table`);
+            }
+            if (!acc[local]) {
+                acc[local] = [];
+            }
+            const error: unknown = curr.Error;
+            if (!isValidationError(error)) {
+                return acc; // Ignore invalid errors
+            }
+            acc[local].push(error as unknown as ValidationError);
+            return acc;
+        }, {} as Record<Local, ValidationError[]>);
 
-Then(
-    '{string} OnePagers have the validation errors {string} and {string}',
-    function (this: Context, employee: string, error1: string, error2: string) {
-        return checkErrors.call(this, employee, error1, error2);
+        if (Object.values(LocalEnum).some((lang) => !errorObj[lang])) {
+            throw new Error(`Error object must contain at least one entry for each local: ${JSON.stringify(errorObj)}`);
+        }
+
+        await checkErrors.call(this, employee, errorObj);
     }
-);
+)
 
 // Generalized to accept up to two error strings, but works for all three step patterns
-async function checkErrors(this: Context, employee: string, ...errors: string[]) {
+async function checkErrors(this: Context, employee: string, errorObj: ValidationErrorObject): Promise<void> {
     const { Id } = this.getEmployee(employee);
-    // Collect errors, filter out undefined
-    const results = await this.reporter.getResultFor(Id);
+    const results: LocalToValidatedOnePager = await this.reporter.getResultFor(Id);
+    const resultErrors: ValidationErrorObject = Object.assign({}, ...((Object.values(LocalEnum) as Local[]).map((lang) => {
+        return {
+            [lang]: results[lang].errors
+        };
+    })));
 
-    assert.deepEqual(
-        results.sort(),
-        errors.sort(),
-        `Expected errors for ${Id} to be ${JSON.stringify(errors)}, but got ${JSON.stringify(results)}`
+
+    assert.deepStrictEqual(
+        resultErrors,
+        errorObj,
+        `Expected errors for ${Id} to be ${JSON.stringify(errorObj)}, but got ${JSON.stringify(resultErrors)}`
     );
 }

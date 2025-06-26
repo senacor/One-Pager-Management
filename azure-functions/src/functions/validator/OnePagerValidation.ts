@@ -9,7 +9,8 @@ import {
     ValidationError,
     ValidationReporter,
     ValidationRule,
-    ValidatedOnePager
+    LocalEnum,
+    LocalToValidatedOnePager
 } from './DomainTypes';
 import { Pptx } from './rules/Pptx';
 
@@ -71,8 +72,7 @@ export class OnePagerValidation {
             await Promise.all(candidates.map(c => this.loadOnePager(c)))
         ).flat();
 
-        const selectedCandidates = Object.values(
-            loadedCandidates.reduce(
+        const selectedCandidates: Record<Local, LoadedOnePager> = loadedCandidates.reduce(
                 (acc, current) => {
                     const langs = [current.onePager.local || current.contentLanguages].flat();
                     for (const lang of langs) {
@@ -86,61 +86,81 @@ export class OnePagerValidation {
                     return acc;
                 },
                 {} as Record<Local, LoadedOnePager>
-            )
-        ).filter(uniq);
+            );
 
         this.logger.log(
-            `Selected one-pagers for validation based on language and last update: ${selectedCandidates.map(op => `${op.onePager.local || op.contentLanguages.join('+')} (${op.onePager.webLocation})`).join(', ')}`
+            `Selected one-pagers for validation based on language and last update: ${selectedCandidates}`
         );
 
-        const validatedOnePagers: ValidatedOnePager[] = await Promise.all(selectedCandidates.map(async op => {
-            return { onePager: op.onePager, errors: await this.validationRule(op, employeeData) };
-        }));
+        // wrap each one pager with local in one ValidatedOnePager object and files with no language in name in multiple ValidatedOnePager objects based on contentLanguages
+        const validatedOnePagers: LocalToValidatedOnePager = Object.assign({}, ...(await Promise.all(Object.values(LocalEnum).map(async lang => {
+            const op = selectedCandidates[lang];
+            if (!op) {
+                this.logger.log(`No one-pager found for language ${lang} for employee ${id}.`);
+                return {
+                    [lang]: {
+                        onePager: undefined,
+                        errors: [`MISSING_${lang}_VERSION`] as ValidationError[]
+                    }
+                };
+            }
+            return {
+                [lang]: {
+                    onePager: op.onePager,
+                    errors: await this.validationRule(op, employeeData),
+                }
+            };
+        }))));
 
 
-        const results: ValidatedOnePager[] = [
-            ...validatedOnePagers,
-            ...this.validateRequiredVersions(selectedCandidates),
-        ];
-
-        const errors = results.flatMap(r => r.errors).filter(uniq);
+        const errors = Object.values(validatedOnePagers).flatMap(r => r.errors).filter(uniq);
         this.logger.log(`Validation results for employee ${id}:`, errors);
-        if (errors.length === 0) {
-            this.logger.log(`Employee ${id} has valid OnePagers!`);
-            await this.reporter.reportValid(id);
-        } else {
-            this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
-            await this.reporter.reportErrors(id, results, employeeData);
-        }
+
+        await Promise.all(Object.values(LocalEnum).map(async (lang) => {
+
+            if (!employeeData.isGerman && lang === LocalEnum.DE) {
+                this.logger.log(`Employee ${id} is not German, skipping DE one-pager.`);
+                return;
+            }
+
+            if (validatedOnePagers[lang].errors.length === 0) {
+                this.logger.log(`Employee ${id} has valid OnePagers!`);
+                await this.reporter.reportValid(id, lang);
+            } else {
+                this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
+                await this.reporter.reportErrors(id, validatedOnePagers[lang], lang, employeeData);
+            }
+        }));
     }
 
-    validateRequiredVersions(
-        candidates: LoadedOnePager[]
-    ): ValidatedOnePager[] {
-        if (candidates.length === 0) {
-            return [
-                {
-                    onePager: undefined,
-                    errors: ['MISSING_DE_VERSION'] as ValidationError[],
-                },
-                {
-                    onePager: undefined,
-                    errors: ['MISSING_EN_VERSION'] as ValidationError[],
-                },
-            ];
-        } else if (candidates.length === 1 && candidates[0].contentLanguages.length === 1) {
-            const missingLang =
-                (candidates[0].onePager.local || candidates[0].contentLanguages[0]) === 'DE' ? 'EN' : 'DE';
-            return [
-                {
-                    onePager: undefined,
-                    errors: [`MISSING_${missingLang}_VERSION`] as ValidationError[],
-                },
-            ];
-        } else {
-            return [];
-        }
-    }
+    // validateRequiredVersions(
+    //     candidates: LoadedOnePager[]
+    // ): ValidatedOnePager[] {
+    //     if (candidates.length === 0) {
+    //         return [
+    //             {
+    //                 onePager: undefined,
+    //                 errors: ['MISSING_DE_VERSION'] as ValidationError[],
+    //             },
+    //             {
+    //                 onePager: undefined,
+    //                 errors: ['MISSING_EN_VERSION'] as ValidationError[],
+    //             },
+    //         ];
+    //     } else if (candidates.length === 1 && (candidates[0].contentLanguages.length === 1 || candidates[0].onePager.local)) {
+    //         const missingLang: Local =
+    //             (candidates[0].onePager.local || candidates[0].contentLanguages[0]) === LocalEnum.DE ? LocalEnum.EN : LocalEnum.DE;
+    //         return [
+    //             {
+    //                 onePager: undefined,
+    //                 errors: [`MISSING_${missingLang}_VERSION`] as ValidationError[],
+    //             },
+    //         ];
+    //     } else {
+    //         this.logger.log(`Found ${candidates.length} one-pagers:`, JSON.stringify(candidates.map(c => c.contentLanguages)));
+    //         return [];
+    //     }
+    // }
 
     /**
      * A function to select the newest one-pager.

@@ -19,7 +19,7 @@ x-functions-key: {{functions_key}}
 POST {{host}}/api/validate/5823
 x-functions-key: {{functions_key}}
 
-### real MaInfo: OLDER_THAN_SIX_MONTHS
+### real MaInfo: OLDER_THAN_SIX_MONTHS an missing english version
 POST {{host}}/api/validate/2391
 x-functions-key: {{functions_key}}
 
@@ -29,6 +29,14 @@ x-functions-key: {{functions_key}}
 
 ###
 POST {{host}}/api/validate/7526
+x-functions-key: {{functions_key}}
+
+###
+POST {{host}}/api/validate/2580
+x-functions-key: {{functions_key}}
+
+### problem case
+POST {{host}}/api/validate/4743
 x-functions-key: {{functions_key}}
 
 ###

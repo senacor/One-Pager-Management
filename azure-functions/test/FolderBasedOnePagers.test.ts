@@ -1,4 +1,4 @@
-import { EmployeeID } from '../src/functions/validator/DomainTypes';
+import { EmployeeID, LocalEnum } from '../src/functions/validator/DomainTypes';
 import { initInMemoryOnePagers } from './OnePagerExemplars';
 
 describe('FolderBasedOnePagers', () => {
@@ -47,11 +47,11 @@ describe('FolderBasedOnePagers', () => {
     it('should extract local of one-pager', async () => {
         const id: EmployeeID = '111';
         const rep = await initInMemoryOnePagers({
-            [id]: [{ lastUpdateByEmployee: new Date(), local: 'DE' }],
+            [id]: [{ lastUpdateByEmployee: new Date(), local: LocalEnum.DE }],
         });
         const onePagers = await rep.getAllOnePagersOfEmployee(id);
         expect(onePagers).toHaveLength(1);
-        expect(onePagers[0].local).toEqual('DE');
+        expect(onePagers[0].local).toEqual(LocalEnum.DE);
     });
 
     it('should accept missing local', async () => {

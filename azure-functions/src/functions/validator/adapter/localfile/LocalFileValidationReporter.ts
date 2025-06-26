@@ -2,6 +2,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import {
     EmployeeID,
+    Local,
+    LocalEnum,
+    LocalToValidatedOnePager,
     Logger,
     ValidatedOnePager,
     ValidationReporter,
@@ -28,8 +31,8 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * @param id The employee ID for which the validation result file is created.
      * @returns The path to the validation result file for the given employee ID.
      */
-    private validationFile(id: EmployeeID): string {
-        return path.join(this.dataDir, `${id}_validation.json`);
+    private validationFile(id: EmployeeID, local: Local): string {
+        return path.join(this.dataDir, `${id}_${local}_validation.json`);
     }
 
     /**
@@ -43,9 +46,9 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * Reports that an employee has valid one-pagers by creating an empty validation result file.
      * @param id The employee ID for which the one-pager is valid.
      */
-    async reportValid(id: EmployeeID): Promise<void> {
+    async reportValid(id: EmployeeID, local: Local): Promise<void> {
         await this.ensureDataDir();
-        await fs.writeFile(this.validationFile(id), JSON.stringify([]));
+        await fs.writeFile(this.validationFile(id, local), JSON.stringify([]));
     }
 
     /**
@@ -56,10 +59,11 @@ export class LocalFileValidationReporter implements ValidationReporter {
      */
     async reportErrors(
         id: EmployeeID,
-        validatedOnePagers: ValidatedOnePager[],
+        validatedOnePager: ValidatedOnePager,
+        local: Local,
     ): Promise<void> {
         await this.ensureDataDir();
-        await fs.writeFile(this.validationFile(id), JSON.stringify(validatedOnePagers));
+        await fs.writeFile(this.validationFile(id, local), JSON.stringify(validatedOnePager));
     }
 
     /**
@@ -67,13 +71,29 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * @param id The employee ID for which to retrieve the validation result.
      * @returns The result resolves to validation errors found for the employee's one-pager, or an empty array if no errors are found.
      */
-    async getResultFor(id: EmployeeID): Promise<ValidatedOnePager[]> {
+    async getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager> {
         await this.ensureDataDir();
+
+        let validatedOnePager_DE: ValidatedOnePager = {errors: [], onePager: undefined};
         try {
-            const file = await fs.readFile(this.validationFile(id), 'utf-8');
-            return JSON.parse(file) as ValidatedOnePager[];
-        } catch {
-            return [];
-        }
+            const file_DE = await fs.readFile(this.validationFile(id, LocalEnum.DE), 'utf-8');
+            const result = JSON.parse(file_DE);
+            if (!Array.isArray(result)) { // array means deleted entry
+                validatedOnePager_DE = result as ValidatedOnePager;
+            }
+        // eslint-disable-next-line no-empty
+        } catch {}
+
+        let validatedOnePager_EN: ValidatedOnePager = {errors: [], onePager: undefined};
+        try {
+            const file_EN = await fs.readFile(this.validationFile(id, LocalEnum.EN), 'utf-8');
+            const result = JSON.parse(file_EN);
+            if (!Array.isArray(result)) { // array means deleted entry
+                validatedOnePager_EN = result as ValidatedOnePager;
+            }
+        // eslint-disable-next-line no-empty
+        } catch {}
+
+        return {[LocalEnum.DE]: validatedOnePager_DE, [LocalEnum.EN]: validatedOnePager_EN};
     }
 }

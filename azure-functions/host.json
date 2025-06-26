@@ -1,5 +1,8 @@
 {
     "version": "2.0",
+    "concurrency": {
+        "dynamicConcurrencyEnabled": false
+    },
     "logging": {
         "applicationInsights": {
             "samplingSettings": {
@@ -16,10 +19,12 @@
         "durableTask": {
             "storageProvider": {
                 "type": "AzureStorage"
-            },
-            "queues": {
-                "batchSize": 20
             }
+
+        },
+        "queues": {
+            "batchSize": 6,
+            "newBatchThreshold": 3
         }
     }
 }
