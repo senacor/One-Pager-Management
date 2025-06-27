@@ -57,6 +57,7 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
                         replaceExtraChars(employee.name).indexOf(replaceExtraChars(lastname)) > -1;
                 });
             }
+            // possibleMatchesList contains powerBI IDs
             possibleMatchesList.forEach((el) => {
                 matchedIDs.push({folderID: id, powerBIID: el.id});
             });
@@ -76,7 +77,11 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
     await Promise.all(powerBIIDs.map(async (id: EmployeeID): Promise<void> => {
         if (!folderIDs.includes(id)) {
             const employeeData: Employee | undefined = await employeeRepo?.getEmployee(id);
-            if (!!employeeData && !(!employeeData?.resource_type_current) && !peopleWithOnePagers.includes(employeeData?.resource_type_current)) {
+            if (
+                employeeData === undefined
+                || employeeData?.resource_type_current === null
+                || !peopleWithOnePagers.includes(employeeData?.resource_type_current)
+            ) {
                 return;
             }
             const matches = matchedIDs.filter((el) => el.powerBIID === id).map((el) => el.folderID).join(', ');
@@ -85,7 +90,7 @@ import { PowerBIRepository } from "../src/functions/validator/adapter/powerbi/Po
         }
     }));
     stringify(mismatchIDsList, {
-        delimiter: ",",
+        delimiter: ";",
         header: true
     }, function (err, output) {
         console.log(output);
