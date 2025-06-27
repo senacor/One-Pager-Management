@@ -1,7 +1,9 @@
 import {
     EmployeeID,
     LoadedOnePager,
+    LocalEnum,
     ValidationError,
+    ValidationErrorEnum
 } from '../src/functions/validator/DomainTypes';
 import { promises, readdirSync } from 'node:fs';
 import { combineRules, lastModifiedRule } from '../src/functions/validator/rules';
@@ -20,12 +22,17 @@ function exampleOnePager(): Promise<LoadedOnePager> {
     if (!_exampleOnePager) {
         _exampleOnePager = readFile('test/resources/onepager/example-2024-DE.pptx').then(
             async data => ({
-                lastUpdateByEmployee: new Date(),
-                local: 'DE',
-                contentLanguages: ['DE'],
+                onePager: {
+                    lastUpdateByEmployee: new Date(),
+                    local: LocalEnum.DE,
+                    data: () => Promise.resolve(data),
+                    webLocation: new URL('https://example.com/onepager.pptx'),
+                    name: 'Mustermann, Max_DE_240209.pptx',
+                },
+                contentLanguages: [LocalEnum.DE],
                 pptx: await Pptx.load(data),
-                webLocation: new URL('https://example.com/onepager.pptx'),
-            })
+                errors: [],
+                })
         );
     }
     return _exampleOnePager;
@@ -44,6 +51,7 @@ const employeeData = {
     position_future: '',
     resource_type_future: '',
     staffing_pool_future: '',
+    isGerman: true,
 };
 
 describe('validationRules', () => {
@@ -65,12 +73,12 @@ describe('validationRules', () => {
             olderThenSixMonths.setMonth(olderThenSixMonths.getMonth() - 7);
             const old = {
                 ...(await exampleOnePager()),
-                lastUpdateByEmployee: olderThenSixMonths,
             };
+            old.onePager.lastUpdateByEmployee = olderThenSixMonths;
 
             const errors = lastModifiedRule(old, employeeData);
 
-            await expect(errors).resolves.toEqual(['OLDER_THAN_SIX_MONTHS']);
+            await expect(errors).resolves.toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
         });
     });
 
@@ -100,7 +108,7 @@ describe('validationRules', () => {
 
                 const errors = usesCurrentTemplate()(oldTemplate, employeeData);
 
-                await expect(errors).resolves.toEqual(['USING_UNKNOWN_TEMPLATE']);
+                await expect(errors).resolves.toEqual([ValidationErrorEnum.USING_UNKNOWN_TEMPLATE]);
             }
         );
 
@@ -118,7 +126,7 @@ describe('validationRules', () => {
 
             const errors = usesCurrentTemplate()(nonExact, employeeData);
 
-            await expect(errors).resolves.toEqual(['USING_MODIFIED_TEMPLATE']);
+            await expect(errors).resolves.toEqual([ValidationErrorEnum.USING_MODIFIED_TEMPLATE]);
         });
     });
 
@@ -133,7 +141,7 @@ describe('validationRules', () => {
 
             const errors = checkImages(onePagerWithoutPhoto, employeeData);
 
-            await expect(errors).resolves.toEqual(expect.arrayContaining(['MISSING_PHOTO']));
+            await expect(errors).resolves.toEqual(expect.arrayContaining([ValidationErrorEnum.MISSING_PHOTO]));
         });
 
         it('should report no error if photo is found', async () => {
@@ -174,12 +182,12 @@ describe('validationRules', () => {
     describe('combineRules', () => {
         it('combines multiple rules and flattens errors', async () => {
             const rule1 = async () => ['MISSING_ONE_PAGER' as ValidationError];
-            const rule2 = async () => ['OLDER_THAN_SIX_MONTHS' as ValidationError];
+            const rule2 = async () => [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS as ValidationError];
             const combined = combineRules(rule1, rule2);
 
             const errors = combined(await exampleOnePager(), employeeData);
 
-            await expect(errors).resolves.toEqual(['MISSING_ONE_PAGER', 'OLDER_THAN_SIX_MONTHS']);
+            await expect(errors).resolves.toEqual(['MISSING_ONE_PAGER', ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
         });
     });
 });

@@ -15,10 +15,19 @@ export function isEmployeeId(txt: unknown): txt is EmployeeID {
     return typeof txt === 'string' && /\d+/.test(txt);
 }
 
-export type Local = 'DE' | 'EN';
+export enum LocalEnum {
+    DE = 'DE',
+    EN = 'EN',
+}
 
+export type Local = keyof typeof LocalEnum;
+/**
+ * A function to check if a given variable is a valid Local.
+ * @param txt A variable to check if it is a valid Local.
+ * @returns Is the variable a valid Local?
+ */
 export function isLocal(txt: unknown): txt is Local {
-    return txt === 'DE' || txt === 'EN';
+    return Object.values(LocalEnum).includes(txt as LocalEnum);
 }
 
 /**
@@ -30,27 +39,43 @@ export type OnePager = {
     local?: Local;
     data: () => Promise<Buffer>;
     webLocation: URL;
+    name: string; // optional name of the one-pager file
 };
 
+
+export enum ValidationErrorEnum {
+    OLDER_THAN_SIX_MONTHS = 'OLDER_THAN_SIX_MONTHS', // one-pager is older than 6 months
+    USING_UNKNOWN_TEMPLATE = 'USING_UNKNOWN_TEMPLATE', // one-pager is using an unknown template, in most cases an outdated template with old styling
+    USING_MODIFIED_TEMPLATE = 'USING_MODIFIED_TEMPLATE', // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
+    MISSING_LANGUAGE_INDICATOR_IN_NAME = 'MISSING_LANGUAGE_INDICATOR_IN_NAME', // one-pager is missing a language indicator in the file name
+    MISSING_DE_VERSION = 'MISSING_DE_VERSION', // employee has no one-pager in German
+    MISSING_EN_VERSION = 'MISSING_EN_VERSION', // employee has no one-pager in English
+    MISSING_PHOTO = 'MISSING_PHOTO', // one-pager  has no photo of the employee
+    OTHER_IMAGES = 'OTHER_IMAGES', // one-pager containes other images that do not belong
+    LOW_QUALITY_PHOTO = 'LOW_QUALITY_PHOTO', // one-pager has a photo of the employee, but it is of low quality
+    MIXED_LANGUAGE_VERSION = 'MIXED_LANGUAGE_VERSION', // one-pager has slides in different languages
+    WRONG_LANGUAGE_CONTENT = 'WRONG_LANGUAGE_CONTENT', // one-pager indicates a different language as is used
+}
 /**
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
-export type ValidationError =
-    | 'OLDER_THAN_SIX_MONTHS' // one-pager is older than 6 months
-    | 'USING_UNKNOWN_TEMPLATE' // one-pager is using an unknown template, in most cases an outdated template with old styling
-    | 'USING_MODIFIED_TEMPLATE' // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
-    | 'MISSING_LANGUAGE_INDICATOR_IN_NAME' // one-pager is missing a language indicator in the file name
-    | 'MISSING_DE_VERSION' // employee has no one-pager in German
-    | 'MISSING_EN_VERSION' // employee has no one-pager in English
-    | 'MISSING_PHOTO' // one-pager has no photo of the employee
-    | 'OTHER_IMAGES' // one-pager containes other images that do not belong
-    | 'LOW_QUALITY_PHOTO' // one-pager has a photo of the employee, but it is of low quality
-    | 'MIXED_LANGUAGE_VERSION' // one-pager has slides in different languages
-    | 'WRONG_LANGUAGE_CONTENT'; // one-pager indicates a different language as is used
+export type ValidationError = keyof typeof ValidationErrorEnum;
+export function isValidationError(txt: unknown): txt is ValidationError {
+    return Object.values(ValidationErrorEnum).includes(txt as ValidationErrorEnum);
+};
 
-export type LoadedOnePager = Omit<OnePager, 'fileLocation' | 'data'> & {
+export type LoadedOnePager = {
+    onePager: OnePager;
     pptx: Pptx;
     contentLanguages: Local[];
+};
+export type ValidatedOnePager = {
+    onePager: OnePager | undefined;
+    errors: ValidationError[];
+};
+
+export type LocalToValidatedOnePager = {
+    [key in Local]: ValidatedOnePager;
 };
 
 export type ValidationRule = (
@@ -90,7 +115,7 @@ export interface ValidationReporter {
      * Reports that the one-pager of the given employee ID is valid.
      * @param id The ID of the employee whose one-pager is valid.
      */
-    reportValid(id: EmployeeID): Promise<void>;
+    reportValid(id: EmployeeID, local: Local): Promise<void>;
 
     /**
      * Reports errors found during validation of the one-pager.
@@ -100,8 +125,8 @@ export interface ValidationReporter {
      */
     reportErrors(
         id: EmployeeID,
-        onePager: OnePager | undefined,
-        errors: ValidationError[],
+        validatedOnePager: ValidatedOnePager,
+        local: Local,
         employee: Employee
     ): Promise<void>;
 
@@ -109,7 +134,7 @@ export interface ValidationReporter {
      * Fetches the latest validation results for the given employee ID.
      * @param id The ID of the employee whose validation results should be fetched.
      */
-    getResultFor(id: EmployeeID): Promise<ValidationError[]>;
+    getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager>;
 }
 
 export type StorageFile = {
@@ -151,7 +176,7 @@ export interface StorageExplorer {
 
 export type EmailAddress = string;
 export function isEmailAddress(txt: unknown): txt is EmailAddress {
-    return typeof txt === 'string' && /^[a-zA-Z0-9._%+-]+@senacor.com$/.test(txt);
+    return typeof txt === 'string' && /^[a-zA-Z0-9._%+-]+@(senacor|finanteq).com$/.test(txt);
 }
 export interface MailPort {
     /**
@@ -170,7 +195,7 @@ export type MSScope =
 export type Employee = {
     id: EmployeeID;
     name: string;
-    email: string; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    email: string | null; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
     entry_date: string;
     office: string;
     date_of_employment_change: string | null;
@@ -180,6 +205,7 @@ export type Employee = {
     position_future: string | null;
     resource_type_future: string | null;
     staffing_pool_future: string | null;
+    isGerman: boolean; // Indicates if the employee is from a german speaking country to know if german one-pager is required
 };
 
 /**

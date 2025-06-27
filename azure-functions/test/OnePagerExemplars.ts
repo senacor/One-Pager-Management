@@ -32,7 +32,7 @@ export class OnePagerExemplars {
     private readonly explorer: StorageExplorer;
 
     constructor(
-        explorer: StorageExplorer = new FileSystemStorageExplorer('/', new MemoryFileSystem())
+        explorer: StorageExplorer = new FileSystemStorageExplorer(system.type().startsWith('Windows') ? 'C:/' : '/', new MemoryFileSystem())
     ) {
         this.explorer = explorer;
     }

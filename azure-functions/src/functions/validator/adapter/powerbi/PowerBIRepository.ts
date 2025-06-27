@@ -93,7 +93,7 @@ FILTER(
     'current employee',
     LEFT('current employee'[resource_type_current], LEN("${prefix}")) = "${prefix}"
 )
-`;
+`.replace(/\n/g, ' ').replace(/\t/g, " ").trim();
         return await this.fetchDataByQuery(query);
     }
 
@@ -148,6 +148,14 @@ FILTER(
     }
 }
 
+function isEmployeeGerman(data: PowerBITableRow): boolean {
+        return data['current employee[resource_type_current]'] ?
+        ['Mitarbeiter Professional Services CH', 'Mitarbeiter Professional Services DE/AT'].includes(data['current employee[resource_type_current]']) :
+        data['current employee[resource_type_future]'] ?
+        ['Mitarbeiter Professional Services CH', 'Mitarbeiter Professional Services DE/AT'].includes(data['current employee[resource_type_future]']) :
+        false;
+}
+
 function convertPowerBIRowToEmployeeData(data: PowerBITableRow) {
     const employeeData: Employee = {
         id: data['current employee[fis_id_first]'],
@@ -162,6 +170,8 @@ function convertPowerBIRowToEmployeeData(data: PowerBITableRow) {
         position_future: data['current employee[position_future]'],
         resource_type_future: data['current employee[resource_type_future]'],
         staffing_pool_future: data['current employee[staffing_pool_future]'],
+        isGerman: isEmployeeGerman(data),
     };
+
     return employeeData;
 }

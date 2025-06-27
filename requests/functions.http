@@ -19,12 +19,24 @@ x-functions-key: {{functions_key}}
 GET {{host}}/api/employee/1483/onepager
 x-functions-key: {{functions_key}}
 
+### real MaInfo: OLDER_THAN_SIX_MONTHS and missing english version
+POST {{host}}/api/validate/2391
+x-functions-key: {{functions_key}}
+
 ###
 GET {{host}}/api/employee/1483/onepager/Heinrich%2C%20Daniel_DE_220125.pptx
 x-functions-key: {{functions_key}}
 
 ###
 GET {{host}}/api/employee/1483/onepager/Heinrich,%20Daniel_DE_220125.pptx/photo/image1.jpg
+x-functions-key: {{functions_key}}
+
+###
+POST {{host}}/api/validate/2580
+x-functions-key: {{functions_key}}
+
+### problem case
+POST {{host}}/api/validate/4743
 x-functions-key: {{functions_key}}
 
 ###

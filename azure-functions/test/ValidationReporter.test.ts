@@ -11,7 +11,10 @@ import { SharepointListValidationReporter } from '../src/functions/validator/ada
 import {
     Employee,
     EmployeeID,
+    LocalEnum,
     OnePager,
+    ValidatedOnePager,
+    ValidationErrorEnum,
     ValidationReporter,
 } from '../src/functions/validator/DomainTypes';
 
@@ -21,6 +24,7 @@ const someOnePager: OnePager = {
     lastUpdateByEmployee: new Date(),
     data: async () => Buffer.from('This is a test one-pager.'),
     webLocation: new URL('https://example.com/onepager/web'),
+    name: 'Mustermann, Max_DE_240209.pptx',
 };
 
 const someEmployeeData: Employee = {
@@ -36,90 +40,155 @@ const someEmployeeData: Employee = {
     position_future: null,
     resource_type_future: null,
     staffing_pool_future: null,
+    isGerman: true, // Indicates if the employee is from a german speaking country to know if german one-pager is required
 };
 
 const testFactory = (name: string, reporterFactory: ReporterFactory) => {
     describe(name, () => {
         it('should return no errors without any report', async () => {
             const reporter = await reporterFactory();
-
-            await expect(reporter.getResultFor('000')).resolves.toEqual([]);
+            const result = await reporter.getResultFor('111');
+            expect(result[LocalEnum.DE].errors).toEqual([]);
+            expect(result[LocalEnum.EN].errors).toEqual([]);
         });
 
         it('should return errors when reported', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+            }; // EN
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+            }; // DE
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION'],
+                someValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+            await reporter.reportErrors(
+                '111',
+                anotherValidatedOnePager,
+                LocalEnum.DE,
                 someEmployeeData
             );
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual([
-                'OLDER_THAN_SIX_MONTHS',
-                'MISSING_DE_VERSION',
+            const result = await reporter.getResultFor('111');
+
+            expect(result[LocalEnum.DE].errors).toEqual([
+                ValidationErrorEnum.MISSING_DE_VERSION,
+            ]);
+            expect(result[LocalEnum.EN].errors).toEqual([
+                ValidationErrorEnum.OLDER_THAN_SIX_MONTHS,
             ]);
         });
 
         it('should clean up errors when valid is reported', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+            };
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS'],
+                someValidatedOnePager,
+                LocalEnum.EN,
                 someEmployeeData
             );
-            await reporter.reportValid('111');
+            await reporter.reportValid('111', LocalEnum.EN);
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual([]);
+            const result = await reporter.getResultFor('111');
+
+            expect(result[LocalEnum.EN].errors).toEqual([]);
+            expect(result[LocalEnum.DE].errors).toEqual([]);
         });
 
         it('should not return errors of other employee', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+            };
+
             await reporter.reportErrors(
                 '000',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS', 'MISSING_DE_VERSION'],
+                someValidatedOnePager,
+                LocalEnum.EN,
                 someEmployeeData
             );
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual([]);
+            await reporter.reportErrors(
+                '000',
+                anotherValidatedOnePager,
+                LocalEnum.DE,
+                someEmployeeData
+            );
+            const result = await reporter.getResultFor('111');
+
+            expect(result[LocalEnum.DE].errors).toEqual([]);
+            expect(result[LocalEnum.EN].errors).toEqual([]);
         });
 
         it('should not clean up errors when valid is reported for other employee', async () => {
             const reporter = await reporterFactory();
 
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+            };
+
             await reporter.reportErrors(
                 '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS'],
+                someValidatedOnePager,
+                LocalEnum.EN,
                 someEmployeeData
             );
-            await reporter.reportValid('000');
+            await reporter.reportValid('000', LocalEnum.EN);
+            const result = await reporter.getResultFor('111');
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual(['OLDER_THAN_SIX_MONTHS']);
+            expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
         });
 
         it('should replace previous error with new ones', async () => {
             const reporter = await reporterFactory();
 
-            await reporter.reportErrors(
-                '111',
-                someOnePager,
-                ['OLDER_THAN_SIX_MONTHS'],
-                someEmployeeData
-            );
-            await reporter.reportErrors(
-                '111',
-                someOnePager,
-                ['MISSING_DE_VERSION'],
-                someEmployeeData
-            );
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+            };
 
-            await expect(reporter.getResultFor('111')).resolves.toEqual(['MISSING_DE_VERSION']);
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+            };
+
+            await reporter.reportErrors(
+                '111',
+                someValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+            await reporter.reportErrors(
+                '111',
+                anotherValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+            const result = await reporter.getResultFor('111');
+            expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.MISSING_DE_VERSION]);
         });
     });
 };

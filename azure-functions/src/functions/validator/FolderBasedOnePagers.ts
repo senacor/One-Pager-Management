@@ -84,7 +84,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
             return {
                 lastUpdateByEmployee: file.lastModified,
                 local,
-                fileName: file.name,
+                name: file.name,
                 data: file.data,
                 webLocation: file.url,
             } as OnePager;
@@ -142,8 +142,10 @@ function isOnePagerFile(fileName: string): fileName is OnePagerFile {
         return false;
     }
 
-    return Boolean(fileName.match(/.+, .+?((?<![A-Z])[A-Z]{2})?_(\d{6})\.pptx$/));
+    return Boolean(fileName.match(/.+\.pptx$/));
+    // return Boolean(fileName.match(/.+, .+?((?<![A-Z])[A-Z]{2})?_(\d{6})\.pptx$/));
 }
+// }
 
 export function extractLanguageCode(name: string): Local | undefined {
     const match = name.match(/((?<![A-Z])[A-Z]{2})_/i);
@@ -180,5 +182,6 @@ function employeeDataFromFolder(folder: EmployeeFolder): Employee {
         position_future: '',
         resource_type_future: '',
         staffing_pool_future: '',
+        isGerman: true, // Indicates if the employee is from a german speaking country to know if german one-pager is required
     };
 }

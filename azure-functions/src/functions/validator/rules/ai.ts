@@ -4,7 +4,7 @@ import '@tensorflow/tfjs-backend-wasm';
 import * as faceDetection from '@tensorflow-models/face-detection';
 import sharp from 'sharp';
 import { fileSystem } from './node_file_system';
-import { Local } from '../DomainTypes';
+import { Local, LocalEnum } from '../DomainTypes';
 import { franc } from 'franc-min';
 import * as fs from 'fs';
 
@@ -101,8 +101,8 @@ export async function labelImage(imageData: Buffer): Promise<PhotoLabels> {
 }
 
 const LOCAL_MAPPINGS: Record<string, Local> = {
-    DEU: 'DE',
-    ENG: 'EN',
+    DEU: LocalEnum.DE,
+    ENG: LocalEnum.EN,
 };
 export async function detectLanguage(text: string): Promise<Local | undefined> {
     const francResp = await franc(text);

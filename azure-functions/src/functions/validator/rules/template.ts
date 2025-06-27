@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { CURRENT_TEMPLATE_PATH } from '.';
-import { Logger, ValidationError, ValidationRule } from '../DomainTypes';
+import { Logger, ValidationError, ValidationErrorEnum, ValidationRule } from '../DomainTypes';
 import { Pptx, PptxTheme } from './Pptx';
 
 let templateHashes: Promise<PptxTheme[]>;
@@ -44,8 +44,8 @@ export function usesCurrentTemplate(logger: Logger = console): ValidationRule {
         // if we detect at least one theme of the template we consider the current one-pager based on it
         const error: ValidationError[] = [
             contentThemesWithSameDigest.length > 0 || contentThemesWithSameName.length > 0
-                ? 'USING_MODIFIED_TEMPLATE'
-                : 'USING_UNKNOWN_TEMPLATE',
+                ? ValidationErrorEnum.USING_MODIFIED_TEMPLATE
+                : ValidationErrorEnum.USING_UNKNOWN_TEMPLATE,
         ];
         return error;
     };
