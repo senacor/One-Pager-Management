@@ -140,7 +140,7 @@ describe('validationRules', () => {
 
             const errors = checkImages(onePagerWithoutPhoto, employeeData);
 
-            await expect(errors).resolves.toEqual(expect.arrayContaining([ValidationErrorEnum.MISSING_EN_VERSION]));
+            await expect(errors).resolves.toEqual(expect.arrayContaining([ValidationErrorEnum.MISSING_PHOTO]));
         });
 
         it('should report no error if photo is found', async () => {
