@@ -34,6 +34,7 @@ export function isLocal(txt: unknown): txt is Local {
  * Represents a one-pager document for an employee.
  */
 export type OnePager = {
+    fileName?: string;
     lastUpdateByEmployee: Date;
     local?: Local;
     data: () => Promise<Buffer>;
@@ -99,6 +100,8 @@ export interface EmployeeRepository {
      * Fetches IDs of all current employees.
      */
     getAllEmployees(): Promise<EmployeeID[]>;
+
+    findEmployees(like: {name: string}): Promise<Employee[]>;
 
     getEmployee(id: EmployeeID): Promise<Employee | undefined>;
 }

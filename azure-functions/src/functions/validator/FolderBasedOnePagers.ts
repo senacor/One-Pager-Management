@@ -36,30 +36,12 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         const folders = await this.explorer.listFolders();
 
         const employeeDir = folders.find(dir => dir.endsWith(`_${employeeId}`));
-        if (!employeeDir) {
+        if (!employeeDir || !isEmployeeFolder(employeeDir)) {
             this.logger.warn(`No OnePagers found for employee "${employeeId}"!`);
             return undefined;
         }
 
-        const i = employeeDir.lastIndexOf('_');
-        const name = employeeDir.substring(0, i).replace(/_/g, ' ');
-
-        // TODO: Determine at least some data from one pager names for testing purposes
-        return {
-            id: employeeId,
-            name,
-            email: '',
-            entry_date: '',
-            office: '',
-            date_of_employment_change: '',
-            position_current: '',
-            resource_type_current: '',
-            staffing_pool_current: '',
-            position_future: '',
-            resource_type_future: '',
-            staffing_pool_future: '',
-            isGerman: true,
-        };
+        return employeeDataFromFolder(employeeDir);
     }
 
     /**
@@ -112,6 +94,12 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
     async getAllEmployees(): Promise<EmployeeID[]> {
         const folders = await this.explorer.listFolders();
         return folders.flatMap(f => (isEmployeeFolder(f) ? employeeIdFromFolder(f) : []));
+    }
+
+    async findEmployees(like: { name: string; }): Promise<Employee[]> {
+        const folders = await this.explorer.listFolders();
+        const employees = folders.flatMap(f => (isEmployeeFolder(f) ? employeeDataFromFolder(f) : []));
+        return employees.filter(e => e.name.toLowerCase().includes(like.name.toLowerCase()));
     }
 }
 
@@ -170,4 +158,30 @@ export function extractLanguageCode(name: string): Local | undefined {
     }
 
     return undefined;
+}
+
+function employeeDataFromFolder(folder: EmployeeFolder): Employee {
+    const i = folder.lastIndexOf('_');
+    const id = folder.substring(i + 1);
+    if(!isEmployeeId(id)) {
+        throw new Error(`Invalid employee ID in folder name: ${folder}`);
+    }
+    const name = folder.substring(0, i).replace(/_/g, ' ');
+
+    // TODO: Determine at least some data from one pager names for testing purposes
+    return {
+        id,
+        name,
+        email: '',
+        entry_date: '',
+        office: '',
+        date_of_employment_change: '',
+        position_current: '',
+        resource_type_current: '',
+        staffing_pool_current: '',
+        position_future: '',
+        resource_type_future: '',
+        staffing_pool_future: '',
+        isGerman: true, // Indicates if the employee is from a german speaking country to know if german one-pager is required
+    };
 }

@@ -97,6 +97,11 @@ FILTER(
         return await this.fetchDataByQuery(query);
     }
 
+    async findEmployees(like: { name: string; }): Promise<Employee[]> {
+        const employees = await this.getAllEmployeeData();
+        return employees.filter(e => e.name.toLowerCase().includes(like.name.toLowerCase()));
+    }
+
     private async fetchDataByQuery(query: string): Promise<Employee[]> {
         const result = cache.get<Employee[]>(query);
         if (result) {

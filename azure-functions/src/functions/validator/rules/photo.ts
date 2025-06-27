@@ -1,5 +1,5 @@
 import { ValidationError, ValidationErrorEnum, ValidationRule } from '../DomainTypes';
-import { detectFaces, labelImage, PhotoLabels } from './ai';
+import { detectFaces, labelImage, labelImageAvailable, PhotoLabels } from './ai';
 import { PptxImage } from './Pptx';
 
 export const QUALITY_THRESHOLD = 0.2;
@@ -7,15 +7,7 @@ export const QUALITY_THRESHOLD = 0.2;
 export const checkImages: ValidationRule = async onePager => {
     const usedImages = await onePager.pptx.getUsedImages();
 
-    const withFaces = (
-        await Promise.all(
-            usedImages.map(async img => {
-                const faces = await detectFaces(await img.data());
-
-                return faces.length > 0 ? [img] : [];
-            })
-        )
-    ).flat();
+    const withFaces = await extractPhotosWithFaces(usedImages);
 
     const errors: ValidationError[] = [];
 
@@ -26,13 +18,26 @@ export const checkImages: ValidationRule = async onePager => {
         errors.push(ValidationErrorEnum.MISSING_PHOTO);
     }
 
-    const scored = await Promise.all(withFaces.map(scoreQuality));
-    if (scored.some(score => score < QUALITY_THRESHOLD)) {
-        errors.push(ValidationErrorEnum.LOW_QUALITY_PHOTO);
+    if (labelImageAvailable()) {
+        const scored = await Promise.all(withFaces.map(scoreQuality));
+        if (scored.some(score => score < QUALITY_THRESHOLD)) {
+            errors.push(ValidationErrorEnum.LOW_QUALITY_PHOTO);
+        }
     }
-
     return errors;
 };
+
+export async function extractPhotosWithFaces(images: PptxImage[]): Promise<PptxImage[]> {
+    return (
+        await Promise.all(
+            images.map(async img => {
+                const faces = await detectFaces(await img.data());
+
+                return faces.length > 0 ? [img] : [];
+            })
+        )
+    ).flat();
+}
 
 export async function scoreQuality(img: PptxImage): Promise<number> {
     const labels = await labelImage(await img.data());

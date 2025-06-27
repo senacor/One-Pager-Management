@@ -1,34 +1,34 @@
-### MaInfoTest
-POST {{host}}/api/validate/1338
-x-functions-key: {{functions_key}}
-
 ### sendAllMails
 POST {{host}}/api/sendValidationMails
 x-functions-key: {{functions_key}}
 
-### real MaInfo: everything valid
-POST {{host}}/api/validate/9560
+###
+POST {{host}}/api/validate/7526
 x-functions-key: {{functions_key}}
 
-### real MaInfo: everything valid
-POST {{host}}/api/validate/57
+###
+POST {{host}}/api/validateAll
+x-functions-key: {{functions_key}}
 x-functions-key: {{functions_key}}
 
-
-### real MaInfo: OLDER_THAN_SIX_MONTHS
-POST {{host}}/api/validate/5823
+###
+GET {{host}}/api/employee?name=Heinrich
 x-functions-key: {{functions_key}}
 
-### real MaInfo: OLDER_THAN_SIX_MONTHS an missing english version
+###
+GET {{host}}/api/employee/1483/onepager
+x-functions-key: {{functions_key}}
+
+### real MaInfo: OLDER_THAN_SIX_MONTHS and missing english version
 POST {{host}}/api/validate/2391
 x-functions-key: {{functions_key}}
 
 ###
-POST {{host}}/api/validate/109
+GET {{host}}/api/employee/1483/onepager/Heinrich%2C%20Daniel_DE_220125.pptx
 x-functions-key: {{functions_key}}
 
 ###
-POST {{host}}/api/validate/7526
+GET {{host}}/api/employee/1483/onepager/Heinrich,%20Daniel_DE_220125.pptx/photo/image1.jpg
 x-functions-key: {{functions_key}}
 
 ###
@@ -40,5 +40,5 @@ POST {{host}}/api/validate/4743
 x-functions-key: {{functions_key}}
 
 ###
-POST {{host}}/api/validateAll
+GET {{host}}/api/employee/1483/onepager/Heinrich%2C%20Daniel_DE_220125.pptx/download
 x-functions-key: {{functions_key}}

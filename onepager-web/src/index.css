@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "croppie/croppie.css";
 
 @theme {
   --color-brand-blue: #7192C7;

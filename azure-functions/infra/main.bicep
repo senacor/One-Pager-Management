@@ -8,6 +8,12 @@ param powerBIDatasetID string = '17c9b3ab-752a-4d66-95bc-2488dd7c4560'
 @secure()
 param sharepointClientSecret string
 
+// CORS configuration parameters
+param corsAllowedOrigins array = [
+  'http://localhost:5173'  // Vite dev server
+  'https://senacor.github.io'  // GitHub Pages - adjust to your username/repo
+]
+
 var storageAccountName = '${uniqueString(resourceGroup().id)}azfunctions'
 
 // Speicher -> Queues, TAbles etc. können angelegt werden
@@ -73,6 +79,10 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
       ftpsState: 'FtpsOnly'
       functionAppScaleLimit: 1
       minTlsVersion: '1.2'
+      cors: {
+        allowedOrigins: corsAllowedOrigins
+        supportCredentials: false
+      }
     }
   }
   identity: {
