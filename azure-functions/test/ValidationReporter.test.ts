@@ -24,7 +24,7 @@ const someOnePager: OnePager = {
     lastUpdateByEmployee: new Date(),
     data: async () => Buffer.from('This is a test one-pager.'),
     webLocation: new URL('https://example.com/onepager/web'),
-    name: 'Mustermann, Max_DE_240209.pptx',
+    fileName: 'Mustermann, Max_DE_240209.pptx',
 };
 
 const someEmployeeData: Employee = {

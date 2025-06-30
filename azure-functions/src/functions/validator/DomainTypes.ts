@@ -39,7 +39,6 @@ export type OnePager = {
     local?: Local;
     data: () => Promise<Buffer>;
     webLocation: URL;
-    name: string; // optional name of the one-pager file
 };
 
 

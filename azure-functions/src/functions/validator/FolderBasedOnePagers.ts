@@ -84,7 +84,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
             return {
                 lastUpdateByEmployee: file.lastModified,
                 local,
-                name: file.name,
+                fileName: file.name,
                 data: file.data,
                 webLocation: file.url,
             } as OnePager;

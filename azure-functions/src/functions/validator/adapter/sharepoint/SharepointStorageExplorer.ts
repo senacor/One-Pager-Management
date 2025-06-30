@@ -2,10 +2,16 @@ import { Client, GraphError } from '@microsoft/microsoft-graph-client';
 import { Logger, StorageExplorer, StorageFile } from '../../DomainTypes';
 import { Drive, DriveItem, Site } from '@microsoft/microsoft-graph-types';
 import { HardenedFetch } from 'hardened-fetch';
+import NodeCache from 'node-cache';
 
 type DriveItemWithDownloadUrl = DriveItem & {
     '@microsoft.graph.downloadUrl'?: string;
 };
+
+const cache = new NodeCache({
+    stdTTL: 10 * 60, // 10 minutes
+    useClones: false,
+});
 
 export class SharepointStorageExplorer implements StorageExplorer {
     private readonly client: Client;
@@ -24,6 +30,10 @@ export class SharepointStorageExplorer implements StorageExplorer {
         listName: string,
         logger: Logger = console
     ): Promise<SharepointStorageExplorer> {
+        if (cache.has('sharepointStorageDriveID')) {
+            return new SharepointStorageExplorer(client, cache.get<string>('sharepointStorageDriveID') as string, logger);
+        }
+
         const site = (await client.api(`/sites/${siteAlias}`).get()) as Site | undefined;
         if (!site || !site.id) {
             throw new Error(`Cannot find site with alias ${siteAlias}!`);
@@ -36,6 +46,8 @@ export class SharepointStorageExplorer implements StorageExplorer {
         if (!driveId) {
             throw new Error(`Cannot find drive with name ${listName} in site ${siteAlias}!`);
         }
+
+        cache.set<string>('sharepointStorageDriveID', driveId);
 
         return new SharepointStorageExplorer(client, driveId, logger);
     }

@@ -24,21 +24,28 @@ export class MSMailAdapter implements MailPort {
                     contentType: 'HTML', // e.g. Text or HTML
                     content: content,
                 },
-                toRecipients: {
-                    emailAddress: {
-                        address: emailAddress,
-                    },
-                },
+                toRecipients: [
+                    {
+                        emailAddress: {
+                            address: emailAddress,
+                        }
+                    }
+                ],
                 // ccRecipients: [
-                //     {
-                //         emailAddress: {
-                //             address: 'email'
-                //         }
-                //     }
+                    // {
+                    //     emailAddress: {
+                    //         address: 'email'
+                    //     }
+                    // }
                 // ],
                 // saveToSentItems: 'false'
             },
         };
+
+        // The primary sending limit when using the Microsoft Graph API to send emails is 30 messages per minute, imposed by Exchange Online,
+        // even though the Graph API itself can handle higher request volumes. Additionally, there's a limit of 4 concurrent requests per application per tenant
+        // and 10,000 requests per 10 minutes per application for all tenants.
+
 
         const sendMailResp = await this.client
             .api('/users/staffing@senacor.com/sendMail')

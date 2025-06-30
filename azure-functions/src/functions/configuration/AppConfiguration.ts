@@ -30,6 +30,7 @@ import {
     isDatasetID,
     PowerBIRepository,
 } from '../validator/adapter/powerbi/PowerBIRepository';
+import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
@@ -73,7 +74,7 @@ export function hasSharepointClientOptions(opts: Record<string, unknown>): opts 
     );
 }
 
-type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOptions;
+export type Options = MemoryStorageOptions | LocalStorageOptions | SharepointStorageOptions;
 
 /**
  * A function to load the application configuration based on environment variables.
@@ -174,12 +175,13 @@ function getSharepointConfig(
                 validationResultListName,
                 logger
             ),
-        mailAdapter: () => new InMemoryMailAdapter(),
-        // new MSMailAdapter(
-        //     client,
-        //     employeeRepo,
-        //     logger
-        // ), // optional mail adapter for SharePoint storage
+        mailAdapter: () =>
+            // new InMemoryMailAdapter()
+            new MSMailAdapter(
+                client,
+                logger
+            ) // optional mail adapter for SharePoint storage
+        ,
         employeeRepo: () => new PowerBIRepository(powerbiAuthProvider, datasetID, logger),
     };
 }

@@ -1,0 +1,55 @@
+p.
+    Hallo #{firstname},
+
+p.
+    vielen Dank, dass du deine One Pager immer so gewissenhaft pflegst. Im Rahmen der aktuellen Validierung deiner One Pager haben wir Folgendes festgestellt:
+
+
+p
+    b Warum ist dein One Pager so wichtig?
+p.
+    Nur aktuelle und einheitliche One Pager können im Staffing-Prozess und für Kundenpräsentationen verwendet werden.
+    Veraltete oder unvollständige Profile führen dazu, dass du bei Projektanfragen unter Umständen nicht berücksichtigt wirst.
+    Auch wenn du aktuell kein Projekt suchst, kann dein One Pager für Kundenpräsentationen oder Ausschreibungen verwendet werden.
+    Nur mit einem aktuellen und vollständigen Profil wirst du optimal vertreten.
+
+if checkedOnePagers.length > 0
+    p
+        b Welche One Pager weisen Fehler auf?
+
+    ul
+        each onePager in checkedOnePagers
+            li <a href="#{onePager.url}">#{onePager.name}</a>: als #{onePager.lang} One Pager
+
+
+    p
+        i.
+            Hinweis: Sollten die ausgewählten One Pager nicht die aktuellsten sein, kann das verschiedene Gründe haben.
+            Detaillierte Infos dazu findest du in unserem <a href="#{faqURL}">FAQ</a>.
+
+
+p
+    b Fehlerbeschreibungen:
+ul
+    each error in generalErrors
+        li #{error.title}: #{error.description}
+
+    each onePager in onePagerErrors
+        li #{onePager.name}:
+            ul
+                each error in onePager.errors
+                    li #{error.title}: #{error.description}
+
+p.
+    Das Guidebook zur Erstellung findest du <a href="#{guideBookURL}">hier</a>.
+
+p.
+    Bitte nimm die Überarbeitung <b>bis zum #{deadline}</b> vor.
+p.
+    Bei Fragen oder Unsicherheiten helfen dir die FAQs auf <a href="#{faqURL}">dieser Confluence-Seite</a> weiter.
+
+p.
+    Danke für deine Unterstützung und Mithilfe!
+
+p
+    b Dein Staffing Team

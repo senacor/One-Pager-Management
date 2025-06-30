@@ -12,6 +12,7 @@ import {
     ValidationError,
     ValidationReporter,
 } from '../../DomainTypes';
+import moment from 'moment';
 
 const enum ListItemColumnNames {
     MA_ID = 'Employee_ID', // number
@@ -23,6 +24,7 @@ const enum ListItemColumnNames {
     LAST_MODIFIED_DATE = 'Date_of_Last_Change', // text field, 1-line, date format MM/DD/YYYY
     URL = 'Links', // text field, 1-line, URL
     ONE_PAGER_LANGUAGE = 'Language_of_Version',
+    FILENAME = 'Filename', // text field, 1-line, file name of the one-pager
 }
 
 type ListItemWithFields = {
@@ -35,6 +37,7 @@ type ListItemWithFields = {
     [ListItemColumnNames.VALIDATION_DATE]: string;
     [ListItemColumnNames.LAST_MODIFIED_DATE]: string; // 'NO_DATE' if no value since '' and ' ' do not work well with sharepoint
     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: string; // 'DE' or 'EN'
+    [ListItemColumnNames.FILENAME]?: string; // optional, file name of the one-pager
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -153,53 +156,6 @@ export class SharepointListValidationReporter implements ValidationReporter {
     }
 
 
-    // private formatOnePagerErrorOutput(validatedOnePagers: ValidatedOnePager[]): string {
-    //     const onePagers: (ValidatedOnePager & {onePager: OnePager})[] = validatedOnePagers.filter((op: ValidatedOnePager) => op.onePager !== undefined) as (ValidatedOnePager & {onePager: OnePager})[];
-    //     const generalErrors: string = validatedOnePagers.filter((op: ValidatedOnePager) => op.onePager === undefined).map((op) => op.errors.join('<br>')).join('<br>');
-
-    //     const onePagerErrors: string = onePagers.map((op: ValidatedOnePager & {onePager: OnePager}) => {
-    //             return `<a href="${op.onePager.webLocation}">${op.onePager.name}</a>: ${op.errors.join(', ')}`;
-    //         }).join('<br>')
-    //     const output: string =
-    //         `${generalErrors}${onePagerErrors !== '' ? `<br>${onePagerErrors}` : ''}`;
-
-    //     return output;
-    // }
-
-    // private parseOnePagerErrorOutput(
-    //     output: string
-    // ): ValidatedOnePager[] {
-    //     const onePagers: ValidatedOnePager[] = [];
-    //     const contentMatch = output.match(/<div class="[^"]+">(.+)<\/div>/);
-
-    //     if (!contentMatch || contentMatch.length < 2) {
-    //         return onePagers; // Return empty array if no content found
-    //     }
-
-    //     const lines = contentMatch[1].split('<br>');
-    //     for (const line of lines) {
-    //         const match = line.match(/<div class="[^"]+"><a href="([^"]+)">([^<]+)<\/a>: (.+)<\/div>/);
-    //         if (match) {
-    //             const [, url, name, errors] = match;
-    //             onePagers.push({
-    //                 onePager: {
-    //                     webLocation: new URL(url),
-    //                     name,
-    //                     lastUpdateByEmployee: new Date(), // Placeholder, as we don't have the actual date here
-    //                     local: undefined, // Placeholder, as we don't have the actual language here
-    //                     data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
-    //                 },
-    //                 errors: errors.split(', ') as ValidationError[],
-    //             });
-    //         } else if (line.trim() !== '') {
-    //             // Handle general errors without a one-pager link
-    //             onePagers.push({ onePager: undefined, errors: [line as ValidationError] });
-    //         }
-    //     }
-    //     return onePagers;
-    // }
-
-
     /**
      * This function reports validation errors for a given employee's one-pager.
      * @param id The employee ID for which a given one-pager has errors.
@@ -234,6 +190,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
                         this.dateToEnglishFormat(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
+                    [ListItemColumnNames.FILENAME]: validatedOnePager.onePager?.fileName || 'NO_FILENAME',
                 },
             });
         } else {
@@ -250,6 +207,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
                         this.dateToEnglishFormat(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
+                    [ListItemColumnNames.FILENAME]: validatedOnePager.onePager?.fileName || 'NO_FILENAME',
                 });
         }
     }
@@ -308,13 +266,17 @@ export class SharepointListValidationReporter implements ValidationReporter {
             );
 
             result[local] = {
-                onePager: itemFields[ListItemColumnNames.URL] && itemFields[ListItemColumnNames.URL] !== 'NO_URL' ? {
-                    webLocation: new URL(itemFields[ListItemColumnNames.URL]),
-                    name: itemFields[ListItemColumnNames.MA_NAME],
-                    lastUpdateByEmployee: new Date(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]),
-                    local: local,
-                    data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
-                } : undefined,
+                onePager:
+                    itemFields[ListItemColumnNames.URL]
+                    && itemFields[ListItemColumnNames.URL] !== 'NO_URL'
+                    && itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]
+                    ? {
+                        webLocation: new URL(itemFields[ListItemColumnNames.URL]),
+                        fileName: itemFields[ListItemColumnNames.FILENAME] || 'NO_FILENAME',
+                        lastUpdateByEmployee: moment(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE], "MM/DD/YYYY", true).isValid() ? new Date(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]) : new Date(),
+                        local: local,
+                        data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
+                    } : undefined,
                 errors: itemFields[ListItemColumnNames.VALIDATION_ERRORS].split(', ') as ValidationError[]
             };
         }
