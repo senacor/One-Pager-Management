@@ -58,11 +58,13 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
                 errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
             }; // EN
 
             const anotherValidatedOnePager: ValidatedOnePager = {
                 onePager: undefined,
                 errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+                folderURL: undefined
             }; // DE
 
             await reporter.reportErrors(
@@ -94,6 +96,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
                 errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
             };
 
             await reporter.reportErrors(
@@ -116,11 +119,13 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
                 errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
             };
 
             const anotherValidatedOnePager: ValidatedOnePager = {
                 onePager: undefined,
                 errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+                folderURL: undefined
             };
 
             await reporter.reportErrors(
@@ -148,6 +153,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
                 errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
             };
 
             await reporter.reportErrors(
@@ -168,11 +174,13 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             const someValidatedOnePager: ValidatedOnePager = {
                 onePager: someOnePager,
                 errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
             };
 
             const anotherValidatedOnePager: ValidatedOnePager = {
                 onePager: undefined,
                 errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+                folderURL: undefined
             };
 
             await reporter.reportErrors(

@@ -30,6 +30,7 @@ import { EMailNotification } from '../src/functions/validator/EMailNotification'
     const mailSender = new EMailNotification(mailAdapter, employeeRepo, await config.reporter(), console);
 
     await mailSender.notifyEmployee('2391');
+    // await mailSender.notifyEmployee('2580');
     // await mailSender.notifyEmployee('230');
 
     if (mailAdapter instanceof InMemoryMailAdapter) {

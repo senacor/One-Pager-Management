@@ -30,15 +30,7 @@ export class MSMailAdapter implements MailPort {
                             address: emailAddress,
                         }
                     }
-                ],
-                // ccRecipients: [
-                    // {
-                    //     emailAddress: {
-                    //         address: 'email'
-                    //     }
-                    // }
-                // ],
-                // saveToSentItems: 'false'
+                ]
             },
         };
 

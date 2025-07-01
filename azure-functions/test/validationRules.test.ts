@@ -28,6 +28,7 @@ function exampleOnePager(): Promise<LoadedOnePager> {
                     data: () => Promise.resolve(data),
                     webLocation: new URL('https://example.com/onepager.pptx'),
                     name: 'Mustermann, Max_DE_240209.pptx',
+                    folderURL: new URL('https://example.com/onepager/folder'),
                 },
                 contentLanguages: [LocalEnum.DE],
                 pptx: await Pptx.load(data),

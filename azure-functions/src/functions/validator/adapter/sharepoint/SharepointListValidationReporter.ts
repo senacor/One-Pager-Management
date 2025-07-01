@@ -25,6 +25,7 @@ const enum ListItemColumnNames {
     URL = 'Links', // text field, 1-line, URL
     ONE_PAGER_LANGUAGE = 'Language_of_Version',
     FILENAME = 'Filename', // text field, 1-line, file name of the one-pager
+    Folder_URL = 'Folder_URL', // text field, 1-line, URL to the folder containing the one-pager
 }
 
 type ListItemWithFields = {
@@ -38,6 +39,7 @@ type ListItemWithFields = {
     [ListItemColumnNames.LAST_MODIFIED_DATE]: string; // 'NO_DATE' if no value since '' and ' ' do not work well with sharepoint
     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: string; // 'DE' or 'EN'
     [ListItemColumnNames.FILENAME]?: string; // optional, file name of the one-pager
+    [ListItemColumnNames.Folder_URL]?: string; // optional, URL to the folder containing the one-pager
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -191,6 +193,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
                         this.dateToEnglishFormat(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
                     [ListItemColumnNames.FILENAME]: validatedOnePager.onePager?.fileName || 'NO_FILENAME',
+                    [ListItemColumnNames.Folder_URL]: validatedOnePager.folderURL ? validatedOnePager.folderURL.toString() : 'NO_FOLDER_URL',
                 },
             });
         } else {
@@ -208,6 +211,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
                         this.dateToEnglishFormat(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
                     [ListItemColumnNames.FILENAME]: validatedOnePager.onePager?.fileName || 'NO_FILENAME',
+                    [ListItemColumnNames.Folder_URL]: validatedOnePager.folderURL ? validatedOnePager.folderURL.toString() : 'NO_FOLDER_URL',
                 });
         }
     }
@@ -225,8 +229,8 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }))));
 
         const result: LocalToValidatedOnePager = {
-            [LocalEnum.DE]: { onePager: undefined, errors: [] },
-            [LocalEnum.EN]: { onePager: undefined, errors: [] }
+            [LocalEnum.DE]: { onePager: undefined, errors: [], folderURL: undefined },
+            [LocalEnum.EN]: { onePager: undefined, errors: [], folderURL: undefined },
         };
 
         if (!itemIds.DE && !itemIds.EN) {
@@ -265,6 +269,17 @@ export class SharepointListValidationReporter implements ValidationReporter {
                 `Parsed item fields for employee with ID "${id}" in language "${local}": ${JSON.stringify(itemFields[ListItemColumnNames.VALIDATION_ERRORS])}`
             );
 
+            let folderURL: URL | undefined = undefined;
+            try {
+                if (itemFields[ListItemColumnNames.URL] && itemFields[ListItemColumnNames.URL] !== 'NO_URL') {
+                    folderURL = new URL(itemFields[ListItemColumnNames.URL]);
+                }
+            } catch {
+                this.logger.log(
+                    `Invalid URL "${itemFields[ListItemColumnNames.URL]}" for employee with ID "${id}"!`
+                );
+            }
+
             result[local] = {
                 onePager:
                     itemFields[ListItemColumnNames.URL]
@@ -277,7 +292,8 @@ export class SharepointListValidationReporter implements ValidationReporter {
                         local: local,
                         data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
                     } : undefined,
-                errors: itemFields[ListItemColumnNames.VALIDATION_ERRORS].split(', ') as ValidationError[]
+                errors: itemFields[ListItemColumnNames.VALIDATION_ERRORS].split(', ') as ValidationError[],
+                folderURL,
             };
         }
 

@@ -61,6 +61,7 @@ export class OnePagerValidation {
         }
 
         const onePagers = await this.onePagers.getAllOnePagersOfEmployee(id);
+        const onePagerFolderURL = await this.onePagers.getOnePagerFolderURLOfEmployee(id);
         this.logger.log(
             `Validating one-pagers for employee ${id}, found ${onePagers.length} one-pagers.`
         );
@@ -100,7 +101,8 @@ export class OnePagerValidation {
                 return {
                     [lang]: {
                         onePager: undefined,
-                        errors: [`MISSING_${lang}_VERSION`] as ValidationError[]
+                        errors: [`MISSING_${lang}_VERSION`] as ValidationError[],
+                        folderURL: onePagerFolderURL
                     }
                 };
             }
@@ -108,6 +110,7 @@ export class OnePagerValidation {
                 [lang]: {
                     onePager: op.onePager,
                     errors: await this.validationRule(op, employeeData),
+                    folderURL: onePagerFolderURL
                 }
             };
         }))));

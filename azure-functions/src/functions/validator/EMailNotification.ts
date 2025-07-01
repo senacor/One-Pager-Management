@@ -5,7 +5,8 @@ import {
     MailPort,
     ValidationReporter,
     ValidationError,
-    ValidationErrorEnum
+    ValidationErrorEnum,
+    LocalEnum
 } from './DomainTypes';
 import fs from 'node:fs';
 import * as config from '../../../app_config/config.json';
@@ -121,6 +122,7 @@ export class EMailNotification {
             faqURL: mailTemplate.faqURL,
             generalErrors,
             onePagerErrors,
+            folderURL: validationErrorArr[LocalEnum.EN]?.folderURL?.toString() || '',
         };
 
         const mailSubject = pug.render(`| ${mailTemplate.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text

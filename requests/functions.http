@@ -9,7 +9,6 @@ x-functions-key: {{functions_key}}
 ###
 POST {{host}}/api/validateAll
 x-functions-key: {{functions_key}}
-x-functions-key: {{functions_key}}
 
 ###
 GET {{host}}/api/employee?name=Heinrich
@@ -45,6 +44,10 @@ x-functions-key: {{functions_key}}
 
 ### problem case
 POST {{host}}/api/validate/7437
+x-functions-key: {{functions_key}}
+
+### problem case: no folder URL
+POST {{host}}/api/validate/8468
 x-functions-key: {{functions_key}}
 
 ###
