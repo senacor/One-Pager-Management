@@ -158,7 +158,7 @@ function isOnePagerFile(fileName: string): fileName is OnePagerFile {
         return false;
     }
 
-    return Boolean(fileName.match(/.+\.pptx$/));
+    return Boolean(fileName.match(/.+\.pptx$/i));
     // return Boolean(fileName.match(/.+, .+?((?<![A-Z])[A-Z]{2})?_(\d{6})\.pptx$/));
 }
 
