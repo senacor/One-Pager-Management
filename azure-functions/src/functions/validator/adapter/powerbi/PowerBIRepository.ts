@@ -88,12 +88,12 @@ export class PowerBIRepository implements EmployeeRepository {
     async getAllEmployeeData(): Promise<Employee[]> {
         const prefix = 'Mitarbeiter Professional Services';
         const query = `
-EVALUATE
-FILTER(
-    'current employee',
-    LEFT('current employee'[resource_type_current], LEN("${prefix}")) = "${prefix}"
-)
-`.replace(/\n/g, ' ').replace(/\t/g, " ").trim();
+            EVALUATE
+            FILTER(
+                'current employee',
+                LEFT('current employee'[resource_type_current], LEN("${prefix}")) = "${prefix}"
+            )
+            `.replace(/\n/g, ' ').replace(/\t/g, " ").trim();
         return await this.fetchDataByQuery(query);
     }
 

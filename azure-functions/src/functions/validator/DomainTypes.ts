@@ -39,7 +39,6 @@ export type OnePager = {
     local?: Local;
     data: () => Promise<Buffer>;
     webLocation: URL;
-    name: string; // optional name of the one-pager file
 };
 
 
@@ -55,7 +54,7 @@ export enum ValidationErrorEnum {
     LOW_QUALITY_PHOTO = 'LOW_QUALITY_PHOTO', // one-pager has a photo of the employee, but it is of low quality
     MIXED_LANGUAGE_VERSION = 'MIXED_LANGUAGE_VERSION', // one-pager has slides in different languages
     WRONG_LANGUAGE_CONTENT = 'WRONG_LANGUAGE_CONTENT', // one-pager indicates a different language as is used
-}
+};
 /**
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
@@ -72,6 +71,7 @@ export type LoadedOnePager = {
 export type ValidatedOnePager = {
     onePager: OnePager | undefined;
     errors: ValidationError[];
+    folderURL: URL | undefined; // URL to the folder containing the one-pager file
 };
 
 export type LocalToValidatedOnePager = {
@@ -90,6 +90,8 @@ export interface OnePagerRepository {
      * @param employeeId The ID of the employee whose one-pagers should be fetched.
      */
     getAllOnePagersOfEmployee(employeeId: EmployeeID): Promise<OnePager[]>;
+
+    getOnePagerFolderURLOfEmployee(employeeId: EmployeeID): Promise<URL | undefined>;
 }
 
 /**
@@ -142,6 +144,11 @@ export type StorageFile = {
     lastModified: Date;
     data: () => Promise<Buffer>;
     url?: URL;
+    folderURL?: URL; // Optional URL to the folder containing the file
+};
+export type StorageFolder = {
+    name: string;
+    webLocation: URL | undefined;
 };
 
 export interface StorageExplorer {
@@ -172,6 +179,8 @@ export interface StorageExplorer {
      * @returns A promise that resolves to an array of StorageFile objects representing the files in the specified folder.
      */
     listFiles(folder: string): Promise<StorageFile[]>;
+
+    listFoldersWithURLs(): Promise<StorageFolder[]>;
 }
 
 export type EmailAddress = string;

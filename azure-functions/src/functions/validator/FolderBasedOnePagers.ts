@@ -9,6 +9,7 @@ import {
     OnePager,
     OnePagerRepository,
     StorageExplorer,
+    StorageFile,
 } from './DomainTypes';
 
 /**
@@ -62,7 +63,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
             return [];
         }
 
-        const files = await this.explorer.listFiles(employeeDir);
+        const files: StorageFile[] = await this.explorer.listFiles(employeeDir);
 
         // Filter for pptx files only
         const pptxFiles = files.filter(f => {
@@ -84,7 +85,7 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
             return {
                 lastUpdateByEmployee: file.lastModified,
                 local,
-                name: file.name,
+                fileName: file.name,
                 data: file.data,
                 webLocation: file.url,
             } as OnePager;
@@ -100,6 +101,21 @@ export class FolderBasedOnePagers implements OnePagerRepository, EmployeeReposit
         const folders = await this.explorer.listFolders();
         const employees = folders.flatMap(f => (isEmployeeFolder(f) ? employeeDataFromFolder(f) : []));
         return employees.filter(e => e.name.toLowerCase().includes(like.name.toLowerCase()));
+    }
+
+    async getOnePagerFolderURLOfEmployee(employeeId: EmployeeID): Promise<URL | undefined> {
+        const folders = await this.explorer.listFoldersWithURLs();
+
+        if (folders.length === 0) {
+            this.logger.error('No One Pager folders found!');
+        }
+
+        const employeeDir = folders.find(dir => dir.name.endsWith(`_${employeeId}`));
+        if (!employeeDir) {
+            this.logger.warn(`No OnePagers found for employee "${employeeId}"!`);
+            return undefined;
+        }
+        return employeeDir.webLocation;
     }
 }
 
@@ -145,7 +161,6 @@ function isOnePagerFile(fileName: string): fileName is OnePagerFile {
     return Boolean(fileName.match(/.+\.pptx$/));
     // return Boolean(fileName.match(/.+, .+?((?<![A-Z])[A-Z]{2})?_(\d{6})\.pptx$/));
 }
-// }
 
 export function extractLanguageCode(name: string): Local | undefined {
     const match = name.match(/((?<![A-Z])[A-Z]{2})_/i);

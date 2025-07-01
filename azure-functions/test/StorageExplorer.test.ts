@@ -189,6 +189,6 @@ if (hasSharepointClientOptions(opts)) {
             )
         );
 
-        return await SharepointStorageExplorer.getInstance(client, siteIDAlias, listName, console);
+        return await SharepointStorageExplorer.getInstance(client, siteIDAlias, listName, console, false); // no caching for tests
     });
 }

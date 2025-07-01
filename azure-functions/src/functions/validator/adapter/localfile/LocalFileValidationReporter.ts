@@ -74,7 +74,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
     async getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager> {
         await this.ensureDataDir();
 
-        let validatedOnePager_DE: ValidatedOnePager = {errors: [], onePager: undefined};
+        let validatedOnePager_DE: ValidatedOnePager = {errors: [], onePager: undefined, folderURL: undefined};
         try {
             const file_DE = await fs.readFile(this.validationFile(id, LocalEnum.DE), 'utf-8');
             const result = JSON.parse(file_DE);
@@ -84,7 +84,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
         // eslint-disable-next-line no-empty
         } catch {}
 
-        let validatedOnePager_EN: ValidatedOnePager = {errors: [], onePager: undefined};
+        let validatedOnePager_EN: ValidatedOnePager = {errors: [], onePager: undefined, folderURL: undefined};
         try {
             const file_EN = await fs.readFile(this.validationFile(id, LocalEnum.EN), 'utf-8');
             const result = JSON.parse(file_EN);

@@ -1,4 +1,4 @@
-import { Logger, StorageExplorer, StorageFile } from '../DomainTypes';
+import { Logger, StorageExplorer, StorageFile, StorageFolder } from '../DomainTypes';
 import { promises as pfs } from 'fs';
 
 export interface FileSystem {
@@ -91,5 +91,9 @@ export class FileSystemStorageExplorer implements StorageExplorer {
         // Assume 2000-2099 for 2-digit years
         const fullYear = year + 2000;
         return new Date(fullYear, month, day);
+    }
+
+    async listFoldersWithURLs(): Promise<StorageFolder[]> {
+        return (await this.listFolders()).map(folder => ({name: folder, webLocation: undefined}));
     }
 }

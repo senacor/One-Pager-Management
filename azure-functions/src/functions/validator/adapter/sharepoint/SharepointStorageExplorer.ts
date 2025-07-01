@@ -1,29 +1,42 @@
 import { Client, GraphError } from '@microsoft/microsoft-graph-client';
-import { Logger, StorageExplorer, StorageFile } from '../../DomainTypes';
+import { Logger, StorageExplorer, StorageFile, StorageFolder } from '../../DomainTypes';
 import { Drive, DriveItem, Site } from '@microsoft/microsoft-graph-types';
 import { HardenedFetch } from 'hardened-fetch';
+import NodeCache from 'node-cache';
 
 type DriveItemWithDownloadUrl = DriveItem & {
     '@microsoft.graph.downloadUrl'?: string;
 };
 
+const cache = new NodeCache({
+    stdTTL: 10 * 60, // 10 minutes
+    useClones: false,
+});
+
 export class SharepointStorageExplorer implements StorageExplorer {
     private readonly client: Client;
     private readonly driveId: string;
     private readonly logger: Logger;
+    private readonly useCaching: boolean;
 
-    private constructor(client: Client, driveId: string, logger: Logger) {
+    private constructor(client: Client, driveId: string, logger: Logger, useCaching: boolean = true) {
         this.client = client;
         this.driveId = driveId;
         this.logger = logger;
+        this.useCaching = useCaching;
     }
 
     public static async getInstance(
         client: Client,
         siteAlias: string,
         listName: string,
-        logger: Logger = console
+        logger: Logger = console,
+        useCaching: boolean = true
     ): Promise<SharepointStorageExplorer> {
+        if (useCaching && cache.has('sharepointStorageDriveID')) {
+            return new SharepointStorageExplorer(client, cache.get<string>('sharepointStorageDriveID') as string, logger, useCaching);
+        }
+
         const site = (await client.api(`/sites/${siteAlias}`).get()) as Site | undefined;
         if (!site || !site.id) {
             throw new Error(`Cannot find site with alias ${siteAlias}!`);
@@ -37,7 +50,9 @@ export class SharepointStorageExplorer implements StorageExplorer {
             throw new Error(`Cannot find drive with name ${listName} in site ${siteAlias}!`);
         }
 
-        return new SharepointStorageExplorer(client, driveId, logger);
+        cache.set<string>('sharepointStorageDriveID', driveId);
+
+        return new SharepointStorageExplorer(client, driveId, logger, useCaching);
     }
 
     async createFolder(folder: string): Promise<void> {
@@ -80,20 +95,7 @@ export class SharepointStorageExplorer implements StorageExplorer {
     }
 
     async listFolders(): Promise<string[]> {
-        const { value: folders } = (await this.client
-            .api(`/drives/${this.driveId}/root/children`)
-            .top(100000)
-            .get()) as {
-            value?: DriveItem[];
-        };
-
-        if (folders === undefined) {
-            throw new Error(
-                `Could not fetch folders of SharePoint drive with ID "${this.driveId}"!`
-            );
-        }
-
-        return folders.flatMap(f => (f.name ? f.name : []));
+        return (await this.listFoldersWithURLs()).map(folder => folder.name);
     }
 
     async listFiles(folder: string): Promise<StorageFile[]> {
@@ -139,6 +141,29 @@ export class SharepointStorageExplorer implements StorageExplorer {
                 },
             ];
         });
+    }
+
+    async listFoldersWithURLs(): Promise<StorageFolder[]> {
+        if (this.useCaching && cache.has(`/drives/${this.driveId}/root/children`)) {
+            return cache.get<StorageFolder[]>(`/drives/${this.driveId}/root/children`) as StorageFolder[];
+        }
+
+        const { value: folders } = (await this.client
+            .api(`/drives/${this.driveId}/root/children`)
+            .top(100000)
+            .get()) as {
+            value?: DriveItem[];
+        };
+
+        if (folders === undefined) {
+            throw new Error(
+                `Could not fetch folders of SharePoint drive with ID "${this.driveId}"!`
+            );
+        }
+        const storageFolders: StorageFolder[] = folders.flatMap(f => f.name ? [{name: f.name, webLocation: f.webUrl ? new URL(f.webUrl) : undefined} as StorageFolder] : []);
+        cache.set<StorageFolder[]>(`/drives/${this.driveId}/root/children`, storageFolders);
+
+        return storageFolders;
     }
 }
 

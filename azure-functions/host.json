@@ -23,8 +23,8 @@
 
         },
         "queues": {
-            "batchSize": 6,
-            "newBatchThreshold": 3
+            "batchSize": 10,
+            "newBatchThreshold": 5
         }
     }
 }

@@ -16,7 +16,7 @@ function OnePager(local?: Local, lastUpdateByEmployee: Date = new Date()): OnePa
         lastUpdateByEmployee,
         webLocation: new URL('file:///example.pptx'),
         data: async () => Buffer.from(''),
-        name: 'Mustermann, Max_DE_240209.pptx',
+        fileName: 'Mustermann, Max_DE_240209.pptx',
     };
 }
 

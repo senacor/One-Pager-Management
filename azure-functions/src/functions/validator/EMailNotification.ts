@@ -4,13 +4,27 @@ import {
     Logger,
     MailPort,
     ValidationReporter,
+    ValidationError,
+    ValidationErrorEnum,
+    LocalEnum
 } from './DomainTypes';
-
-export type QueueSaveFunction = (item: object) => void;
-export type MailTemplate = { subject: string; content: string };
 import fs from 'node:fs';
 import * as config from '../../../app_config/config.json';
-import { render } from 'template-file';
+// import { render } from 'template-file';
+import pug from 'pug';
+import NodeCache from 'node-cache';
+
+export type MailTemplate = {
+    subject: string;
+    content: string;
+    errors: Record<ValidationError, {title: string; description: string}>;
+    faqURL: string;
+};
+
+const cache = new NodeCache({
+    stdTTL: 10 * 60, // 10 minutes
+    useClones: false,
+});
 
 /**
  * Validates one-pagers of employees based on a given validation rule.
@@ -46,22 +60,87 @@ export class EMailNotification {
             return;
         }
 
-        const mailTemplate = await this.loadEMailTemplate();
+
 
         const validationErrorArr = await this.reporter.getResultFor(employeeId);
 
-        // const templateData = {
-        //     errors: validationErrorArr.join('\n'),
-        // };
+        // check if employee needs to be notified
+        const allErrors = Object.values(validationErrorArr).map((op) => op.errors).flat();
+        if (allErrors.length === 0 || employee.email === null || employee.email === '') {
+            return;
+        }
 
-        // const mailContent = render(mailTemplate.content, templateData);
 
-        // this.logger.log(employee.email, mailTemplate.subject, mailContent);
 
-        // await this.mailAdapter.sendMail(employee.email, mailTemplate.subject, mailContent);
+        const mailTemplate = await this.loadEMailTemplate();
+
+        const listOfGeneralErrors = [
+            ValidationErrorEnum.MISSING_DE_VERSION,
+            ValidationErrorEnum.MISSING_EN_VERSION
+        ];
+        // check if mail template contains all general errors
+        if (listOfGeneralErrors.some((error) => !Object.keys(mailTemplate.errors).includes(error))) {
+            this.logger.log(`The E-Mail template needs to include all general errors. Missing: ${listOfGeneralErrors.filter((error) => !Object.keys(mailTemplate.errors).includes(error)).join(', ')}`);
+            return;
+        }
+
+
+
+        const curDate = new Date();
+        const deadline = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+7);
+
+        // const checkedOnePagers = Object.entries(validationErrorArr).filter(([, op]) => op.onePager !== undefined);
+
+
+        const generalErrors = Object.values(validationErrorArr)
+            .filter((validationOP) => validationOP.onePager === undefined)
+            .map((validationOP) => {
+                return validationOP.errors.filter((error) => Object.keys(mailTemplate.errors).includes(error)).map((error) => (mailTemplate.errors[error]));
+            })
+            .flat();
+
+        const onePagerErrors = Object.entries(validationErrorArr)
+            .filter(([,validationOP]) => validationOP.onePager !== undefined)
+            .map(([lang,validationOP]) => {
+                return {
+                    name: validationOP.onePager?.fileName ? validationOP.onePager.fileName.toString() : '',
+                    url: validationOP.onePager?.webLocation ? validationOP.onePager.webLocation.toString() : '',
+                    lang: lang,
+                    errors: validationOP.errors.filter((error) => Object.keys(mailTemplate.errors).includes(error)).map((error) => mailTemplate.errors[error])
+                };
+            }).filter((op) => op.errors.length > 0);
+
+        if (generalErrors.length === 0 && onePagerErrors.length === 0) {
+            this.logger.log(`No errors found for employee ${employeeId} that are in the current e-mail template. No email will be sent.`);
+            return;
+        }
+
+        const templateData = {
+            checkedOnePagers: onePagerErrors,
+            deadline: `${deadline.getDate()}.${deadline.getMonth() + 1}.${deadline.getFullYear()}`,
+            firstname: employee.name.split(',')[1]?.trim(),
+            faqURL: mailTemplate.faqURL,
+            generalErrors,
+            onePagerErrors,
+            folderURL: validationErrorArr[LocalEnum.EN]?.folderURL?.toString() || '',
+        };
+
+        const mailSubject = pug.render(`| ${mailTemplate.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
+        const mailContent = pug.render(mailTemplate.content, templateData);
+
+        //this.logger.log(employee.email, mailSubject, mailContent);
+
+        await this.mailAdapter.sendMail("artjom.konschin@senacor.com", mailSubject, mailContent);
+        //await this.mailAdapter.sendMail(employee.email, mailSubject, mailContent);
     }
 
     private async loadEMailTemplate(): Promise<MailTemplate> {
+        if (cache.has('mailTemplate')) {
+            this.logger.log('Using cached mail template.');
+            return cache.get<MailTemplate>('mailTemplate')!;
+        }
+
+
         const templateString = fs.readFileSync(`${config.mailTemplatePath}`, {
             encoding: 'utf8',
             flag: 'r',
@@ -70,9 +149,27 @@ export class EMailNotification {
 
         const template = JSON.parse(templateString);
 
-        return {
+        if (!template.subject || !template.contentPath || !template.errors) {
+            throw new Error('Invalid email template format. Subject, content, and errors are required.');
+        }
+        if (!fs.existsSync(`${template.contentPath}`)) {
+            throw new Error(`Mail template: Content path is invalid: ${template.contentPath}`);
+        }
+
+        const templateContent = fs.readFileSync(`${template.contentPath}`, {
+            encoding: 'utf8',
+            flag: 'r',
+        });
+
+        const mailTemplate: MailTemplate = {
             subject: template.subject,
-            content: template.content,
+            content: templateContent,
+            errors: template.errors,
+            faqURL: template.faqURL || '',
         };
+
+        cache.set('mailTemplate', mailTemplate);
+
+        return mailTemplate;
     }
 }

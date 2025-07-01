@@ -9,7 +9,6 @@ x-functions-key: {{functions_key}}
 ###
 POST {{host}}/api/validateAll
 x-functions-key: {{functions_key}}
-x-functions-key: {{functions_key}}
 
 ###
 GET {{host}}/api/employee?name=Heinrich
@@ -19,8 +18,12 @@ x-functions-key: {{functions_key}}
 GET {{host}}/api/employee/1483/onepager
 x-functions-key: {{functions_key}}
 
-### real MaInfo: OLDER_THAN_SIX_MONTHS and missing english version
+### real MaInfo: missing english version
 POST {{host}}/api/validate/2391
+x-functions-key: {{functions_key}}
+
+### real MaInfo: OLDER_THAN_SIX_MONTHS
+POST {{host}}/api/validate/2337
 x-functions-key: {{functions_key}}
 
 ###
@@ -35,8 +38,16 @@ x-functions-key: {{functions_key}}
 POST {{host}}/api/validate/2580
 x-functions-key: {{functions_key}}
 
-### problem case
+### problem case: german template and powerpoint file, but script says mixed languages
 POST {{host}}/api/validate/4743
+x-functions-key: {{functions_key}}
+
+### problem case
+POST {{host}}/api/validate/7437
+x-functions-key: {{functions_key}}
+
+### problem case: no folder URL
+POST {{host}}/api/validate/8468
 x-functions-key: {{functions_key}}
 
 ###
