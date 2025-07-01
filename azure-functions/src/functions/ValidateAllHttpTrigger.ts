@@ -21,11 +21,15 @@ const queueOutput = output.storageQueue({
  * @returns The HTTP response.
  */
 export async function ValidateAllHttpTrigger(
-    request: HttpRequest,
+    request: HttpRequest | undefined,
     context: InvocationContext
 ): Promise<HttpResponseInit> {
     try {
-        context.log(`Http function processed request for url "${request.url}"!`);
+        if (!request) {
+            context.log('Timer Request!');
+        } else {
+            context.log(`Http function processed request for url "${request.url}"!`);
+        }
 
         const config = await loadConfigFromEnv(context);
         const onePagers = new FolderBasedOnePagers(await config.explorer(), context);
@@ -51,4 +55,13 @@ app.http('ValidateAllHttpTrigger', {
     authLevel: 'function',
     handler: ValidateAllHttpTrigger,
     extraOutputs: [queueOutput],
+});
+
+// A timer trigger that periodically executes the FileChangeQueueTrigger function.
+app.timer('ValidationTimeTrigger',{
+    schedule: '0 30 5 * * 1-5', // weekday (monday to friday) at 5:30 am since at 5 o'clock the employees are usually not in the office
+    handler: async (myTimer, context) => {
+        return ValidateAllHttpTrigger(undefined, context);
+    },
+    useMonitor: true,
 });
