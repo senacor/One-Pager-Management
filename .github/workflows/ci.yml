@@ -96,8 +96,8 @@ jobs:
             sleep 5 # wait for the function to finish processing
 
             echo "check if validation error was written"
-            if ! jq -e 'index("MISSING_DE_VERSION")' .storage/1338_validation.json >/dev/null; then
-              echo 'File does not contain "MISSING_DE_VERSION" in the array' >&2
+            if ! jq -e 'index("MISSING_EN_VERSION")' .storage/1338_validation.json >/dev/null; then
+              echo 'File does not contain "MISSING_EN_VERSION" in the array' >&2
               exit 1
             fi
 
