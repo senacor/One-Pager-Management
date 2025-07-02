@@ -57,7 +57,7 @@ app.http('MailNotificationAllHttpTrigger', {
 
 // A timer trigger that periodically executes the FileChangeQueueTrigger function.
 app.timer('MailNotificationAllTimeTrigger', {
-    schedule: '0 35 8 1-7 * 3', // shall be first monday of the month at 6 o'clock (UTC)
+    schedule: '0 45 8 1-7 * 2', // shall be first monday of the month at 6 o'clock (UTC)
     handler: async (myTimer, context) => {
         return MailNotificationAllHttpTrigger(undefined, context);
     },
