@@ -1,5 +1,8 @@
 {
     "onePagerDETemplatePath": "resources/one_pager_templates/OP_Template_PPT_DE_240119.pptx",
     "onePagerENTemplatePath": "resources/one_pager_templates/OP_Template_PPT_EN_240119.pptx",
-    "mailTemplatePath": "resources/mail_templates/template.json"
+    "mailTemplatePaths": {
+        "DE": "resources/mail_templates/template_DE.json",
+        "EN": "resources/mail_templates/template_EN.json"
+    }
 }

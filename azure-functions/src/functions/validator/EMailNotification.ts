@@ -6,7 +6,9 @@ import {
     ValidationReporter,
     ValidationError,
     ValidationErrorEnum,
-    LocalEnum
+    LocalEnum,
+    Local,
+    Employee
 } from './DomainTypes';
 import fs from 'node:fs';
 import * as config from '../../../app_config/config.json';
@@ -54,7 +56,7 @@ export class EMailNotification {
     }
 
     async notifyEmployee(employeeId: EmployeeID): Promise<void> {
-        const employee = await this.employeeRepo.getEmployee(employeeId);
+        const employee: Employee | undefined = await this.employeeRepo.getEmployee(employeeId);
         if (!employee) {
             this.logger.error(`Employee ${employeeId} does not exist.`);
             return;
@@ -70,9 +72,13 @@ export class EMailNotification {
             return;
         }
 
+        let local: Local = LocalEnum.EN; // default to English
+        if (employee.isGerman) {
+            local = LocalEnum.DE; // use German if employee is German
+        }
 
 
-        const mailTemplate = await this.loadEMailTemplate();
+        const mailTemplate = await this.loadEMailTemplate(local);
 
         const listOfGeneralErrors = [
             ValidationErrorEnum.MISSING_DE_VERSION,
@@ -134,14 +140,18 @@ export class EMailNotification {
         //await this.mailAdapter.sendMail(employee.email, mailSubject, mailContent);
     }
 
-    private async loadEMailTemplate(): Promise<MailTemplate> {
-        if (cache.has('mailTemplate')) {
+    private async loadEMailTemplate(local: Local): Promise<MailTemplate> {
+        if (cache.has(local)) {
             this.logger.log('Using cached mail template.');
-            return cache.get<MailTemplate>('mailTemplate')!;
+            return cache.get<MailTemplate>(local)!;
+        }
+
+        if (!config.mailTemplatePaths || !config.mailTemplatePaths[local]) {
+            throw new Error(`Mail template path for local "${local}" is not defined in the configuration.`);
         }
 
 
-        const templateString = fs.readFileSync(`${config.mailTemplatePath}`, {
+        const templateString = fs.readFileSync(`${config.mailTemplatePaths[local]}`, {
             encoding: 'utf8',
             flag: 'r',
         });
@@ -168,7 +178,7 @@ export class EMailNotification {
             faqURL: template.faqURL || '',
         };
 
-        cache.set('mailTemplate', mailTemplate);
+        cache.set(local, mailTemplate);
 
         return mailTemplate;
     }
