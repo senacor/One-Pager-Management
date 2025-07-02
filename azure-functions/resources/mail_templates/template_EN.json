@@ -1,6 +1,6 @@
 {
-    "subject": "Aktualisierung deiner One Pager erforderlich – bitte um Überprüfung bis zum #{deadline}",
-    "contentPath": "./resources/mail_templates/template.pug",
+    "subject": "EN: Aktualisierung deiner One Pager erforderlich – bitte um Überprüfung bis zum #{deadline}",
+    "contentPath": "./resources/mail_templates/template_EN.pug",
     "errors": {
         "OLDER_THAN_SIX_MONTHS": {
             "title": "One Pager ist älter als 6 Monate",

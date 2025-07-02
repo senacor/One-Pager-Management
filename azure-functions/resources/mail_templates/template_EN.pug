@@ -1,0 +1,63 @@
+p.
+    Hallo #{firstname},
+
+p.
+    vielen Dank, dass du deine One Pager immer so gewissenhaft pflegst.
+    Wie du sicherlich weißt, ist dein One Pager der zentrale Ort, an dem alle relevanten Informationen zu deinem Profil gebündelt sind - von deinem Foto über deine Skills bis hin zu deinen Projekterfahrungen.
+    Er dient als Grundlage für Kundenpräsentationen, Projektbesetzungen und Ausschreibungen.
+
+p.
+    Nur aktuelle und einheitliche One Pager können im Staffing-Prozess und für Kundenpräsentationen verwendet werden.
+    Veraltete oder unvollständige Profile führen dazu, dass du bei Projektanfragen unter Umständen nicht berücksichtigt wirst.
+    Auch wenn du aktuell kein Projekt suchst, kann dein One Pager für Kundenpräsentationen oder Ausschreibungen verwendet werden.
+    Nur mit einem aktuellen und vollständigen Profil wirst du optimal vertreten.
+
+p.
+    Im Rahmen der aktuellen Validierung deiner One Pager haben wir Folgendes festgestellt:
+
+if checkedOnePagers.length > 0
+    p
+        b Welche One Pager weisen Fehler auf?
+
+    ul
+        each onePager in checkedOnePagers
+            li <a href="#{onePager.url}">#{onePager.name}</a>: als #{onePager.lang} One Pager
+
+
+    p
+        i.
+            Hinweis: Sollten die ausgewählten One Pager nicht die aktuellsten sein, kann das verschiedene Gründe haben.
+            Detaillierte Infos dazu findest du in unserem <a href="#{faqURL}">FAQ</a>.
+
+
+p
+    b Fehlerbeschreibungen:
+ul
+    each error in generalErrors
+        li #{error.title}: #{error.description}
+
+    each onePager in onePagerErrors
+        li(style="margin-top: 5px;") #{onePager.name}:
+            ul(style="list-style-type:square;")
+                each error in onePager.errors
+                    li(style="margin-top: 5px;") #{error.title}: #{error.description}
+
+
+if folderURL !== ''
+    p Das One Pager Guidebook findest du <a href="#{guideBookURL}">hier</a> und zu deinem One Pager Ordner gelangst du über diesen <a href="#{folderURL}">Link</a>.
+else
+    p Das One Pager Guidebook findest du <a href="#{guideBookURL}">hier</a>.
+
+
+p.
+    Bitte nimm die Überarbeitung <b>bis zum #{deadline}</b> vor.
+p.
+    Bei Fragen oder Unsicherheiten schaue dir unsere <a href="#{faqURL}">FAQs</a> an.
+
+p.
+    Danke für deine Unterstützung und Mithilfe!
+
+p
+    b Dein Staffing Team
+
+br
