@@ -12,12 +12,17 @@ const queueOutput = output.storageQueue({
 });
 
 export async function MailNotificationAllHttpTrigger(
-    request: HttpRequest,
+    request: HttpRequest | undefined,
     context: InvocationContext
 ): Promise<HttpResponseInit> {
     context.log(`--------- Trigger MailNotificationAllHttpTrigger ---------`);
     try {
-        context.log(`HTTP function processed request for url "${request.url}"`);
+        if (!request) {
+            context.log('Timer Request!');
+        } else {
+            context.log(`HTTP function processed request for url "${request.url}"`);
+        }
+
 
         const config = loadConfigFromEnv(context);
 
@@ -47,5 +52,15 @@ app.http('MailNotificationAllHttpTrigger', {
     route: 'sendValidationMails',
     authLevel: 'function',
     handler: MailNotificationAllHttpTrigger,
+    extraOutputs: [queueOutput],
+});
+
+// A timer trigger that periodically executes the FileChangeQueueTrigger function.
+app.timer('MailNotificationAllTimeTrigger', {
+    schedule: '0 35 8 1-7 * 3', // shall be first monday of the month at 6 o'clock (UTC)
+    handler: async (myTimer, context) => {
+        return MailNotificationAllHttpTrigger(undefined, context);
+    },
+    useMonitor: true,
     extraOutputs: [queueOutput],
 });
