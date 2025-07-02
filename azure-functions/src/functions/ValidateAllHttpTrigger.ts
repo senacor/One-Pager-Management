@@ -59,9 +59,10 @@ app.http('ValidateAllHttpTrigger', {
 
 // A timer trigger that periodically executes the FileChangeQueueTrigger function.
 app.timer('ValidationTimeTrigger',{
-    schedule: '0 30 5 * * 1-5', // weekday (monday to friday) at 5:30 am since at 5 o'clock the employees are usually not in the office
+    schedule: '0 20 7 * * 1-5', // weekday (monday to friday) at 5:30 am UTC since at 5 o'clock the employee data is updated
     handler: async (myTimer, context) => {
         return ValidateAllHttpTrigger(undefined, context);
     },
     useMonitor: true,
+    extraOutputs: [queueOutput],
 });
