@@ -90,10 +90,16 @@ export class PowerBIRepository implements EmployeeRepository {
         const query = `
             EVALUATE
             FILTER(
-                'current employee',
-                LEFT('current employee'[resource_type_current], LEN("${prefix}")) = "${prefix}"
+                FILTER(
+                    'current employee',
+                    LEFT(
+                        'current employee'[resource_type_current],
+                        LEN("${prefix}")
+                    ) = "${prefix}"
+                ),
+                'current employee'[email]<>BLANK()
             )
-            `.replace(/\n/g, ' ').replace(/\t/g, " ").trim();
+            `.replace(/\n/g, ' ').replace(/\t/g, ' ').trim();
         return await this.fetchDataByQuery(query);
     }
 
