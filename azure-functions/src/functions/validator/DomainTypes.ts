@@ -137,6 +137,8 @@ export interface ValidationReporter {
      * @param id The ID of the employee whose validation results should be fetched.
      */
     getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager>;
+
+    cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void>;
 }
 
 export type StorageFile = {

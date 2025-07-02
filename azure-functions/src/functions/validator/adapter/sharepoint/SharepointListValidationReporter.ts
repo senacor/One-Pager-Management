@@ -341,12 +341,46 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
         if (items) {
             await Promise.all(
-                items.map(item =>
-                    this.client
+                items.map(async item =>
+                    await this.client
                         .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
                         .delete()
                 )
             );
         }
+    }
+
+    async cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void> {
+        this.logger.log(`Cleaning up validation list!`);
+
+        const { value: items } = (await this.client
+            .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
+            .headers(FORCE_REFRESH)
+            .get()) as { value?: ListItem[] };
+
+        if (!items) {
+            this.logger.log('No items found in the validation list to clean up.');
+            return;
+        }
+
+        const itemsToDelete = items.filter(item => {
+            const fields = item.fields as ListItemWithFields;
+            return fields && !validEmployees.includes(fields[ListItemColumnNames.MA_ID] as EmployeeID);
+        });
+
+        if (itemsToDelete.length === 0) {
+            this.logger.log('No items to delete in the validation list.');
+            return;
+        }
+
+        await Promise.all(
+            itemsToDelete.map(async item =>
+                await this.client
+                    .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
+                    .delete()
+            )
+        );
+
+        this.logger.log(`Deleted ${itemsToDelete.length} items from the validation list.`);
     }
 }

@@ -83,4 +83,15 @@ export class InMemoryValidationReporter implements ValidationReporter {
 
         return result;
     }
+
+    async cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void> {
+        this.logger.log('Cleaning up validation list in memory reporter.');
+        (Object.keys(this.reports) as EmployeeID[]).forEach((key: EmployeeID) => {
+            if (!validEmployees.includes(key)) {
+                this.logger.log(`Removing validation report for employee with id "${key}"!`);
+                this.reports.delete(key);
+            }
+        });
+        this.logger.log('Validation list cleanup completed.');
+    }
 }
