@@ -106,7 +106,8 @@ export class LocalFileValidationReporter implements ValidationReporter {
             if (file.endsWith('_validation.json') && !validEmployees.includes(file.split('_')[0] as EmployeeID)) {
                 const filePath = path.join(this.dataDir, file);
                 await fs.unlink(filePath).catch(err => {
-                    _this.logger.error(`Failed to delete file ${filePath}: ${err.message}`);
+                    const sanitizedFileName = path.basename(filePath); // Extract file name only
+                    _this.logger.error(`Failed to delete validation file '${sanitizedFileName}': ${err.message}`);
                 });
             }
         }));
