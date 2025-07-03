@@ -107,7 +107,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
                 const filePath = path.join(this.dataDir, file);
                 await fs.unlink(filePath).catch(err => {
                     const sanitizedFileName = path.basename(filePath); // Extract file name only
-                    _this.logger.error(`Failed to delete validation file '${sanitizedFileName}': ${err.message}`);
+                    _this.logger.error(`Failed to delete validation file '${sanitizedFileName}'. Please check permissions or file integrity.`);
                 });
             }
         }));
