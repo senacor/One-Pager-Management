@@ -96,4 +96,20 @@ export class LocalFileValidationReporter implements ValidationReporter {
 
         return {[LocalEnum.DE]: validatedOnePager_DE, [LocalEnum.EN]: validatedOnePager_EN};
     }
+
+    async cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void> {
+        await this.ensureDataDir();
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const _this = this;
+        const files = await fs.readdir(this.dataDir);
+        await Promise.all(files.map(async file => {
+            if (file.endsWith('_validation.json') && !validEmployees.includes(file.split('_')[0] as EmployeeID)) {
+                const filePath = path.join(this.dataDir, file);
+                await fs.unlink(filePath).catch(err => {
+                    const sanitizedFileName = path.basename(filePath); // Extract file name only
+                    _this.logger.error(`Failed to delete validation file '${sanitizedFileName}'. Please check permissions or file integrity.`);
+                });
+            }
+        }));
+    }
 }

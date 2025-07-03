@@ -23,5 +23,5 @@ module.exports = {
             usePathForSuiteName: "true"
         }]
     ],
-    testTimeout: 5000
+    testTimeout: 10000
 };

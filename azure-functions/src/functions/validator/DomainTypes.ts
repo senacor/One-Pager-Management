@@ -50,11 +50,19 @@ export enum ValidationErrorEnum {
     MISSING_DE_VERSION = 'MISSING_DE_VERSION', // employee has no one-pager in German
     MISSING_EN_VERSION = 'MISSING_EN_VERSION', // employee has no one-pager in English
     MISSING_PHOTO = 'MISSING_PHOTO', // one-pager  has no photo of the employee
+
     OTHER_IMAGES = 'OTHER_IMAGES', // one-pager containes other images that do not belong
     LOW_QUALITY_PHOTO = 'LOW_QUALITY_PHOTO', // one-pager has a photo of the employee, but it is of low quality
     MIXED_LANGUAGE_VERSION = 'MIXED_LANGUAGE_VERSION', // one-pager has slides in different languages
     WRONG_LANGUAGE_CONTENT = 'WRONG_LANGUAGE_CONTENT', // one-pager indicates a different language as is used
 };
+export const listOfGeneralErrors = [
+    ValidationErrorEnum.MISSING_DE_VERSION,
+    ValidationErrorEnum.MISSING_EN_VERSION
+];
+
+
+
 /**
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
@@ -137,6 +145,8 @@ export interface ValidationReporter {
      * @param id The ID of the employee whose validation results should be fetched.
      */
     getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager>;
+
+    cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void>;
 }
 
 export type StorageFile = {
@@ -204,7 +214,7 @@ export type MSScope =
 export type Employee = {
     id: EmployeeID;
     name: string;
-    email: string | null; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    email: EmailAddress | null;
     entry_date: string;
     office: string;
     date_of_employment_change: string | null;

@@ -5,10 +5,11 @@ import {
     MailPort,
     ValidationReporter,
     ValidationError,
-    ValidationErrorEnum,
     LocalEnum,
     Local,
-    Employee
+    Employee,
+    listOfGeneralErrors,
+    isEmailAddress
 } from './DomainTypes';
 import fs from 'node:fs';
 import * as config from '../../../app_config/config.json';
@@ -68,9 +69,20 @@ export class EMailNotification {
 
         // check if employee needs to be notified
         const allErrors = Object.values(validationErrorArr).map((op) => op.errors).flat();
-        if (allErrors.length === 0 || employee.email === null || employee.email === '') {
+        if (
+            allErrors.length === 0 // has no errors
+        ) {
+            this.logger.log(`No errors found for employee ${employeeId}. No email will be sent.`);
             return;
         }
+        if (
+            employee.email === null || employee.email === '' || !isEmailAddress(employee.email) // has no email or invalid email
+        ) {
+            this.logger.error(`Employee ${employeeId} has no valid email address. No email will be sent.`);
+            return;
+        }
+
+
 
         let local: Local = LocalEnum.EN; // default to English
         if (employee.isGerman) {
@@ -79,17 +91,6 @@ export class EMailNotification {
 
 
         const mailTemplate = await this.loadEMailTemplate(local);
-
-        const listOfGeneralErrors = [
-            ValidationErrorEnum.MISSING_DE_VERSION,
-            ValidationErrorEnum.MISSING_EN_VERSION
-        ];
-        // check if mail template contains all general errors
-        if (listOfGeneralErrors.some((error) => !Object.keys(mailTemplate.errors).includes(error))) {
-            this.logger.log(`The E-Mail template needs to include all general errors. Missing: ${listOfGeneralErrors.filter((error) => !Object.keys(mailTemplate.errors).includes(error)).join(', ')}`);
-            return;
-        }
-
 
 
         const curDate = new Date();
@@ -177,6 +178,12 @@ export class EMailNotification {
             errors: template.errors,
             faqURL: template.faqURL || '',
         };
+
+
+        // check if mail template contains all general errors
+        if (listOfGeneralErrors.some((error) => !Object.keys(mailTemplate.errors).includes(error))) {
+            throw new Error(`The E-Mail template needs to include all general errors. Missing: ${listOfGeneralErrors.filter((error) => !Object.keys(mailTemplate.errors).includes(error)).join(', ')}`);
+        }
 
         cache.set(local, mailTemplate);
 

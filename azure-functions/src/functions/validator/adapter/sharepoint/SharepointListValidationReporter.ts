@@ -341,12 +341,54 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
         if (items) {
             await Promise.all(
-                items.map(item =>
-                    this.client
+                items.map(async item =>
+                    await this.client
                         .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
                         .delete()
                 )
             );
         }
+    }
+
+    async cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void> {
+        this.logger.log(`Cleaning up validation list!`);
+
+        // get all items
+        const { value: items } = (await this.client
+            .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
+            .headers(FORCE_REFRESH)
+            .get()) as { value?: ListItem[] };
+
+        if (!items) {
+            this.logger.log('No items found in the validation list to clean up.');
+            return;
+        }
+
+
+        const itemsToDelete = (await Promise.all(items.map(async item => {
+            const itemWithFields = (await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
+                .headers(FORCE_REFRESH)
+                .select('fields')
+                .get()) as ListItem;
+
+            const fields = itemWithFields.fields as ListItemWithFields;
+            return [fields === undefined || !validEmployees.includes(`${fields[ListItemColumnNames.MA_ID]}` as EmployeeID), item.id];
+        }))).filter((item => item[0]));
+
+        if (itemsToDelete.length === 0) {
+            this.logger.log('No items to delete in the validation list.');
+            return;
+        }
+
+        await Promise.all(
+            itemsToDelete.map(async ([, itemID]) =>
+                await this.client
+                    .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemID}`)
+                    .delete()
+            )
+        );
+
+        this.logger.log(`Deleted ${itemsToDelete.length} items from the validation list.`);
     }
 }

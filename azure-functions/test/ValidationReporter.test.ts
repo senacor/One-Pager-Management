@@ -199,6 +199,64 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
             expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.MISSING_DE_VERSION]);
         });
     });
+
+    describe(`${name} - cleanUpValidationList`, () => {
+        it('should remove all entries that are not in the list of valid employees', async () => {
+            const reporter = await reporterFactory();
+
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+                folderURL: undefined
+            };
+
+            await reporter.reportErrors(
+                '111',
+                someValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+            await reporter.reportErrors(
+                '111',
+                anotherValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+
+            await reporter.reportErrors(
+                '110',
+                someValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+            await reporter.reportErrors(
+                '112',
+                anotherValidatedOnePager,
+                LocalEnum.DE,
+                someEmployeeData
+            );
+            await reporter.cleanUpValidationList(['112']);
+
+            const result_111 = await reporter.getResultFor('111');
+            const result_110 = await reporter.getResultFor('110');
+            const result_112 = await reporter.getResultFor('112');
+
+            expect(result_110[LocalEnum.EN].errors).toEqual([]);
+            expect(result_110[LocalEnum.DE].errors).toEqual([]);
+
+            expect(result_111[LocalEnum.EN].errors).toEqual([]);
+            expect(result_111[LocalEnum.DE].errors).toEqual([]);
+
+            expect(result_112[LocalEnum.DE].errors).toEqual([ValidationErrorEnum.MISSING_DE_VERSION]);
+            expect(result_112[LocalEnum.EN].errors).toEqual([]);
+        });
+    });
 };
 
 testFactory('InMemoryValidationReporter', async () => new InMemoryValidationReporter());
