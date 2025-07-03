@@ -353,6 +353,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void> {
         this.logger.log(`Cleaning up validation list!`);
 
+        // get all items
         const { value: items } = (await this.client
             .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
             .headers(FORCE_REFRESH)
@@ -363,10 +364,17 @@ export class SharepointListValidationReporter implements ValidationReporter {
             return;
         }
 
-        const itemsToDelete = items.filter(item => {
-            const fields = item.fields as ListItemWithFields;
-            return fields && !validEmployees.includes(fields[ListItemColumnNames.MA_ID] as EmployeeID);
-        });
+
+        const itemsToDelete = (await Promise.all(items.map(async item => {
+            const itemWithFields = (await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
+                .headers(FORCE_REFRESH)
+                .select('fields')
+                .get()) as ListItem;
+
+            const fields = itemWithFields.fields as ListItemWithFields;
+            return [fields === undefined || !validEmployees.includes(`${fields[ListItemColumnNames.MA_ID]}` as EmployeeID), item.id];
+        }))).filter((item => item[0]));
 
         if (itemsToDelete.length === 0) {
             this.logger.log('No items to delete in the validation list.');
@@ -374,9 +382,9 @@ export class SharepointListValidationReporter implements ValidationReporter {
         }
 
         await Promise.all(
-            itemsToDelete.map(async item =>
+            itemsToDelete.map(async ([, itemID]) =>
                 await this.client
-                    .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
+                    .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemID}`)
                     .delete()
             )
         );

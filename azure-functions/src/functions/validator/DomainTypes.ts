@@ -55,6 +55,13 @@ export enum ValidationErrorEnum {
     MIXED_LANGUAGE_VERSION = 'MIXED_LANGUAGE_VERSION', // one-pager has slides in different languages
     WRONG_LANGUAGE_CONTENT = 'WRONG_LANGUAGE_CONTENT', // one-pager indicates a different language as is used
 };
+export const listOfGeneralErrors = [
+    ValidationErrorEnum.MISSING_DE_VERSION,
+    ValidationErrorEnum.MISSING_EN_VERSION
+];
+
+
+
 /**
  * Type definition for all possible validation errors that can occur during one-pager validation.
  */
@@ -206,7 +213,7 @@ export type MSScope =
 export type Employee = {
     id: EmployeeID;
     name: string;
-    email: string | null; //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
+    email: EmailAddress | null;
     entry_date: string;
     office: string;
     date_of_employment_change: string | null;
