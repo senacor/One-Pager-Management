@@ -67,7 +67,7 @@ jobs:
         env:
           VITE_API_BASE_URL: https://poc-one-pager.azurewebsites.net
           VITE_ENVIRONMENT: production
-          VITE_ASSET_URL: ${{ vars.VITE_ASSET_URL}}
+          VITE_ASSET_URL: ${{ vars.VITE_ASSET_URL }}
 
 
       - name: Upload artifact
