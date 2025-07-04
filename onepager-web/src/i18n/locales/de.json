@@ -1,98 +1,98 @@
 {
-  "steps": {
-    "basicInfo": {
-      "title": "Mitarbeiterinformationen",
-      "fullNameLabel": "Vollständiger Name",
-      "fullNamePlaceholder": "Geben Sie Ihren vollständigen Namen ein",
-      "positionLabel": "Position",
-      "positionPlaceholder": "Wählen Sie Ihre Position",
-      "profilePhotoLabel": "Profilfoto"
+    "steps": {
+        "basicInfo": {
+            "title": "Mitarbeiterinformationen",
+            "fullNameLabel": "Vollständiger Name",
+            "fullNamePlaceholder": "Geben Sie Ihren vollständigen Namen ein",
+            "positionLabel": "Position",
+            "positionPlaceholder": "Wählen Sie Ihre Position",
+            "profilePhotoLabel": "Profilfoto"
+        },
+        "focus": {
+            "title": "Fokus",
+            "description": "<ul><li>Maximal fünf Bulletpoints zu deinen Erfahrungsschwerpunkten, fachlicher Expertise oder Technologien</li><li>Als <strong>Absolvent</strong> ohne Berufserfahrung: relevante Schwerpunkte und Fähigkeiten aus dem Studium, Praktika oder anderen studentischen Tätigkeiten eintragen und nach den ersten Wochen, bei einem Projektwechsel, aber spätestens sechs Monate nach Eintritt bei Senacor aktualisieren</li><li>Als Berufserfahrener:<ul><li>Erster Bulletpoint: Ein zusammenfassender Satz deiner Erfahrung</li><li>Letzter Bulletpoint: Branchenfokus</li></ul></li></ul>",
+            "placeholder": "Listen Sie Schwerpunktbereiche auf, einen pro Zeile"
+        },
+        "experience": {
+            "title": "Ausbildung und Berufliche Erfahrung",
+            "description": "<ul><li>Erster Bulletpoint : aktuelle Position bei Senacor inkl. Startjahr</li><li>Weitere Bulletpoints in antichronologischer Reihenfolge:<ul><li>Vorbeschäftigungen mit Beschäftigungszeitraum und namentlicher Erwähnung von Vorarbeitgebern (Beispiel: Systems Engineer, MusterTec AG (2015-2017))</li><li>Berufs-/FH -/Uni-Abschlüsse mit Abschlussjahr und Nennung der akademischen Einrichtung (Beispiel: M.Sc. in Wirtschaftsinformatik, Universität Ulm (2020))</li><li>Optional: berufliche Zertifizierungen/ Veröffentlichungen/ Patente/ etc. (Beispiel: Zertifizierter SCRUM Master (2017))</li></ul></li><li>Wenn nicht alle Beschäftigungen/ Abschlüsse in das Feld passen, kann die Folie für Ergänzungen genutzt werden.</li></ul>",
+            "placeholder": "Listen Sie Erfahrungen oder Zertifikate auf, eines pro Zeile"
+        },
+        "projects": {
+            "title": "Projekterfahrungen",
+            "description": "<ul><li>Auflisten der Projekte in absteigender Priorität in Bezug auf die im Fokus genannten Erfahrungsschwerpunkte</li><li>Als <strong>Absolvent</strong> ohne Projekterfahrung: Erfahrungen aus studienbegleitender Tätigkeit, Abschlussarbeit, Praktika o.ä.</li><li>Als <strong>Berufserfahrener</strong>: relevanteste Projekte</li><li>Bei zusätzlicher <strong>Erfahrung aus Linienposition</strong>: Linienposition anführen, falls diese zum Profil beiträgt. Die Linientätigkeit sowie ggf. den Verantwortungsumfang explizit anführen.</li></ul>",
+            "placeholder": "Projektzusammenfassung"
+        }
     },
-    "focus": {
-      "title": "Fokus",
-      "description": "<ul><li>Maximal fünf Bulletpoints zu deinen Erfahrungsschwerpunkten, fachlicher Expertise oder Technologien</li><li>Als <strong>Absolvent</strong> ohne Berufserfahrung: relevante Schwerpunkte und Fähigkeiten aus dem Studium, Praktika oder anderen studentischen Tätigkeiten eintragen und nach den ersten Wochen, bei einem Projektwechsel, aber spätestens sechs Monate nach Eintritt bei Senacor aktualisieren</li><li>Als Berufserfahrener:<ul><li>Erster Bulletpoint: Ein zusammenfassender Satz deiner Erfahrung</li><li>Letzter Bulletpoint: Branchenfokus</li></ul></li></ul>",
-      "placeholder": "Listen Sie Schwerpunktbereiche auf, einen pro Zeile"
+    "common": {
+        "stepGuide": "Anleitung",
+        "addEntry": "Eintrag hinzufügen",
+        "remove": "Entfernen",
+        "maxItemsReached": "Maximum von {{max}} Einträgen erreicht"
     },
-    "experience": {
-      "title": "Ausbildung und Berufliche Erfahrung",
-      "description": "<ul><li>Erster Bulletpoint : aktuelle Position bei Senacor inkl. Startjahr</li><li>Weitere Bulletpoints in antichronologischer Reihenfolge:<ul><li>orbeschäftigungen mit Beschäftigungszeitraum und namentlicher Erwähnung von Vorarbeitgebern (Beispiel: Systems Engineer, MusterTec AG (2015-2017))</li><li>Berufs-/FH -/Uni-Abschlüsse mit Abschlussjahr und Nennung der akademischen Einrichtung (Beispiel: M.Sc. in Wirtschaftsinformatik, Universität Ulm (2020))</li><li>Optional: berufliche Zertifizierungen/ Veröffentlichungen/ Patente/ etc. (Beispiel: Zertifizierter SCRUM Master (2017))</li></ul></li><li>Wenn nicht alle Beschäftigungen/ Abschlüsse in das Feld passen, kann die Folie für Ergänzungen genutzt werden.</li></ul>",
-      "placeholder": "Listen Sie Erfahrungen oder Zertifikate auf, eines pro Zeile"
+    "fileUpload": {
+        "defaultPhotoName": "Standard-Profilfoto",
+        "croppedPhoto": "Zugeschnittenes Foto",
+        "uploadedPhoto": "Hochgeladenes Foto",
+        "changePhoto": "Foto ändern",
+        "editCrop": "Zuschnitt bearbeiten",
+        "removePhoto": "Foto entfernen",
+        "clickToUpload": "Klicken zum Hochladen",
+        "dragAndDrop": "oder per Drag & Drop",
+        "fileTypes": "PNG, JPG, GIF bis zu 10MB",
+        "loading": "Lädt...",
+        "failedToLoad": "Fehler beim Laden des Bildes",
+        "invalidFileType": "Bitte wählen Sie eine gültige Bilddatei (JPG, PNG, GIF oder WebP)",
+        "fileTooLarge": "Dateigröße muss kleiner als 10MB sein"
     },
-    "projects": {
-      "title": "Projekterfahrungen",
-      "description": "<ul><li>Auflisten der Projekte in absteigender Priorität in Bezug auf die im Fokus genannten Erfahrungsschwerpunkte</li><li>Als <strong>Absolvent</strong> ohne Projekterfahrung: Erfahrungen aus studienbegleitender Tätigkeit, Abschlussarbeit, Praktika o.ä.</li><li>Als <strong>Berufserfahrener</strong>: relevanteste Projekte</li><li>Bei zusätzlicher <strong>Erfahrung aus Linienposition</strong>: Linienposition anführen, falls diese zum Profil beiträgt. Die Linientätigkeit sowie ggf. den Verantwortungsumfang explizit anführen.</li></ul>",
-      "placeholder": "Projektzusammenfassung"
+    "imageCropper": {
+        "title": "Profilfoto zuschneiden",
+        "description": "Ziehen Sie zum Repositionieren und verwenden Sie den Schieberegler zum Zoomen. Das Bild wird quadratisch zugeschnitten.",
+        "rotateLeft": "Nach links drehen",
+        "rotateRight": "Nach rechts drehen",
+        "cancel": "Abbrechen",
+        "applyCrop": "Zuschnitt anwenden",
+        "cropping": "Wird zugeschnitten..."
+    },
+    "import": {
+        "title": "OnePager importieren",
+        "searchEmployees": "Mitarbeiter suchen",
+        "employeeName": "Mitarbeitername",
+        "searchPlaceholder": "Eingeben um Mitarbeiter zu suchen...",
+        "search": "Suchen",
+        "searching": "Suche läuft...",
+        "searchResults": "Suchergebnisse",
+        "searchTooShort": "Bitte mindestens 3 Zeichen eingeben",
+        "noEmployeesFound": "Keine Mitarbeiter gefunden",
+        "searchError": "Fehler bei der Mitarbeitersuche",
+        "selectOnePager": "OnePager auswählen",
+        "noOnePagersFound": "Keine OnePager für diesen Mitarbeiter gefunden",
+        "loadOnePagersError": "Fehler beim Laden der OnePager",
+        "preview": "Vorschau",
+        "loadDataError": "Fehler beim Laden der OnePager-Daten",
+        "employeeInfo": "Mitarbeiterinformationen",
+        "name": "Name",
+        "position": "Position",
+        "fileName": "Dateiname",
+        "photo": "Foto",
+        "employeePhoto": "Mitarbeiterfoto",
+        "importNote": "Hinweis: Derzeit können nur Grundinformationen (Name, Position, Foto) importiert werden. Die vollständige OnePager-Importfunktion wird in zukünftigen Versionen verfügbar sein.",
+        "back": "Zurück",
+        "cancel": "Abbrechen",
+        "importButton": "Importieren",
+        "loading": "Lade..."
+    },
+    "runtimeConfig": {
+        "title": "Laufzeit-API-Konfiguration",
+        "description": "Diese Einstellungen werden im localStorage Ihres Browsers gespeichert und überschreiben Build-Zeit-Einstellungen. Sie sind nützlich für Entwicklung, Tests oder bei der Verwendung Ihrer eigenen Azure Functions.",
+        "customApiUrl": "Benutzerdefinierte API-Basis-URL (optional)",
+        "customApiUrlPlaceholder": "https://ihre-functions-app.azurewebsites.net",
+        "customApiUrlHelp": "Leer lassen, um die zur Build-Zeit konfigurierte URL zu verwenden",
+        "functionsKey": "Azure Functions Schlüssel (optional)",
+        "functionsKeyPlaceholder": "Ihr Azure Functions Zugriffsschlüssel",
+        "functionsKeyHelp": "Wird verwendet, wenn Azure Functions Authentifizierung erfordern",
+        "saveConfiguration": "Konfiguration speichern",
+        "clearAll": "Alles löschen",
+        "debugInformation": "Debug-Informationen"
     }
-  },
-  "common": {
-    "stepGuide": "Anleitung",
-    "addEntry": "Eintrag hinzufügen",
-    "remove": "Entfernen",
-    "maxItemsReached": "Maximum von {{max}} Einträgen erreicht"
-  },
-  "fileUpload": {
-    "defaultPhotoName": "Standard-Profilfoto",
-    "croppedPhoto": "Zugeschnittenes Foto",
-    "uploadedPhoto": "Hochgeladenes Foto",
-    "changePhoto": "Foto ändern",
-    "editCrop": "Zuschnitt bearbeiten",
-    "removePhoto": "Foto entfernen",
-    "clickToUpload": "Klicken zum Hochladen",
-    "dragAndDrop": "oder per Drag & Drop",
-    "fileTypes": "PNG, JPG, GIF bis zu 10MB",
-    "loading": "Lädt...",
-    "failedToLoad": "Fehler beim Laden des Bildes",
-    "invalidFileType": "Bitte wählen Sie eine gültige Bilddatei (JPG, PNG, GIF oder WebP)",
-    "fileTooLarge": "Dateigröße muss kleiner als 10MB sein"
-  },
-  "imageCropper": {
-    "title": "Profilfoto zuschneiden",
-    "description": "Ziehen Sie zum Repositionieren und verwenden Sie den Schieberegler zum Zoomen. Das Bild wird quadratisch zugeschnitten.",
-    "rotateLeft": "Nach links drehen",
-    "rotateRight": "Nach rechts drehen",
-    "cancel": "Abbrechen",
-    "applyCrop": "Zuschnitt anwenden",
-    "cropping": "Wird zugeschnitten..."
-  },
-  "import": {
-    "title": "OnePager importieren",
-    "searchEmployees": "Mitarbeiter suchen",
-    "employeeName": "Mitarbeitername",
-    "searchPlaceholder": "Eingeben um Mitarbeiter zu suchen...",
-    "search": "Suchen",
-    "searching": "Suche läuft...",
-    "searchResults": "Suchergebnisse",
-    "searchTooShort": "Bitte mindestens 3 Zeichen eingeben",
-    "noEmployeesFound": "Keine Mitarbeiter gefunden",
-    "searchError": "Fehler bei der Mitarbeitersuche",
-    "selectOnePager": "OnePager auswählen",
-    "noOnePagersFound": "Keine OnePager für diesen Mitarbeiter gefunden",
-    "loadOnePagersError": "Fehler beim Laden der OnePager",
-    "preview": "Vorschau",
-    "loadDataError": "Fehler beim Laden der OnePager-Daten",
-    "employeeInfo": "Mitarbeiterinformationen",
-    "name": "Name",
-    "position": "Position",
-    "fileName": "Dateiname",
-    "photo": "Foto",
-    "employeePhoto": "Mitarbeiterfoto",
-    "importNote": "Hinweis: Derzeit können nur Grundinformationen (Name, Position, Foto) importiert werden. Die vollständige OnePager-Importfunktion wird in zukünftigen Versionen verfügbar sein.",
-    "back": "Zurück",
-    "cancel": "Abbrechen",
-    "importButton": "Importieren",
-    "loading": "Lade..."
-  },
-  "runtimeConfig": {
-    "title": "Laufzeit-API-Konfiguration",
-    "description": "Diese Einstellungen werden im localStorage Ihres Browsers gespeichert und überschreiben Build-Zeit-Einstellungen. Sie sind nützlich für Entwicklung, Tests oder bei der Verwendung Ihrer eigenen Azure Functions.",
-    "customApiUrl": "Benutzerdefinierte API-Basis-URL (optional)",
-    "customApiUrlPlaceholder": "https://ihre-functions-app.azurewebsites.net",
-    "customApiUrlHelp": "Leer lassen, um die zur Build-Zeit konfigurierte URL zu verwenden",
-    "functionsKey": "Azure Functions Schlüssel (optional)",
-    "functionsKeyPlaceholder": "Ihr Azure Functions Zugriffsschlüssel",
-    "functionsKeyHelp": "Wird verwendet, wenn Azure Functions Authentifizierung erfordern",
-    "saveConfiguration": "Konfiguration speichern",
-    "clearAll": "Alles löschen",
-    "debugInformation": "Debug-Informationen"
-  }
 }

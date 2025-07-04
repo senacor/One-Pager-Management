@@ -2,7 +2,7 @@
 @import "croppie/croppie.css";
 
 @theme {
-  --color-brand-blue: #7192C7;
-  --color-dark-nav: #323232;
-  --font-family-sans: Arial, Helvetica, sans-serif;
+    --color-brand-blue: #7192C7;
+    --color-dark-nav: #323232;
+    --font-family-sans: Arial, Helvetica, sans-serif;
 }

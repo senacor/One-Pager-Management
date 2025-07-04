@@ -1,98 +1,98 @@
 {
-  "steps": {
-    "basicInfo": {
-      "title": "Employee Information",
-      "fullNameLabel": "Full Name",
-      "fullNamePlaceholder": "Enter your full name",
-      "positionLabel": "Position",
-      "positionPlaceholder": "Select your position",
-      "profilePhotoLabel": "Profile Photo"
+    "steps": {
+        "basicInfo": {
+            "title": "Employee Information",
+            "fullNameLabel": "Full Name",
+            "fullNamePlaceholder": "Enter your full name",
+            "positionLabel": "Position",
+            "positionPlaceholder": "Select your position",
+            "profilePhotoLabel": "Profile Photo"
+        },
+        "focus": {
+            "title": "Focus",
+            "description": "<ul><li>Maximum of five bullet points covering your core areas of experience, professional expertise, or technologies</li><li>As a <strong>graduate</strong> without professional experience: enter relevant focus areas and skills from your studies, internships, or other student activities and update after the first weeks, during a project change, but at latest six months after joining Senacor</li><li>As an experienced professional:<ul><li>First bullet point: A summarizing sentence of your experience</li><li>Last bullet point: Industry focus</li></ul></li></ul>",
+            "placeholder": "List focus areas, one per line"
+        },
+        "experience": {
+            "title": "Education and Professional Experience",
+            "description": "<ul><li>First bullet point: current position at Senacor including start year</li><li>Additional bullet points in reverse chronological order:<ul><li>Previous employments with employment period and naming of former employers (Example: Systems Engineer, ExampleTech AG (2015-2017))</li><li>Professional/university/college degrees with graduation year and mention of academic institution (Example: M.Sc. in Business Informatics, University of Ulm (2020))</li><li>Optional: professional certifications/publications/patents/etc. (Example: Certified SCRUM Master (2017))</li></ul></li><li>If not all employments/degrees fit in the field, the slide can be used for additions.</li></ul>",
+            "placeholder": "List experiences or certificates, one per line"
+        },
+        "projects": {
+            "title": "Project History",
+            "description": "<ul><li>List projects in descending priority regarding the core experience areas mentioned in the focus section</li><li>As a <strong>graduate</strong> without project experience: experiences from study-related activities, thesis, internships, or similar</li><li>As an <strong>experienced professional</strong>: most relevant projects</li><li>With additional <strong>line management experience</strong>: mention line position if it contributes to the profile. Explicitly mention the line activities and scope of responsibility if applicable.</li></ul>",
+            "placeholder": "Project summary"
+        }
     },
-    "focus": {
-      "title": "Focus",
-      "description": "<ul><li>Maximum of five bullet points covering your core areas of experience, professional expertise, or technologies</li><li>As a <strong>graduate</strong> without professional experience: enter relevant focus areas and skills from your studies, internships, or other student activities and update after the first weeks, during a project change, but at latest six months after joining Senacor</li><li>As an experienced professional:<ul><li>First bullet point: A summarizing sentence of your experience</li><li>Last bullet point: Industry focus</li></ul></li></ul>",
-      "placeholder": "List focus areas, one per line"
+    "common": {
+        "stepGuide": "Guide",
+        "addEntry": "Add Entry",
+        "remove": "Remove",
+        "maxItemsReached": "Maximum of {{max}} entries reached"
     },
-    "experience": {
-      "title": "Education and Professional Experience",
-      "description": "<ul><li>First bullet point: current position at Senacor including start year</li><li>Additional bullet points in reverse chronological order:<ul><li>Previous employments with employment period and naming of former employers (Example: Systems Engineer, ExampleTech AG (2015-2017))</li><li>Professional/university/college degrees with graduation year and mention of academic institution (Example: M.Sc. in Business Informatics, University of Ulm (2020))</li><li>Optional: professional certifications/publications/patents/etc. (Example: Certified SCRUM Master (2017))</li></ul></li><li>If not all employments/degrees fit in the field, the slide can be used for additions.</li></ul>",
-      "placeholder": "List experiences or certificates, one per line"
+    "fileUpload": {
+        "defaultPhotoName": "Default profile photo",
+        "croppedPhoto": "Cropped photo",
+        "uploadedPhoto": "Uploaded photo",
+        "changePhoto": "Change photo",
+        "editCrop": "Edit crop",
+        "removePhoto": "Remove photo",
+        "clickToUpload": "Click to upload",
+        "dragAndDrop": "or drag and drop",
+        "fileTypes": "PNG, JPG, GIF up to 10MB",
+        "loading": "Loading...",
+        "failedToLoad": "Failed to load image",
+        "invalidFileType": "Please select a valid image file (JPG, PNG, GIF, or WebP)",
+        "fileTooLarge": "File size must be less than 10MB"
     },
-    "projects": {
-      "title": "Project History", 
-      "description": "<ul><li>List projects in descending priority regarding the core experience areas mentioned in the focus section</li><li>As a <strong>graduate</strong> without project experience: experiences from study-related activities, thesis, internships, or similar</li><li>As an <strong>experienced professional</strong>: most relevant projects</li><li>With additional <strong>line management experience</strong>: mention line position if it contributes to the profile. Explicitly mention the line activities and scope of responsibility if applicable.</li></ul>",
-      "placeholder": "Project summary"
+    "imageCropper": {
+        "title": "Crop your profile photo",
+        "description": "Drag to reposition and use the slider to zoom. The image will be cropped to a square.",
+        "rotateLeft": "Rotate left",
+        "rotateRight": "Rotate right",
+        "cancel": "Cancel",
+        "applyCrop": "Apply Crop",
+        "cropping": "Cropping..."
+    },
+    "import": {
+        "title": "Import OnePager",
+        "searchEmployees": "Search Employees",
+        "employeeName": "Employee Name",
+        "searchPlaceholder": "Type to search employees...",
+        "search": "Search",
+        "searching": "Searching...",
+        "searchResults": "Search Results",
+        "searchTooShort": "Please enter at least 3 characters to search",
+        "noEmployeesFound": "No employees found",
+        "searchError": "Error searching employees",
+        "selectOnePager": "Select OnePager",
+        "noOnePagersFound": "No OnePagers found for this employee",
+        "loadOnePagersError": "Error loading OnePagers",
+        "preview": "Preview",
+        "loadDataError": "Error loading OnePager data",
+        "employeeInfo": "Employee Information",
+        "name": "Name",
+        "position": "Position",
+        "fileName": "File Name",
+        "photo": "Photo",
+        "employeePhoto": "Employee Photo",
+        "importNote": "Note: Currently only basic information (name, position, photo) can be imported. Full OnePager import functionality will be available in future versions.",
+        "back": "Back",
+        "cancel": "Cancel",
+        "importButton": "Import",
+        "loading": "Loading..."
+    },
+    "runtimeConfig": {
+        "title": "Runtime API Configuration",
+        "description": "These settings are stored in your browser's localStorage and override build-time settings. They're useful for development, testing, or when using your own Azure Functions.",
+        "customApiUrl": "Custom API Base URL (optional)",
+        "customApiUrlPlaceholder": "https://your-functions-app.azurewebsites.net",
+        "customApiUrlHelp": "Leave empty to use the build-time configured URL",
+        "functionsKey": "Azure Functions Key (optional)",
+        "functionsKeyPlaceholder": "Your Azure Functions access key",
+        "functionsKeyHelp": "Used when Azure Functions require authentication",
+        "saveConfiguration": "Save Configuration",
+        "clearAll": "Clear All",
+        "debugInformation": "Debug Information"
     }
-  },
-  "common": {
-    "stepGuide": "Guide",
-    "addEntry": "Add Entry",
-    "remove": "Remove",
-    "maxItemsReached": "Maximum of {{max}} entries reached"
-  },
-  "fileUpload": {
-    "defaultPhotoName": "Default profile photo",
-    "croppedPhoto": "Cropped photo",
-    "uploadedPhoto": "Uploaded photo",
-    "changePhoto": "Change photo",
-    "editCrop": "Edit crop",
-    "removePhoto": "Remove photo",
-    "clickToUpload": "Click to upload",
-    "dragAndDrop": "or drag and drop",
-    "fileTypes": "PNG, JPG, GIF up to 10MB",
-    "loading": "Loading...",
-    "failedToLoad": "Failed to load image",
-    "invalidFileType": "Please select a valid image file (JPG, PNG, GIF, or WebP)",
-    "fileTooLarge": "File size must be less than 10MB"
-  },
-  "imageCropper": {
-    "title": "Crop your profile photo",
-    "description": "Drag to reposition and use the slider to zoom. The image will be cropped to a square.",
-    "rotateLeft": "Rotate left",
-    "rotateRight": "Rotate right",
-    "cancel": "Cancel",
-    "applyCrop": "Apply Crop",
-    "cropping": "Cropping..."
-  },
-  "import": {
-    "title": "Import OnePager",
-    "searchEmployees": "Search Employees",
-    "employeeName": "Employee Name",
-    "searchPlaceholder": "Type to search employees...",
-    "search": "Search",
-    "searching": "Searching...",
-    "searchResults": "Search Results",
-    "searchTooShort": "Please enter at least 3 characters to search",
-    "noEmployeesFound": "No employees found",
-    "searchError": "Error searching employees",
-    "selectOnePager": "Select OnePager",
-    "noOnePagersFound": "No OnePagers found for this employee",
-    "loadOnePagersError": "Error loading OnePagers",
-    "preview": "Preview",
-    "loadDataError": "Error loading OnePager data",
-    "employeeInfo": "Employee Information",
-    "name": "Name",
-    "position": "Position",
-    "fileName": "File Name",
-    "photo": "Photo",
-    "employeePhoto": "Employee Photo",
-    "importNote": "Note: Currently only basic information (name, position, photo) can be imported. Full OnePager import functionality will be available in future versions.",
-    "back": "Back",
-    "cancel": "Cancel",
-    "importButton": "Import",
-    "loading": "Loading..."
-  },
-  "runtimeConfig": {
-    "title": "Runtime API Configuration",
-    "description": "These settings are stored in your browser's localStorage and override build-time settings. They're useful for development, testing, or when using your own Azure Functions.",
-    "customApiUrl": "Custom API Base URL (optional)",
-    "customApiUrlPlaceholder": "https://your-functions-app.azurewebsites.net",
-    "customApiUrlHelp": "Leave empty to use the build-time configured URL",
-    "functionsKey": "Azure Functions Key (optional)",
-    "functionsKeyPlaceholder": "Your Azure Functions access key",
-    "functionsKeyHelp": "Used when Azure Functions require authentication",
-    "saveConfiguration": "Save Configuration",
-    "clearAll": "Clear All",
-    "debugInformation": "Debug Information"
-  }
 }
