@@ -12,7 +12,7 @@
         },
         "USING_MODIFIED_TEMPLATE": {
             "title": "Modifiziertes Template",
-            "description": "Dein One Pager verwendet ein modifiziertes Template. Bitte stelle sicher, dass nur das aktuelle Template verwendet wird. Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden, erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte, ohne alte Folien direkt zu kopieren. Die entsprechenden Vorlagen findest du im vorgesehenen Unterordner deines One Pager-Ordners."
+            "description": "Dein One Pager verwendet ein veraltetes oder modifiziertes Template. Bitte stelle sicher, dass nur das aktuelle Template verwendet wird. Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden, erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte, ohne alte Folien direkt zu kopieren. Die entsprechenden Vorlagen findest du im vorgesehenen Unterordner deines One Pager-Ordners."
         },
 
         "MISSING_LANGUAGE_INDICATOR_IN_NAME": {
