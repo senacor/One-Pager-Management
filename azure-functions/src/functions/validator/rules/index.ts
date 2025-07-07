@@ -11,6 +11,12 @@ export const lastModifiedRule: ValidationRule = async onePager => {
     return onePager.onePager.lastUpdateByEmployee < sixMonthsAgo ? [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS] : [];
 };
 
+export const lastModifiedRule1Year: ValidationRule = async onePager => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 12);
+    return onePager.onePager.lastUpdateByEmployee < sixMonthsAgo ? [ValidationErrorEnum.OLDER_THAN_ONE_YEAR] : [];
+};
+
 export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
     if (onePager.contentLanguages.length > 1) {
         return [ValidationErrorEnum.MIXED_LANGUAGE_VERSION];
@@ -32,6 +38,7 @@ export const contentLanguageIsIndicatedInName: ValidationRule = async onePager =
 export function allRules(log: Logger = console): ValidationRule {
     return combineRules(
         lastModifiedRule,
+        lastModifiedRule1Year,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
         checkImages

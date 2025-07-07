@@ -22,6 +22,7 @@ export type MailTemplate = {
     content: string;
     errors: Record<ValidationError, {title: string; description: string}>;
     faqURL: string;
+    guideBookURL: string;
 };
 
 const cache = new NodeCache({
@@ -122,13 +123,23 @@ export class EMailNotification {
             return;
         }
 
+        const errorData = {
+            faqURL: mailTemplate.faqURL,
+            guideBookURL: mailTemplate.guideBookURL,
+        };
+
         const templateData = {
+            ...errorData,
             checkedOnePagers: onePagerErrors,
             deadline: `${deadline.getDate()}.${deadline.getMonth() + 1}.${deadline.getFullYear()}`,
             firstname: employee.name.split(',')[1]?.trim(),
-            faqURL: mailTemplate.faqURL,
-            generalErrors,
-            onePagerErrors,
+            generalErrors: generalErrors.map((error) => ({ title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) })),
+            onePagerErrors: onePagerErrors.map((validationOP) => {
+                validationOP.errors = validationOP.errors.map((error) => {
+                    return { title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) }
+                });
+                return validationOP;
+            }),
             folderURL: validationErrorArr[LocalEnum.EN]?.folderURL?.toString() || '',
         };
 
@@ -172,11 +183,14 @@ export class EMailNotification {
             flag: 'r',
         });
 
+
+
         const mailTemplate: MailTemplate = {
             subject: template.subject,
             content: templateContent,
             errors: template.errors,
             faqURL: template.faqURL || '',
+            guideBookURL: template.guideBookURL || ''
         };
 
 

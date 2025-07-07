@@ -2,16 +2,12 @@
     "subject": "Aktualisierung deiner One Pager erforderlich – bitte um Überprüfung bis zum #{deadline}",
     "contentPath": "./resources/mail_templates/template_DE.pug",
     "errors": {
-        "OLDER_THAN_SIX_MONTHS": {
-            "title": "One Pager ist älter als 6 Monate",
-            "description": "Dein One Pager ist älter als 6 Monate und entspricht daher unter Umständen nicht mehr dem Aktualitätsanspruch. Bitte überprüfe die Inhalte und erstelle ggf. eine aktualisierte Version."
-        },
         "USING_UNKNOWN_TEMPLATE": {
             "title": "Veraltetes oder modifiziertes Template",
             "description": "Dein One Pager verwendet ein veraltetes oder modifiziertes Template. Bitte stelle sicher, dass nur das aktuelle Template verwendet wird. Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden, erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte, ohne alte Folien direkt zu kopieren. Die entsprechenden Vorlagen findest du im vorgesehenen Unterordner deines One Pager-Ordners."
         },
         "USING_MODIFIED_TEMPLATE": {
-            "title": "Modifiziertes Template",
+            "title": "Veraltetes oder modifiziertes Template",
             "description": "Dein One Pager verwendet ein veraltetes oder modifiziertes Template. Bitte stelle sicher, dass nur das aktuelle Template verwendet wird. Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden, erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte, ohne alte Folien direkt zu kopieren. Die entsprechenden Vorlagen findest du im vorgesehenen Unterordner deines One Pager-Ordners."
         },
 
@@ -30,6 +26,10 @@
         "MISSING_PHOTO": {
             "title": "Kein Bild vorhanden",
             "description": "Dein One Pager enthält aktuell kein Foto. Bitte füge ein aktuelles Bild von dir hinzu, damit dein Profil vollständig ist."
+        },
+        "OLDER_THAN_ONE_YEAR": {
+            "title": "One Pager ist älter als 1 Jahr",
+            "description": "Dein One Pager ist älter als 1 Jahr und entspricht daher unter Umständen nicht mehr dem Aktualitätsanspruch. Bitte überprüfe die Inhalte und erstelle ggf. eine aktualisierte Version."
         }
 
     },

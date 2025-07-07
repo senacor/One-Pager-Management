@@ -44,6 +44,7 @@ export type OnePager = {
 
 export enum ValidationErrorEnum {
     OLDER_THAN_SIX_MONTHS = 'OLDER_THAN_SIX_MONTHS', // one-pager is older than 6 months
+    OLDER_THAN_ONE_YEAR = 'OLDER_THAN_ONE_YEAR', // one-pager is older than 6 months
     USING_UNKNOWN_TEMPLATE = 'USING_UNKNOWN_TEMPLATE', // one-pager is using an unknown template, in most cases an outdated template with old styling
     USING_MODIFIED_TEMPLATE = 'USING_MODIFIED_TEMPLATE', // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
     MISSING_LANGUAGE_INDICATOR_IN_NAME = 'MISSING_LANGUAGE_INDICATOR_IN_NAME', // one-pager is missing a language indicator in the file name
