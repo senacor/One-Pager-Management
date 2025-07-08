@@ -8,9 +8,9 @@
 - const faqURL = "https://senacor.atlassian.net/wiki/spaces/HR/pages/48791692/Staffing+Wechselwunsch+Beach+One+Pager";
 - const guideBookURL = "https://senacor.atlassian.net/wiki/spaces/HR/pages/48791692/Staffing+Wechselwunsch+Beach+One+Pager";
 
-mixing errors(error)
-    switch error
-        case "USING_UNKNOWN_TEMPLATE"
+mixin errors(error)
+    case error
+        when "USING_UNKNOWN_TEMPLATE"
             li(style="margin-top: 5px;").
                 Veraltetes oder modifiziertes Template: Dein One Pager verwendet ein veraltetes oder modifiziertes Template.
                 Bitte stelle sicher, dass nur das aktuelle Template verwendet wird.
@@ -18,7 +18,7 @@ mixing errors(error)
                 erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte,
                 ohne alte Folien direkt zu kopieren.
                 Die entsprechenden Vorlagen findest du <a href="#{faqURL}">hier</a>.
-        case "USING_MODIFIED_TEMPLATE"
+        when "USING_MODIFIED_TEMPLATE"
             li(style="margin-top: 5px;").
                 Veraltetes oder modifiziertes Template: Dein One Pager verwendet ein veraltetes oder modifiziertes Template.
                 Bitte stelle sicher, dass nur das aktuelle Template verwendet wird.
@@ -26,25 +26,25 @@ mixing errors(error)
                 erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte,
                 ohne alte Folien direkt zu kopieren.
                 Die entsprechenden Vorlagen findest du <a href="#{faqURL}">hier</a>.
-        case "MISSING_LANGUAGE_INDICATOR_IN_NAME"
+        when "MISSING_LANGUAGE_INDICATOR_IN_NAME"
             li(style="margin-top: 5px;").
                 "Fehlender Sprachindikator im Dateinamen": Dein One Pager enthält keinen Sprachindikator im Dateinamen.
                 Bitte füge den Sprachindikator (z.B. _EN_ oder _DE_) hinzu, um die Sprache des One Pagers zu kennzeichnen.
-        case "MISSING_DE_VERSION"
+        when "MISSING_DE_VERSION"
             li(style="margin-top: 5px;").
                 Fehlender deutscher One Pager: Es liegt aktuell kein deutscher One Pager von dir vor.
                 Bitte lege einen neuen One Pager nach aktuellem Template an und lade ihn im entsprechenden SharePoint-Ordner hoch.
                 Die zugehörigen Vorlagen findest du <a href="#{faqURL}">hier</a>.
-        case "MISSING_EN_VERSION"
+        when "MISSING_EN_VERSION"
             li(style="margin-top: 5px;").
                 Fehlender englischer One Pager: Es liegt aktuell kein englischer One Pager von dir vor.
                 Bitte lege einen neuen One Pager nach aktuellem Template an und lade ihn im entsprechenden
                 SharePoint-Ordner hoch. Die zugehörigen Vorlagen findest du <a href="#{faqURL}">hier</a>.
-        case "MISSING_PHOTO"
-            li(style="margin-top: 5px;").
-                Kein Bild vorhanden: Dein One Pager enthält aktuell kein Foto.
-                Bitte füge ein aktuelles Bild von dir hinzu, damit dein Profil vollständig ist.
-        case "OLDER_THAN_ONE_YEAR"
+        //- when "MISSING_PHOTO"
+        //-     li(style="margin-top: 5px;").
+        //-         Kein Bild vorhanden: Dein One Pager enthält aktuell kein Foto.
+        //-         Bitte füge ein aktuelles Bild von dir hinzu, damit dein Profil vollständig ist.
+        when "OLDER_THAN_ONE_YEAR"
             li(style="margin-top: 5px;").
                 One Pager ist älter als 1 Jahr: Dein One Pager ist älter als 1 Jahr und entspricht daher unter Umständen nicht mehr dem Aktualitätsanspruch.
                 Bitte überprüfe die Inhalte und erstelle ggf. eine aktualisierte Version.

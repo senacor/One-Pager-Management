@@ -1,4 +1,15 @@
 {
     "subject": "EN: Aktualisierung deiner One Pager erforderlich – bitte um Überprüfung bis zum #{deadline}",
-    "contentPath": "./resources/mail_templates/template_EN.pug"
+    "contentPath": "./resources/mail_templates/template_EN.pug",
+    "activeErrors": [
+        "OLDER_THAN_ONE_YEAR",
+        "USING_UNKNOWN_TEMPLATE",
+        "USING_MODIFIED_TEMPLATE",
+        "MISSING_LANGUAGE_INDICATOR_IN_NAME",
+        "MISSING_DE_VERSION",
+        "MISSING_EN_VERSION"
+    ]
 }
+
+
+

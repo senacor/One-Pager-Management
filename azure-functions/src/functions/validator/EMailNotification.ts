@@ -27,6 +27,13 @@ export type MailTemplate = {
     // guideBookURL: string;
 };
 
+type OnePagerError = {
+    name: string;
+    url: string;
+    lang: Local;
+    errors: ValidationError[];
+}
+
 const cache = new NodeCache({
     stdTTL: 10 * 60, // 10 minutes
     useClones: false,
@@ -96,16 +103,16 @@ export class EMailNotification {
         }
 
 
-        const mailTemplate = await this.loadEMailTemplate(local);
+        const mailTemplate: MailTemplate = await this.loadEMailTemplate(local);
 
 
-        const curDate = new Date();
-        const deadline = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+7);
+        const curDate: Date = new Date();
+        const deadline: Date = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+7);
 
         // const checkedOnePagers = Object.entries(localToValidatedOnePager).filter(([, op]) => op.onePager !== undefined);
 
 
-        const generalErrors = Object.values(localToValidatedOnePager)
+        const generalErrors: ValidationError[] = Object.values(localToValidatedOnePager)
             .filter((validationOP) => validationOP.onePager === undefined)
             .map((validationOP) => {
                 return validationOP.errors.filter((error) => {
@@ -115,7 +122,7 @@ export class EMailNotification {
             })
             .flat();
 
-        const onePagerErrors = Object.entries(localToValidatedOnePager)
+        const onePagerErrors: OnePagerError[] = Object.entries(localToValidatedOnePager)
             .filter(([,validationOP]) => validationOP.onePager !== undefined)
             .map(([lang,validationOP]) => {
                 return {
@@ -124,7 +131,7 @@ export class EMailNotification {
                     lang: lang,
                     errors: validationOP.errors.filter((error) =>mailTemplate.activeErrors.includes(error))
                         // .map((error) => mailTemplate.errors[error])
-                };
+                } as OnePagerError;
             }).filter((op) => op.errors.length > 0);
 
         if (generalErrors.length === 0 && onePagerErrors.length === 0) {
@@ -180,7 +187,7 @@ export class EMailNotification {
 
     }
 
-    private async loadEMailTemplate(local: Local): Promise<MailTemplate> {
+    async loadEMailTemplate(local: Local): Promise<MailTemplate> {
         if (cache.has(local)) {
             this.logger.log('Using cached mail template.');
             return cache.get<MailTemplate>(local)!;
@@ -199,8 +206,8 @@ export class EMailNotification {
 
         const template = JSON.parse(templateString);
 
-        if (!template.subject || !template.contentPath || !template.errors) {
-            throw new Error('Invalid email template format. Subject, content, and errors are required.');
+        if (!template.subject || !template.contentPath || !template.activeErrors) {
+            throw new Error('Invalid email template format. Subject, content, and activeErrors are required.');
         }
         if (!fs.existsSync(`${template.contentPath}`)) {
             throw new Error(`Mail template: Content path is invalid: ${template.contentPath}`);
