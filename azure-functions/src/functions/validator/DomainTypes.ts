@@ -126,7 +126,12 @@ export interface ValidationReporter {
      * Reports that the one-pager of the given employee ID is valid.
      * @param id The ID of the employee whose one-pager is valid.
      */
-    reportValid(id: EmployeeID, local: Local): Promise<void>;
+    reportValid(
+        id: EmployeeID,
+        validatedOnePager: ValidatedOnePager,
+        local: Local,
+        employee: Employee
+    ): Promise<void>;
 
     /**
      * Reports errors found during validation of the one-pager.

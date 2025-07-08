@@ -128,7 +128,7 @@ export class OnePagerValidation {
 
             if (validatedOnePagers[lang].errors.length === 0) {
                 this.logger.log(`Employee ${id} has valid OnePagers!`);
-                await this.reporter.reportValid(id, lang);
+                await this.reporter.reportValid(id,validatedOnePagers[lang], lang, employeeData);
             } else {
                 this.logger.log(`Employee ${id} has the following errors: ${errors.join(' ')}!`);
                 await this.reporter.reportErrors(id, validatedOnePagers[lang], lang, employeeData);

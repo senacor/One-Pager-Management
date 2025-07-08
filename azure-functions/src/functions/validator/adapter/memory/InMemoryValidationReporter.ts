@@ -32,9 +32,10 @@ export class InMemoryValidationReporter implements ValidationReporter {
      * This function reports that an employee has valid one-pagers by removing any existing validation reports for that employee if they exist.
      * @param id The employee ID for which the one-pager is valid.
      */
-    async reportValid(id: EmployeeID, local: Local): Promise<void> {
+    async reportValid(id: EmployeeID, validatedOnePager: ValidatedOnePager, local: Local): Promise<void> {
         this.logger.log('(InMemoryValidationReporter.ts: reportValid)', id);
-        this.reports.get(id)?.delete(local);
+        // this.reports.get(id)?.delete(local);
+        await this.reportErrors(id, validatedOnePager, local);
     }
 
     /**

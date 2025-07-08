@@ -146,15 +146,18 @@ export class SharepointListValidationReporter implements ValidationReporter {
      * This function reports that an employee has valid one-pagers by removing any existing validation reports for that employee if they exist.
      * @param id The employee ID for which the one-pager is valid.
      */
-    async reportValid(id: EmployeeID, local: Local): Promise<void> {
-        const itemId = await this.getItemIdOfEmployee(id, local);
+    async reportValid(id: EmployeeID, validatedOnePager: ValidatedOnePager, local: Local, employee: Employee): Promise<void> {
+        // const itemId = await this.getItemIdOfEmployee(id, local);
 
-        if (itemId !== undefined) {
-            this.logger.log(`Reporting valid one-pager for employee with ID "${id}"!`);
-            await this.client
-                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`)
-                .delete();
-        }
+        // if (itemId !== undefined) {
+        //     this.logger.log(`Reporting valid one-pager for employee with ID "${id}"!`);
+        //     // await this.client
+        //     //     .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`)
+        //     //     .delete();
+        // } else {
+
+        // }
+        await this.reportErrors(id, validatedOnePager, local, employee);
     }
 
 

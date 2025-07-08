@@ -43,6 +43,12 @@ const someEmployeeData: Employee = {
     isGerman: true, // Indicates if the employee is from a german speaking country to know if german one-pager is required
 };
 
+const someValidatedOnePagerWithoutErrors: ValidatedOnePager = {
+    onePager: undefined,
+    errors: [],
+    folderURL: undefined,
+};
+
 const testFactory = (name: string, reporterFactory: ReporterFactory) => {
     describe(name, () => {
         it('should return no errors without any report', async () => {
@@ -105,7 +111,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
                 LocalEnum.EN,
                 someEmployeeData
             );
-            await reporter.reportValid('111', LocalEnum.EN);
+            await reporter.reportValid('111', someValidatedOnePagerWithoutErrors, LocalEnum.EN, someEmployeeData);
 
             const result = await reporter.getResultFor('111');
 
@@ -162,7 +168,7 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
                 LocalEnum.EN,
                 someEmployeeData
             );
-            await reporter.reportValid('000', LocalEnum.EN);
+            await reporter.reportValid('000', someValidatedOnePagerWithoutErrors, LocalEnum.EN, someEmployeeData);
             const result = await reporter.getResultFor('111');
 
             expect(result[LocalEnum.EN].errors).toEqual([ValidationErrorEnum.OLDER_THAN_SIX_MONTHS]);
