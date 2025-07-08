@@ -150,6 +150,20 @@ export interface ValidationReporter {
     cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void>;
 }
 
+export interface MailReporter {
+    /**
+     * Reports the validation results of the one-pager to the employee via email.
+     * @param id The ID of the employee whose one-pager is being reported.
+     * @param validatedOnePager The validated one-pager document.
+     * @param local The language of the one-pager.
+     */
+    reportMail(
+        id: EmployeeID,
+        validatedOnePager: ValidatedOnePager,
+        local: Local
+    ): Promise<void>;
+}
+
 export type StorageFile = {
     name: string;
     lastModified: Date;

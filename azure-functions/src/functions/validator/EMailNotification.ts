@@ -9,7 +9,8 @@ import {
     Local,
     Employee,
     listOfGeneralErrors,
-    isEmailAddress
+    isEmailAddress,
+    MailReporter
 } from './DomainTypes';
 import fs from 'node:fs';
 import * as config from '../../../app_config/config.json';
@@ -20,9 +21,10 @@ import NodeCache from 'node-cache';
 export type MailTemplate = {
     subject: string;
     content: string;
-    errors: Record<ValidationError, {title: string; description: string}>;
-    faqURL: string;
-    guideBookURL: string;
+    activeErrors: ValidationError[];
+    // errors: Record<ValidationError, {title: string; description: string}>;
+    // faqURL: string;
+    // guideBookURL: string;
 };
 
 const cache = new NodeCache({
@@ -35,26 +37,29 @@ const cache = new NodeCache({
  */
 export class EMailNotification {
     private readonly logger: Logger;
-    private readonly reporter: ValidationReporter;
+    private readonly validationReporter: ValidationReporter;
     private readonly mailAdapter: MailPort;
     private readonly employeeRepo: EmployeeRepository;
+    private readonly mailReporter: MailReporter;
 
     /**
      * Creates an instance of EMailNotification.
      * @param mailAdapter The MailPort used for sending mails.
-     * @param reporter The reporter where validation results are stored.
+     * @param validationReporter The reporter where validation results are stored.
      * @param logger The logger to use for logging messages (default is console).
      */
     constructor(
         mailAdapter: MailPort,
         employeeRepo: EmployeeRepository,
-        reporter: ValidationReporter,
+        validationReporter: ValidationReporter,
+        mailReporter: MailReporter,
         logger: Logger = console
     ) {
         this.logger = logger;
-        this.reporter = reporter;
+        this.validationReporter = validationReporter;
         this.mailAdapter = mailAdapter;
         this.employeeRepo = employeeRepo;
+        this.mailReporter = mailReporter;
     }
 
     async notifyEmployee(employeeId: EmployeeID): Promise<void> {
@@ -66,10 +71,10 @@ export class EMailNotification {
 
 
 
-        const validationErrorArr = await this.reporter.getResultFor(employeeId);
+        const localToValidatedOnePager = await this.validationReporter.getResultFor(employeeId);
 
         // check if employee needs to be notified
-        const allErrors = Object.values(validationErrorArr).map((op) => op.errors).flat();
+        const allErrors = Object.values(localToValidatedOnePager).map((op) => op.errors).flat();
         if (
             allErrors.length === 0 // has no errors
         ) {
@@ -97,24 +102,28 @@ export class EMailNotification {
         const curDate = new Date();
         const deadline = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+7);
 
-        // const checkedOnePagers = Object.entries(validationErrorArr).filter(([, op]) => op.onePager !== undefined);
+        // const checkedOnePagers = Object.entries(localToValidatedOnePager).filter(([, op]) => op.onePager !== undefined);
 
 
-        const generalErrors = Object.values(validationErrorArr)
+        const generalErrors = Object.values(localToValidatedOnePager)
             .filter((validationOP) => validationOP.onePager === undefined)
             .map((validationOP) => {
-                return validationOP.errors.filter((error) => Object.keys(mailTemplate.errors).includes(error)).map((error) => (mailTemplate.errors[error]));
+                return validationOP.errors.filter((error) => {
+                    return mailTemplate.activeErrors.includes(error)
+                    // .map((error) => (mailTemplate.errors[error])
+                });
             })
             .flat();
 
-        const onePagerErrors = Object.entries(validationErrorArr)
+        const onePagerErrors = Object.entries(localToValidatedOnePager)
             .filter(([,validationOP]) => validationOP.onePager !== undefined)
             .map(([lang,validationOP]) => {
                 return {
                     name: validationOP.onePager?.fileName ? validationOP.onePager.fileName.toString() : '',
                     url: validationOP.onePager?.webLocation ? validationOP.onePager.webLocation.toString() : '',
                     lang: lang,
-                    errors: validationOP.errors.filter((error) => Object.keys(mailTemplate.errors).includes(error)).map((error) => mailTemplate.errors[error])
+                    errors: validationOP.errors.filter((error) =>mailTemplate.activeErrors.includes(error))
+                        // .map((error) => mailTemplate.errors[error])
                 };
             }).filter((op) => op.errors.length > 0);
 
@@ -123,33 +132,52 @@ export class EMailNotification {
             return;
         }
 
-        const errorData = {
-            faqURL: mailTemplate.faqURL,
-            guideBookURL: mailTemplate.guideBookURL,
-        };
+        // const errorData = {
+        //     faqURL: mailTemplate.faqURL,
+        //     guideBookURL: mailTemplate.guideBookURL,
+        // };
 
         const templateData = {
-            ...errorData,
+            // ...errorData,
             checkedOnePagers: onePagerErrors,
             deadline: `${deadline.getDate()}.${deadline.getMonth() + 1}.${deadline.getFullYear()}`,
             firstname: employee.name.split(',')[1]?.trim(),
-            generalErrors: generalErrors.map((error) => ({ title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) })),
-            onePagerErrors: onePagerErrors.map((validationOP) => {
-                validationOP.errors = validationOP.errors.map((error) => {
-                    return { title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) }
-                });
-                return validationOP;
-            }),
-            folderURL: validationErrorArr[LocalEnum.EN]?.folderURL?.toString() || '',
+            generalErrors: generalErrors
+                // .map((error) => ({ title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) }))
+            ,
+            onePagerErrors: onePagerErrors
+            // .map((validationOP) => {
+            //     validationOP.errors = validationOP.errors.map((error) => {
+            //         return { title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) }
+            //     });
+            //     return validationOP;
+            // })
+            ,
+            folderURL: localToValidatedOnePager[LocalEnum.EN]?.folderURL?.toString() || '',
         };
 
         const mailSubject = pug.render(`| ${mailTemplate.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
         const mailContent = pug.render(mailTemplate.content, templateData);
 
-        //this.logger.log(employee.email, mailSubject, mailContent);
+        // const emailAddress = employee.email;
+        const emailAddress = "artjom.konschin@senacor.com";
 
-        await this.mailAdapter.sendMail("artjom.konschin@senacor.com", mailSubject, mailContent);
-        //await this.mailAdapter.sendMail(employee.email, mailSubject, mailContent);
+
+        await this.mailAdapter.sendMail(emailAddress, mailSubject, mailContent);
+
+        await Promise.all((Object.keys(LocalEnum) as Local[]).map(async (lang: Local) => {
+            if (localToValidatedOnePager[lang].errors.length === 0) {
+                return;
+            }
+
+            return await this.mailReporter.reportMail(
+                employeeId,
+                localToValidatedOnePager[lang],
+                lang
+            );
+        }));
+
+
     }
 
     private async loadEMailTemplate(local: Local): Promise<MailTemplate> {
@@ -188,15 +216,16 @@ export class EMailNotification {
         const mailTemplate: MailTemplate = {
             subject: template.subject,
             content: templateContent,
-            errors: template.errors,
-            faqURL: template.faqURL || '',
-            guideBookURL: template.guideBookURL || ''
+            activeErrors: template.activeErrors || [],
+            // errors: template.errors,
+            // faqURL: template.faqURL || '',
+            // guideBookURL: template.guideBookURL || ''
         };
 
 
         // check if mail template contains all general errors
-        if (listOfGeneralErrors.some((error) => !Object.keys(mailTemplate.errors).includes(error))) {
-            throw new Error(`The E-Mail template needs to include all general errors. Missing: ${listOfGeneralErrors.filter((error) => !Object.keys(mailTemplate.errors).includes(error)).join(', ')}`);
+        if (listOfGeneralErrors.some((error) => !mailTemplate.activeErrors.includes(error))) {
+            throw new Error(`The E-Mail template needs to include all general errors. Missing: ${listOfGeneralErrors.filter((error) => !mailTemplate.activeErrors.includes(error)).join(', ')}`);
         }
 
         cache.set(local, mailTemplate);

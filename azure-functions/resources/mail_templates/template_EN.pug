@@ -1,3 +1,56 @@
+// variable "deadline" means the time in 1 week from now
+// variable "firstname" means the first name of the employee
+// variable "checkedOnePagers" is an array of objects with properties "name", "url", and "lang"
+// variable "generalErrors" is an array of error strings
+// variable "onePagerErrors" is an array of objects with error strings
+// variable "folderURL" is a string representing the URL to the One Pager folder
+
+- const faqURL = "https://senacor.atlassian.net/wiki/spaces/HR/pages/48791692/Staffing+Wechselwunsch+Beach+One+Pager";
+- const guideBookURL = "https://senacor.atlassian.net/wiki/spaces/HR/pages/48791692/Staffing+Wechselwunsch+Beach+One+Pager";
+
+mixing errors(error)
+    switch error
+        case "USING_UNKNOWN_TEMPLATE"
+            li(style="margin-top: 5px;").
+                Veraltetes oder modifiziertes Template: Dein One Pager verwendet ein veraltetes oder modifiziertes Template.
+                Bitte stelle sicher, dass nur das aktuelle Template verwendet wird.
+                Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden,
+                erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte,
+                ohne alte Folien direkt zu kopieren.
+                Die entsprechenden Vorlagen findest du <a href="#{faqURL}">hier</a>.
+        case "USING_MODIFIED_TEMPLATE"
+            li(style="margin-top: 5px;").
+                Veraltetes oder modifiziertes Template: Dein One Pager verwendet ein veraltetes oder modifiziertes Template.
+                Bitte stelle sicher, dass nur das aktuelle Template verwendet wird.
+                Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden,
+                erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte,
+                ohne alte Folien direkt zu kopieren.
+                Die entsprechenden Vorlagen findest du <a href="#{faqURL}">hier</a>.
+        case "MISSING_LANGUAGE_INDICATOR_IN_NAME"
+            li(style="margin-top: 5px;").
+                "Fehlender Sprachindikator im Dateinamen": Dein One Pager enthält keinen Sprachindikator im Dateinamen.
+                Bitte füge den Sprachindikator (z.B. _EN_ oder _DE_) hinzu, um die Sprache des One Pagers zu kennzeichnen.
+        case "MISSING_DE_VERSION"
+            li(style="margin-top: 5px;").
+                Fehlender deutscher One Pager: Es liegt aktuell kein deutscher One Pager von dir vor.
+                Bitte lege einen neuen One Pager nach aktuellem Template an und lade ihn im entsprechenden SharePoint-Ordner hoch.
+                Die zugehörigen Vorlagen findest du <a href="#{faqURL}">hier</a>.
+        case "MISSING_EN_VERSION"
+            li(style="margin-top: 5px;").
+                Fehlender englischer One Pager: Es liegt aktuell kein englischer One Pager von dir vor.
+                Bitte lege einen neuen One Pager nach aktuellem Template an und lade ihn im entsprechenden
+                SharePoint-Ordner hoch. Die zugehörigen Vorlagen findest du <a href="#{faqURL}">hier</a>.
+        case "MISSING_PHOTO"
+            li(style="margin-top: 5px;").
+                Kein Bild vorhanden: Dein One Pager enthält aktuell kein Foto.
+                Bitte füge ein aktuelles Bild von dir hinzu, damit dein Profil vollständig ist.
+        case "OLDER_THAN_ONE_YEAR"
+            li(style="margin-top: 5px;").
+                One Pager ist älter als 1 Jahr: Dein One Pager ist älter als 1 Jahr und entspricht daher unter Umständen nicht mehr dem Aktualitätsanspruch.
+                Bitte überprüfe die Inhalte und erstelle ggf. eine aktualisierte Version.
+        default
+            // do nothing
+
 p.
     Hallo #{firstname},
 
@@ -34,13 +87,13 @@ p
     b Fehlerbeschreibungen:
 ul
     each error in generalErrors
-        li #{error.title}: #{error.description}
+        +errors(error)
 
     each onePager in onePagerErrors
         li(style="margin-top: 5px;") #{onePager.name}:
             ul(style="list-style-type:square;")
                 each error in onePager.errors
-                    li(style="margin-top: 5px;") #{error.title}: #{error.description}
+                    +errors(error)
 
 
 if folderURL !== ''

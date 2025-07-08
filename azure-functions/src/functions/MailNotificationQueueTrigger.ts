@@ -54,11 +54,16 @@ export async function MailNotificationQueueTrigger(
         if (!mailAdapter) {
             throw new Error('A MailPort can only be used in combination with SharePoint!');
         }
+        const mailReporter = await config.mailReporter();
+        if (!mailReporter) {
+            throw new Error('A MailReporter is needed!');
+        }
 
         const mailNotificationHandler = new EMailNotification(
             mailAdapter,
             employeeRepo,
             await config.reporter(),
+            mailReporter,
             context
         );
 
