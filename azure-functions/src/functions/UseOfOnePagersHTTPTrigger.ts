@@ -39,7 +39,7 @@ export async function UseOfOnePagersHTTPTrigger(
 }
 
 app.http('UseOfOnePagersHTTPTrigger', {
-    methods: ['POST'],
+    methods: ['GET'],
     route: 'allowUseOfOnePagers/{employeeToken}/{employeeId}',
     // authLevel: 'function',
     handler: UseOfOnePagersHTTPTrigger,

@@ -63,21 +63,21 @@ x-functions-key: {{functions_key}}
 
 
 ### allow use of onepagers: allow, person with id 1019
-POST {{host}}/api/allowUseOfOnePagers/e5724b66dc39883598779aced607fcd3b2859270efc2f76767f57fa912cf6f99/1019
+GET {{host}}/api/allowUseOfOnePagers/e5724b66dc39883598779aced607fcd3b2859270efc2f76767f57fa912cf6f99/1019
 
 
 ### allow use of onepagers: allow, person with id 22
-POST {{host}}/api/allowUseOfOnePagers/fb9c22856d29dde3452d107263c339a3aed9bdcb5f24b88fed0664cada617cdd/22
+GET {{host}}/api/allowUseOfOnePagers/fb9c22856d29dde3452d107263c339a3aed9bdcb5f24b88fed0664cada617cdd/22
 
 ### allow use of onepagers: allow, person with id 57
-POST {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a0e8611e63d02b070f9f718f/57
+GET {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a0e8611e63d02b070f9f718f/57
 
 ### allow use of onepagers: allow, person that does not exist
-POST {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a/12
+GET {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a/12
 
 
 ### allow use of onepagers: allow, person with id 57, but wrong token
-POST {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a0e8611e63d02b070f9f718u/57
+GET {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a0e8611e63d02b070f9f718u/57
 
 ### allow use of onepagers: allow, person with id 57: wrong id
-POST {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a0e8611e63d02b070f9f718f/58
+GET {{host}}/api/allowUseOfOnePagers/19d55e5b4f93c7cf56de0b4a10247d1f04b26965a0e8611e63d02b070f9f718f/58
