@@ -102,7 +102,10 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
 
     const host = process.env['WEBSITE_HOSTNAME'] === undefined || process.env['WEBSITE_HOSTNAME'].indexOf("localhost") > -1
         ? 'http://localhost:7071'
-        : `https://${process.env['WEBSITE_HOSTNAME']}`; // Use the environment variable or default to localhost
+        :
+        // `https://${process.env['WEBSITE_HOSTNAME']}`
+        'https://poc-one-pager.azurewebsites.net'
+        ; // Use the environment variable or default to localhost
 
     switch (opts.STORAGE_SOURCE) {
         case 'memory': {
