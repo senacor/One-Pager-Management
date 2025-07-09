@@ -39,6 +39,8 @@ export async function FileChangeHttpTrigger(
             };
         }
 
+        context.log(request.headers.get("Host"))
+
         const config = loadConfigFromEnv(context);
         // Load the list of employees from the configuration
         const onePagers = new FolderBasedOnePagers(await config.explorer(), context);

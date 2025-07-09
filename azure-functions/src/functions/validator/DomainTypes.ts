@@ -217,6 +217,9 @@ export interface UseOfOnePagerReporter {
 
     confirmUseOfOnePagerForEmployee(employeeToken: string, id: EmployeeID): Promise<void>;
     reportNewEmployee(id: EmployeeID): Promise<void>;
+
+    didEmployeeAllowUseOfOnePager(id: EmployeeID): Promise<boolean>;
+    getTokenOfEmployee(id: EmployeeID): Promise<EmployeeToken | undefined>;
 }
 
 export type EmployeeToken = string;
