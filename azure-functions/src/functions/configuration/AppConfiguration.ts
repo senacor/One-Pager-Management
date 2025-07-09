@@ -18,6 +18,8 @@ import {
     MSScope,
     ValidationReporter,
     EmployeeRepository,
+    MailReporter,
+    UseOfOnePagerReporter,
 } from '../validator/DomainTypes';
 import { CachingHandler } from './CachingHandler';
 import { promises as fs } from 'fs';
@@ -31,12 +33,16 @@ import {
     PowerBIRepository,
 } from '../validator/adapter/powerbi/PowerBIRepository';
 import { MSMailAdapter } from '../validator/adapter/mail/MSMailAdapter';
+import { SharepointListSendMailsReporter } from '../validator/adapter/sharepoint/SharepointListSendMailsReporter.';
+import { SharepointListAllowUseOfOnePagers } from '../validator/adapter/sharepoint/SharepointListAllowUseOfOnePagers';
 
 export type AppConfiguration = {
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
     mailAdapter: () => MailPort | undefined; // optional mail adapter for sharepoint storage
     employeeRepo: () => EmployeeRepository | undefined;
+    mailReporter: () => Promise<MailReporter | undefined>; // optional mail reporter for sharepoint storage
+    useOfOnePagersReporter: () => Promise<UseOfOnePagerReporter | undefined>; // optional flag to allow the use of one-pagers
 };
 
 type MemoryStorageOptions = {
@@ -55,6 +61,10 @@ type SharepointStorageOptions = MSClientOptions & {
     SHAREPOINT_ONE_PAGER_DRIVE_NAME?: string;
     SHAREPOINT_VALIDATION_SITE_NAME?: string;
     SHAREPOINT_VALIDATION_RESULT_LIST_NAME?: string;
+    SHAREPOINT_SENDMAIL_LIST_NAME?: string;
+    SHAREPOINT_SENDMAIL_SITE_NAME?: string;
+    SHAREPOINT_USEOFONEPAGER_LIST_NAME?: string;
+    SHAREPOINT_USEOFONEPAGER_SITE_NAME?: string;
 };
 
 export type MSClientOptions = {
@@ -98,6 +108,8 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 reporter: async () => new InMemoryValidationReporter(logger),
                 mailAdapter: () => new InMemoryMailAdapter(),
                 employeeRepo: () => undefined,
+                mailReporter: async () => undefined,
+                useOfOnePagersReporter: async () => undefined, // no reporter for allowing one-pagers in memory storage
             };
         }
         case 'localfile': {
@@ -112,6 +124,8 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
                 mailAdapter: () => undefined,
                 employeeRepo: () => undefined,
+                mailReporter: async () => undefined,
+                useOfOnePagersReporter: async () => undefined, // no reporter for allowing one-pagers in local file storage
             };
         }
         case 'sharepoint': {
@@ -148,6 +162,12 @@ function getSharepointConfig(
     const validationResultListName =
         opts.SHAREPOINT_VALIDATION_RESULT_LIST_NAME || 'OnePager_Status';
 
+    const sendMailSiteName = opts.SHAREPOINT_SENDMAIL_SITE_NAME || validationSiteName;
+    const sendMailListName = opts.SHAREPOINT_SENDMAIL_LIST_NAME || 'OnePager_MailsSend';
+
+    const useOfOnePagersSiteName = opts.SHAREPOINT_USEOFONEPAGER_SITE_NAME || validationSiteName;
+    const useofOnePagersListName = opts.SHAREPOINT_USEOFONEPAGER_SITE_NAME || 'OnePagers_allowUse';
+
     if (!opts.POWERBI_DATASET_ID || !isDatasetID(opts.POWERBI_DATASET_ID)) {
         throw new Error('Missing or invalid Power BI Dataset ID!');
     }
@@ -176,13 +196,27 @@ function getSharepointConfig(
                 logger
             ),
         mailAdapter: () =>
-            new InMemoryMailAdapter()
-            // new MSMailAdapter(
-            //     client,
-            //     logger
-            // ) // optional mail adapter for SharePoint storage
+            // new InMemoryMailAdapter()
+            new MSMailAdapter(
+                client,
+                logger
+            ) // optional mail adapter for SharePoint storage
         ,
         employeeRepo: () => new PowerBIRepository(powerbiAuthProvider, datasetID, logger),
+        mailReporter: () =>
+            SharepointListSendMailsReporter.getInstance(
+                client,
+                sendMailSiteName,
+                sendMailListName,
+                logger
+            ),
+        useOfOnePagersReporter: async () =>
+            SharepointListAllowUseOfOnePagers.getInstance(
+                client,
+                useOfOnePagersSiteName,
+                useofOnePagersListName,
+                logger
+            ),
     };
 }
 

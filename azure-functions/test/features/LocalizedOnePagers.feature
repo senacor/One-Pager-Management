@@ -18,6 +18,7 @@ Feature: Localized OnePagers
             | Version | Error |
             | EN      | USING_UNKNOWN_TEMPLATE |
             | DE      | OLDER_THAN_SIX_MONTHS  |
+            | DE      | OLDER_THAN_ONE_YEAR  |
 
     Rule: Employees require localized OnePagers
         Employees must have localized OnePagers in German and English.
@@ -92,6 +93,7 @@ Feature: Localized OnePagers
                 | Version | Error |
                 | DE      | WRONG_LANGUAGE_CONTENT |
                 | EN      | OLDER_THAN_SIX_MONTHS  |
+                | EN      | OLDER_THAN_ONE_YEAR    |
 
     Rule: OnePagers without language indicator may supersede other OnePagers
         OnePagers without a language indicator supersedes OnePagers with the same language content if it is newer.

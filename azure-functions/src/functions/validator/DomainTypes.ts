@@ -44,6 +44,7 @@ export type OnePager = {
 
 export enum ValidationErrorEnum {
     OLDER_THAN_SIX_MONTHS = 'OLDER_THAN_SIX_MONTHS', // one-pager is older than 6 months
+    OLDER_THAN_ONE_YEAR = 'OLDER_THAN_ONE_YEAR', // one-pager is older than 6 months
     USING_UNKNOWN_TEMPLATE = 'USING_UNKNOWN_TEMPLATE', // one-pager is using an unknown template, in most cases an outdated template with old styling
     USING_MODIFIED_TEMPLATE = 'USING_MODIFIED_TEMPLATE', // one-pager is using a modified template. It probably looks correct, but the file might contain other slides with different styling.
     MISSING_LANGUAGE_INDICATOR_IN_NAME = 'MISSING_LANGUAGE_INDICATOR_IN_NAME', // one-pager is missing a language indicator in the file name
@@ -125,7 +126,12 @@ export interface ValidationReporter {
      * Reports that the one-pager of the given employee ID is valid.
      * @param id The ID of the employee whose one-pager is valid.
      */
-    reportValid(id: EmployeeID, local: Local): Promise<void>;
+    reportValid(
+        id: EmployeeID,
+        validatedOnePager: ValidatedOnePager,
+        local: Local,
+        employee: Employee
+    ): Promise<void>;
 
     /**
      * Reports errors found during validation of the one-pager.
@@ -147,6 +153,20 @@ export interface ValidationReporter {
     getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager>;
 
     cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void>;
+}
+
+export interface MailReporter {
+    /**
+     * Reports the validation results of the one-pager to the employee via email.
+     * @param id The ID of the employee whose one-pager is being reported.
+     * @param validatedOnePager The validated one-pager document.
+     * @param local The language of the one-pager.
+     */
+    reportMail(
+        id: EmployeeID,
+        validatedOnePager: ValidatedOnePager,
+        local: Local
+    ): Promise<void>;
 }
 
 export type StorageFile = {
@@ -191,6 +211,17 @@ export interface StorageExplorer {
     listFiles(folder: string): Promise<StorageFile[]>;
 
     listFoldersWithURLs(): Promise<StorageFolder[]>;
+}
+
+export interface UseOfOnePagerReporter {
+
+    confirmUseOfOnePagerForEmployee(employeeToken: string, id: EmployeeID): Promise<void>;
+    reportNewEmployee(id: EmployeeID): Promise<void>;
+}
+
+export type EmployeeToken = string;
+export function isEmployeeTokenValid(employeeToken: unknown): employeeToken is EmployeeToken {
+    return typeof employeeToken === 'string' && employeeToken.length > 0;
 }
 
 export type EmailAddress = string;

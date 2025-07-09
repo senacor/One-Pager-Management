@@ -164,7 +164,7 @@ function isEmployeeGerman(data: PowerBITableRow): boolean {
 
 function convertPowerBIRowToEmployeeData(data: PowerBITableRow) {
     const employeeData: Employee = {
-        id: data['current employee[fis_id_first]'],
+        id: `${data['current employee[fis_id_first]']}`,
         name: data['current employee[name]'],
         email: data['current employee[email]'],
         entry_date: data['current employee[entry_date]'],

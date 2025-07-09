@@ -46,9 +46,9 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * Reports that an employee has valid one-pagers by creating an empty validation result file.
      * @param id The employee ID for which the one-pager is valid.
      */
-    async reportValid(id: EmployeeID, local: Local): Promise<void> {
+    async reportValid(id: EmployeeID, validatedOnePager: ValidatedOnePager, local: Local): Promise<void> {
         await this.ensureDataDir();
-        await fs.writeFile(this.validationFile(id, local), JSON.stringify([]));
+        await fs.writeFile(this.validationFile(id, local), JSON.stringify(validatedOnePager));
     }
 
     /**
@@ -78,9 +78,9 @@ export class LocalFileValidationReporter implements ValidationReporter {
         try {
             const file_DE = await fs.readFile(this.validationFile(id, LocalEnum.DE), 'utf-8');
             const result = JSON.parse(file_DE);
-            if (!Array.isArray(result)) { // array means deleted entry
+            // if (!Array.isArray(result)) { // array means deleted entry
                 validatedOnePager_DE = result as ValidatedOnePager;
-            }
+            // }
         // eslint-disable-next-line no-empty
         } catch {}
 
@@ -88,9 +88,9 @@ export class LocalFileValidationReporter implements ValidationReporter {
         try {
             const file_EN = await fs.readFile(this.validationFile(id, LocalEnum.EN), 'utf-8');
             const result = JSON.parse(file_EN);
-            if (!Array.isArray(result)) { // array means deleted entry
+            // if (!Array.isArray(result)) { // array means deleted entry
                 validatedOnePager_EN = result as ValidatedOnePager;
-            }
+            // }
         // eslint-disable-next-line no-empty
         } catch {}
 
@@ -105,7 +105,7 @@ export class LocalFileValidationReporter implements ValidationReporter {
         await Promise.all(files.map(async file => {
             if (file.endsWith('_validation.json') && !validEmployees.includes(file.split('_')[0] as EmployeeID)) {
                 const filePath = path.join(this.dataDir, file);
-                await fs.unlink(filePath).catch(err => {
+                await fs.unlink(filePath).catch(() => {
                     const sanitizedFileName = path.basename(filePath); // Extract file name only
                     _this.logger.error(`Failed to delete validation file '${sanitizedFileName}'. Please check permissions or file integrity.`);
                 });

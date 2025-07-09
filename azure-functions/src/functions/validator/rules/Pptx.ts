@@ -261,13 +261,10 @@ function extractTextFromSlide(slideData: XmlSlide): string[] {
 
         const snippets = paragraphs.map(p => {
             const parts = (p['a:r'] || []).flatMap(r => r['a:t'] || []);
-            if (p['a:br']) {
-                parts.push('\n');
-            }
 
             // Handle explicit line breaks
             if (p['a:br']) {
-                parts.push('\n');
+                parts.push('\n\n');
             }
 
             // Handle paragraph breaks
