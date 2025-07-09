@@ -44,7 +44,7 @@ type OnePagerError = {
     const mailSender = new EMailNotification(mailAdapter, employeeRepo, await config.reporter(), mailReporter, console);
 
     const templateDE = await mailSender.loadEMailTemplate(LocalEnum.DE);
-    const templateEN = await mailSender.loadEMailTemplate(LocalEnum.EN);
+    // const templateEN = await mailSender.loadEMailTemplate(LocalEnum.EN);
 
     const curDate = new Date();
     const deadline = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+7);
@@ -93,8 +93,8 @@ type OnePagerError = {
 
     const mailSubjectDE = pug.render(`| ${templateDE.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
     const mailContentDE = pug.render(templateDE.content, templateData);
-    const mailSubjectEN = pug.render(`| ${templateEN.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
-    const mailContentEN = pug.render(templateEN.content, templateData);
+    // const mailSubjectEN = pug.render(`| ${templateEN.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
+    // const mailContentEN = pug.render(templateEN.content, templateData);
 
     // const emailAddress = employee.email;
     const emailAddress = "artjom.konschin@senacor.com";

@@ -36,7 +36,7 @@ import { EMailNotification } from '../src/functions/validator/EMailNotification'
     await mailSender.notifyEmployee('2391');
     // await mailSender.notifyEmployee('2580');
     // await mailSender.notifyEmployee('230');
-    await mailSender.notifyEmployee('8771'); // This employee is not german speaking, so english mail should be sent
+    // await mailSender.notifyEmployee('8771'); // This employee is not german speaking, so english mail should be sent
 
     if (mailAdapter instanceof InMemoryMailAdapter) {
         const mails = mailAdapter.mails;

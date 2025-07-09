@@ -213,6 +213,17 @@ export interface StorageExplorer {
     listFoldersWithURLs(): Promise<StorageFolder[]>;
 }
 
+export interface UseOfOnePagerReporter {
+
+    confirmUseOfOnePagerForEmployee(employeeToken: string, id: EmployeeID): Promise<void>;
+    reportNewEmployee(id: EmployeeID): Promise<void>;
+}
+
+export type EmployeeToken = string;
+export function isEmployeeTokenValid(employeeToken: unknown): employeeToken is EmployeeToken {
+    return typeof employeeToken === 'string' && employeeToken.length > 0;
+}
+
 export type EmailAddress = string;
 export function isEmailAddress(txt: unknown): txt is EmailAddress {
     return typeof txt === 'string' && /^[a-zA-Z0-9._%+-]+@(senacor|finanteq).com$/.test(txt);
