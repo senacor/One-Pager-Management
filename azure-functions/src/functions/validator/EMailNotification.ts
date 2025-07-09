@@ -152,6 +152,12 @@ export class EMailNotification {
         // };
 
 
+        const linkToAllowUseOfOnePagers = await this.useOfOnePagerRepo.didEmployeeAllowUseOfOnePager(employeeId)
+                ? `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`
+                : `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`
+
+        this.logger.log(`Link to allow use of one-pagers: ${linkToAllowUseOfOnePagers}`);
+
         const templateData = {
             // ...errorData,
             checkedOnePagers: onePagerErrors,
@@ -169,9 +175,7 @@ export class EMailNotification {
             // })
             ,
             folderURL: localToValidatedOnePager[LocalEnum.EN]?.folderURL?.toString() || '',
-            linkToAllowUseOfOnePagers: await this.useOfOnePagerRepo.didEmployeeAllowUseOfOnePager(employeeId)
-                ? null
-                : `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`,
+            linkToAllowUseOfOnePagers: linkToAllowUseOfOnePagers
         };
 
 
