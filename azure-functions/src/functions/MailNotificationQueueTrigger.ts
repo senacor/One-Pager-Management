@@ -58,12 +58,21 @@ export async function MailNotificationQueueTrigger(
         if (!mailReporter) {
             throw new Error('A MailReporter is needed!');
         }
+        const useOfOnePagersRepo = await config.useOfOnePagersReporter();
+        if (!useOfOnePagersRepo) {
+            throw new Error('Use of one-pagers repository is not configured.');
+        }
+        const host = config.host;
+
+        context.log(host);
 
         const mailNotificationHandler = new EMailNotification(
             mailAdapter,
             employeeRepo,
             await config.reporter(),
             mailReporter,
+            useOfOnePagersRepo,
+            host,
             context
         );
 

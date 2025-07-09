@@ -37,6 +37,7 @@ import { SharepointListSendMailsReporter } from '../validator/adapter/sharepoint
 import { SharepointListAllowUseOfOnePagers } from '../validator/adapter/sharepoint/SharepointListAllowUseOfOnePagers';
 
 export type AppConfiguration = {
+    host: string; // the host URL of the application, used for generating links in emails
     explorer: () => Promise<StorageExplorer>;
     reporter: () => Promise<ValidationReporter>;
     mailAdapter: () => MailPort | undefined; // optional mail adapter for sharepoint storage
@@ -99,10 +100,15 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
         ? { ...process.env, ...overrides }
         : { STORAGE_SOURCE: 'memory', ...process.env };
 
+    const host = process.env['WEBSITE_HOSTNAME'] === undefined || process.env['WEBSITE_HOSTNAME'].indexOf("localhost") > -1
+        ? 'http://localhost:7071'
+        : `https://${process.env['WEBSITE_HOSTNAME']}`; // Use the environment variable or default to localhost
+
     switch (opts.STORAGE_SOURCE) {
         case 'memory': {
             logger.log('Using in-memory storage!');
             return {
+                host: host,
                 explorer: async () =>
                     new FileSystemStorageExplorer('/', new MemoryFileSystem(), logger),
                 reporter: async () => new InMemoryValidationReporter(logger),
@@ -120,6 +126,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
             );
 
             return {
+                host: host,
                 explorer: async () => new FileSystemStorageExplorer(onePagerDir, fs, logger),
                 reporter: async () => new LocalFileValidationReporter(resultDir, logger),
                 mailAdapter: () => undefined,
@@ -130,7 +137,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
         }
         case 'sharepoint': {
             logger.log('Using SharePoint storage!');
-            return getSharepointConfig(opts, logger);
+            return getSharepointConfig(opts, host, logger);
         }
     }
 }
@@ -143,6 +150,7 @@ export function loadConfigFromEnv(logger: Logger = console, overrides?: Options)
  */
 function getSharepointConfig(
     opts: SharepointStorageOptions,
+    host: string,
     logger: Logger = console
 ): AppConfiguration {
     const sharePointAuthProvider = createAuthProvider(opts);
@@ -181,6 +189,7 @@ function getSharepointConfig(
     );
 
     return {
+        host: host,
         explorer: () =>
             SharepointStorageExplorer.getInstance(
                 client,

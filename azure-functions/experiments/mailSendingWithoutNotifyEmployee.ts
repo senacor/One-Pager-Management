@@ -41,7 +41,12 @@ type OnePagerError = {
         throw new Error('Mail reporter is not configured.');
     }
 
-    const mailSender = new EMailNotification(mailAdapter, employeeRepo, await config.reporter(), mailReporter, console);
+    const useOfOnePagersRepo = await config.useOfOnePagersReporter();
+    if (!useOfOnePagersRepo) {
+        throw new Error('Use of one-pagers repository is not configured.');
+    }
+
+    const mailSender = new EMailNotification(mailAdapter, employeeRepo, await config.reporter(), mailReporter, useOfOnePagersRepo, config.host, console);
 
     const templateDE = await mailSender.loadEMailTemplate(LocalEnum.DE);
     // const templateEN = await mailSender.loadEMailTemplate(LocalEnum.EN);

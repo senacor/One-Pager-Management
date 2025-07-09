@@ -15,6 +15,27 @@ const enum ListItemColumnNames {
     CONFIRMATION_DATE = 'Date_of_Confirmation', // text field, 1-line, date format MM/DD/YYYY
 }
 
+type ListItemWithFields = {
+    [ListItemColumnNames.MA_ID]: string | number;
+    [ListItemColumnNames.CONFIRMATION_DATE]?: string | null;
+    [ListItemColumnNames.TOKEN]: string;
+};
+function isListItemWithFields(item: unknown): item is ListItemWithFields {
+    if (item === null || typeof item !== 'object') {
+        return false;
+    }
+    const record = item as { [key: string]: unknown };
+    return (
+        ListItemColumnNames.MA_ID in record &&
+        ['string', 'number'].includes(typeof record[ListItemColumnNames.MA_ID]) &&
+        ListItemColumnNames.TOKEN in record &&
+        typeof record[ListItemColumnNames.TOKEN] === 'string' && (
+            !(ListItemColumnNames.CONFIRMATION_DATE in record)
+            || ['string', 'null'].includes(typeof record[ListItemColumnNames.CONFIRMATION_DATE])
+        )
+    );
+}
+
 
 export class SharepointListAllowUseOfOnePagers implements UseOfOnePagerReporter {
     private readonly listId: string;
@@ -29,6 +50,36 @@ export class SharepointListAllowUseOfOnePagers implements UseOfOnePagerReporter 
         this.siteId = siteId;
         this.logger = logger;
     }
+
+
+    async getTokenOfEmployee(id: EmployeeID): Promise<EmployeeToken> {
+        const itemId: string | undefined = await this.getItemIdOfEmployeeByEmployeeID(id);
+
+        if (!itemId) {
+            throw new Error(`No item found for employee with ID "${id}"!`);
+        }
+
+        const item = (await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`)
+                .headers(FORCE_REFRESH)
+                .select('fields')
+                .get()) as ListItem;
+
+        if (!item.fields || !isListItemWithFields(item.fields)) {
+            throw new Error(`Item with ID "${itemId}" does not have the expected fields structure!`);
+        }
+
+        const itemFields: ListItemWithFields = item.fields;
+
+        this.logger.log(
+            `Parsed item fields for employee with ID "${id}"": ${JSON.stringify(itemFields)}`
+        );
+
+        return itemFields[ListItemColumnNames.TOKEN];
+    }
+
+
+
 
 
     private dateToEnglishFormat(date: Date | undefined): string | undefined {
@@ -122,6 +173,36 @@ export class SharepointListAllowUseOfOnePagers implements UseOfOnePagerReporter 
         }
     }
 
+    async didEmployeeAllowUseOfOnePager(id: EmployeeID): Promise<boolean> {
+        const itemId: string | undefined = await this.getItemIdOfEmployeeByEmployeeID(id);
+        if (!itemId) {
+            this.logger.error(`No item found for employee with ID "${id}"!`);
+            return false;
+        }
+
+        const item = (await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}`)
+                .headers(FORCE_REFRESH)
+                .select('fields')
+                .get()) as ListItem;
+
+        if (!item.fields || !isListItemWithFields(item.fields)) {
+            this.logger.error(
+                `Item with ID "${itemId}" does not have the expected fields structure!`
+            );
+            return false;
+        }
+
+        const itemFields: ListItemWithFields = item.fields;
+
+        this.logger.log(
+            `Parsed item fields for employee with ID "${id}"": ${JSON.stringify(itemFields)}`
+        );
+        return itemFields[ListItemColumnNames.CONFIRMATION_DATE] !== undefined
+            && itemFields[ListItemColumnNames.CONFIRMATION_DATE] !== null
+            && itemFields[ListItemColumnNames.CONFIRMATION_DATE] !== '';
+    }
+
 
     private async getItemIdOfEmployeeByToken(employeeToken: EmployeeToken): Promise<string | undefined> {
         this.logger.log(`Getting item ID for employee with token "${employeeToken}"!`);
@@ -166,3 +247,4 @@ export class SharepointListAllowUseOfOnePagers implements UseOfOnePagerReporter 
     }
 
 }
+

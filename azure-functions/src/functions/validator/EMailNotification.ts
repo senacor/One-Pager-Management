@@ -10,7 +10,8 @@ import {
     Employee,
     listOfGeneralErrors,
     isEmailAddress,
-    MailReporter
+    MailReporter,
+    UseOfOnePagerReporter
 } from './DomainTypes';
 import fs from 'node:fs';
 import * as config from '../../../app_config/config.json';
@@ -48,6 +49,8 @@ export class EMailNotification {
     private readonly mailAdapter: MailPort;
     private readonly employeeRepo: EmployeeRepository;
     private readonly mailReporter: MailReporter;
+    private readonly useOfOnePagerRepo: UseOfOnePagerReporter;
+    private readonly hostname: string;
 
     /**
      * Creates an instance of EMailNotification.
@@ -60,6 +63,8 @@ export class EMailNotification {
         employeeRepo: EmployeeRepository,
         validationReporter: ValidationReporter,
         mailReporter: MailReporter,
+        useOfOnePagerRepo: UseOfOnePagerReporter,
+        hostname: string,
         logger: Logger = console
     ) {
         this.logger = logger;
@@ -67,6 +72,8 @@ export class EMailNotification {
         this.mailAdapter = mailAdapter;
         this.employeeRepo = employeeRepo;
         this.mailReporter = mailReporter;
+        this.useOfOnePagerRepo = useOfOnePagerRepo;
+        this.hostname = hostname;
     }
 
     async notifyEmployee(employeeId: EmployeeID): Promise<void> {
@@ -144,6 +151,7 @@ export class EMailNotification {
         //     guideBookURL: mailTemplate.guideBookURL,
         // };
 
+
         const templateData = {
             // ...errorData,
             checkedOnePagers: onePagerErrors,
@@ -161,7 +169,11 @@ export class EMailNotification {
             // })
             ,
             folderURL: localToValidatedOnePager[LocalEnum.EN]?.folderURL?.toString() || '',
+            linkToAllowUseOfOnePagers: await this.useOfOnePagerRepo.didEmployeeAllowUseOfOnePager(employeeId)
+                ? null
+                : `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`,
         };
+
 
         const mailSubject = pug.render(`| ${mailTemplate.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
         const mailContent = pug.render(mailTemplate.content, templateData);
