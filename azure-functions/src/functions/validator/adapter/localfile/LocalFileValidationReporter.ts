@@ -6,6 +6,7 @@ import {
     LocalEnum,
     LocalToValidatedOnePager,
     Logger,
+    stringToDate,
     ValidatedOnePager,
     ValidationReporter,
 } from '../../DomainTypes';
@@ -47,8 +48,9 @@ export class LocalFileValidationReporter implements ValidationReporter {
      * @param id The employee ID for which the one-pager is valid.
      */
     async reportValid(id: EmployeeID, validatedOnePager: ValidatedOnePager, local: Local): Promise<void> {
-        await this.ensureDataDir();
-        await fs.writeFile(this.validationFile(id, local), JSON.stringify(validatedOnePager));
+        await this.reportErrors(id, validatedOnePager, local);
+        // await this.ensureDataDir();
+        // await fs.writeFile(this.validationFile(id, local), JSON.stringify(validatedOnePager));
     }
 
     /**
@@ -79,6 +81,13 @@ export class LocalFileValidationReporter implements ValidationReporter {
             const file_DE = await fs.readFile(this.validationFile(id, LocalEnum.DE), 'utf-8');
             const result = JSON.parse(file_DE);
             // if (!Array.isArray(result)) { // array means deleted entry
+                result.folderURL = result.folderURL ? new URL(result.folderURL) : undefined;
+
+                if (result.onePager) {
+                    this.logger.log(result.onePager?.lastUpdateByEmployee);
+                    result.onePager.lastUpdateByEmployee = stringToDate(result.onePager?.lastUpdateByEmployee);
+                    result.onePager.webLocation = new URL(result.onePager?.webLocation);
+                }
                 validatedOnePager_DE = result as ValidatedOnePager;
             // }
         // eslint-disable-next-line no-empty
@@ -89,6 +98,12 @@ export class LocalFileValidationReporter implements ValidationReporter {
             const file_EN = await fs.readFile(this.validationFile(id, LocalEnum.EN), 'utf-8');
             const result = JSON.parse(file_EN);
             // if (!Array.isArray(result)) { // array means deleted entry
+                result.folderURL = result.folderURL ? new URL(result.folderURL) : undefined;
+
+                if (result.onePager) {
+                    result.onePager.lastUpdateByEmployee = stringToDate(result.onePager?.lastUpdateByEmployee);
+                    result.onePager.webLocation = new URL(result.onePager?.webLocation);
+                }
                 validatedOnePager_EN = result as ValidatedOnePager;
             // }
         // eslint-disable-next-line no-empty

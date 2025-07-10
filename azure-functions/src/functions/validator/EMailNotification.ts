@@ -160,6 +160,8 @@ export class EMailNotification {
             didEmployeeAllowUseOfOnePager: didEmployeeAllowUseOfOnePager,
         };
 
+        this.logger.log(`folderURL: ${JSON.stringify(localToValidatedOnePager)}`);
+
 
         const mailSubject = pug.render(`| ${mailTemplate.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
         const mailContent = pug.render(mailTemplate.content, templateData);

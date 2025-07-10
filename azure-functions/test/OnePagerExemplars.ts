@@ -99,12 +99,13 @@ export function onePagerFile(
     local: Local | undefined,
     lastUpdated: Date
 ): string {
-    return `${familyName}, ${name}_${local ? `${local}_` : ''}${toYYMMDD(lastUpdated)}.pptx`;
+    return `${familyName}, ${name}_${local ? `${local}_` : ''}${dateToString(lastUpdated)}.pptx`;
 }
 
-function toYYMMDD(date: Date): string {
-    const yy = String(date.getFullYear()).slice(-2);
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
+
+function dateToString(date: Date): string {
+    const yy = String(date.getUTCFullYear()).slice(-2);
+    const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(date.getUTCDate()).padStart(2, '0');
     return `${yy}${mm}${dd}`;
 }

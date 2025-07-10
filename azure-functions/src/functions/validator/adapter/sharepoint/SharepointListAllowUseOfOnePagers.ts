@@ -2,6 +2,7 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
 import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
 import {
+    dateToString,
     EmployeeID,
     EmployeeToken,
     Logger,
@@ -76,18 +77,6 @@ export class SharepointListAllowUseOfOnePagers implements UseOfOnePagerReporter 
         );
 
         return itemFields[ListItemColumnNames.TOKEN];
-    }
-
-
-
-
-
-    private dateToEnglishFormat(date: Date | undefined): string | undefined {
-        if (date === undefined) {
-            return undefined;
-        }
-
-        return `${(date.getUTCMonth()+1).toString().padStart(2, '0')}/${date.getUTCDate().toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
     }
 
 
@@ -168,7 +157,7 @@ export class SharepointListAllowUseOfOnePagers implements UseOfOnePagerReporter 
             await this.client
                 .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemIdByToken}/fields`)
                 .patch({
-                    [ListItemColumnNames.CONFIRMATION_DATE]: this.dateToEnglishFormat(new Date()),
+                    [ListItemColumnNames.CONFIRMATION_DATE]: dateToString(new Date()),
                 });
         }
     }

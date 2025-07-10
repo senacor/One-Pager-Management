@@ -1,12 +1,17 @@
 import { Client } from '@microsoft/microsoft-graph-client';
-import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
-import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
+import {
+    List,
+    // ListItem,
+    Site
+} from '@microsoft/microsoft-graph-types';
+// import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
 import {
     EmployeeID,
     Local,
     Logger,
     ValidatedOnePager,
     MailReporter,
+    dateToString,
 } from '../../DomainTypes';
 
 const enum ListItemColumnNames {
@@ -29,14 +34,6 @@ export class SharepointListSendMailsReporter implements MailReporter {
         this.listId = listId;
         this.siteId = siteId;
         this.logger = logger;
-    }
-
-    private dateToEnglishFormat(date: Date | undefined): string | undefined {
-        if (date === undefined) {
-            return undefined;
-        }
-
-        return `${(date.getUTCMonth()+1).toString().padStart(2, '0')}/${date.getUTCDate().toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
     }
 
 
@@ -81,55 +78,55 @@ export class SharepointListSendMailsReporter implements MailReporter {
         validatedOnePager: ValidatedOnePager,
         local: Local,
     ): Promise<void> {
-        const itemId: string | undefined = await this.getItemIdOfEmployee(id, local);
+        // const itemId: string | undefined = await this.getItemIdOfEmployee(id, local);
 
-        this.logger.log(`Item ID for employee with ID "${id}": ${JSON.stringify(itemId)}`);
+        // this.logger.log(`Item ID for employee with ID "${id}": ${JSON.stringify(itemId)}`);
 
         this.logger.log(
             `Reporting the following errors for employee with id "${id}" and onePager ${JSON.stringify(validatedOnePager)}: ${JSON.stringify(validatedOnePager.errors)}`
         );
 
-        if (itemId === undefined) {
-            this.logger.log(`Creating a new list entry for employee with ID "${id}"!`);
-            await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
-                fields: {
-                    [ListItemColumnNames.MA_ID]: id,
-                    [ListItemColumnNames.VALIDATION_ERRORS]: validatedOnePager.errors.join(', '),
-                    [ListItemColumnNames.SEND_DATE]: this.dateToEnglishFormat(new Date()),
-                    [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
-                },
-            });
-        } else {
-            this.logger.log(`Updating existing list entry for employee with ID "${id}"!`);
-            await this.client
-                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
-                .patch({
-                    [ListItemColumnNames.VALIDATION_ERRORS]: validatedOnePager.errors.join(', '),
-                    [ListItemColumnNames.SEND_DATE]: this.dateToEnglishFormat(new Date()),
-                });
-        }
+        // if (itemId === undefined) {
+        this.logger.log(`Creating a new list entry for employee with ID "${id}"!`);
+        await this.client.api(`/sites/${this.siteId}/lists/${this.listId}/items`).post({
+            fields: {
+                [ListItemColumnNames.MA_ID]: id,
+                [ListItemColumnNames.VALIDATION_ERRORS]: validatedOnePager.errors.join(', '),
+                [ListItemColumnNames.SEND_DATE]: dateToString(new Date()),
+                [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
+            },
+        });
+        // } else {
+        //     this.logger.log(`Updating existing list entry for employee with ID "${id}"!`);
+        //     await this.client
+        //         .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemId}/fields`)
+        //         .patch({
+        //             [ListItemColumnNames.VALIDATION_ERRORS]: validatedOnePager.errors.join(', '),
+        //             [ListItemColumnNames.SEND_DATE]: dateToString(new Date()),
+        //         });
+        // }
     }
 
 
-    private async getItemIdOfEmployee(id: EmployeeID, local: Local): Promise<string | undefined> {
-        this.logger.log(`Getting item ID for employee with ID "${id}"!`);
+    // private async getItemIdOfEmployee(id: EmployeeID, local: Local): Promise<string | undefined> {
+    //     this.logger.log(`Getting item ID for employee with ID "${id}"!`);
 
-        const { value: entries } = (await this.client
-            .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
-            .headers(FORCE_REFRESH)
-            .filter(`fields/${ListItemColumnNames.MA_ID} eq '${id}' and fields/${ListItemColumnNames.ONE_PAGER_LANGUAGE} eq '${local}' and fields/${ListItemColumnNames.SEND_DATE} eq '${this.dateToEnglishFormat(new Date())}'`)
-            .get()) as { value?: ListItem[] };
+    //     const { value: entries } = (await this.client
+    //         .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
+    //         .headers(FORCE_REFRESH)
+    //         .filter(`fields/${ListItemColumnNames.MA_ID} eq '${id}' and fields/${ListItemColumnNames.ONE_PAGER_LANGUAGE} eq '${local}' and fields/${ListItemColumnNames.SEND_DATE} eq '${this.dateToEnglishFormat(new Date())}'`)
+    //         .get()) as { value?: ListItem[] };
 
-        if (!entries) {
-            return undefined;
-        }
+    //     if (!entries) {
+    //         return undefined;
+    //     }
 
-        this.logger.log(`Retrieved entries for employee with ID "${id}": ${JSON.stringify(entries)}`);
+    //     this.logger.log(`Retrieved entries for employee with ID "${id}": ${JSON.stringify(entries)}`);
 
 
-        return entries.length > 0
-            ? entries[0].id
-            : undefined;
-    }
+    //     return entries.length > 0
+    //         ? entries[0].id
+    //         : undefined;
+    // }
 
 }

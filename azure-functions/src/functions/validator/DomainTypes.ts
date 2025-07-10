@@ -277,3 +277,35 @@ export interface Logger {
 
     error(...args: unknown[]): void;
 }
+
+
+
+export function dateToString(date: Date | undefined): string | undefined {
+    if (!date) {
+        return undefined;
+    }
+
+    const yyyy = String(date.getUTCFullYear());
+    const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(date.getUTCDate()).padStart(2, '0');
+    return `${mm}/${dd}/${yyyy}`;
+}
+
+export function stringToDate(dateString: string | undefined): Date | undefined {
+    if (!dateString) {
+        return undefined;
+    }
+
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        const mm = parseInt(dateString.slice(0, 2), 10) - 1; // Months are zero-based
+        const dd = parseInt(dateString.slice(3, 5), 10);
+        const yyyy = parseInt(dateString.slice(6, 19), 10);
+        return new Date(Date.UTC(yyyy, mm, dd));
+    } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(dateString)) {
+        return new Date(dateString);
+    } else {
+        throw new Error(`Unkown date format: ${  dateString}`);
+    }
+
+    // Otherwise Expecting dateString in format `MM/DD/YYYY`
+}

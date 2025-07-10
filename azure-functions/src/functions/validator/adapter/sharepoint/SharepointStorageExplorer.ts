@@ -1,5 +1,5 @@
 import { Client, GraphError } from '@microsoft/microsoft-graph-client';
-import { Logger, StorageExplorer, StorageFile, StorageFolder } from '../../DomainTypes';
+import { Logger, StorageExplorer, StorageFile, StorageFolder, stringToDate } from '../../DomainTypes';
 import { Drive, DriveItem, Site } from '@microsoft/microsoft-graph-types';
 import { HardenedFetch } from 'hardened-fetch';
 import NodeCache from 'node-cache';
@@ -135,7 +135,7 @@ export class SharepointStorageExplorer implements StorageExplorer {
             return [
                 {
                     name: item.name,
-                    lastModified: new Date(item.lastModifiedDateTime),
+                    lastModified: stringToDate(item.lastModifiedDateTime) as Date,
                     data: fetchUrl(item['@microsoft.graph.downloadUrl'], this.logger),
                     url: item.webUrl ? new URL(item.webUrl) : undefined,
                 },

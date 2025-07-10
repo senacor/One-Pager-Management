@@ -1,4 +1,4 @@
-import { EmployeeID, LocalEnum } from '../src/functions/validator/DomainTypes';
+import { EmployeeID, LocalEnum, stringToDate } from '../src/functions/validator/DomainTypes';
 import { initInMemoryOnePagers } from './OnePagerExemplars';
 
 describe('FolderBasedOnePagers', () => {
@@ -21,11 +21,11 @@ describe('FolderBasedOnePagers', () => {
         const rep = await initInMemoryOnePagers({
             [id]: [
                 {
-                    lastUpdateByEmployee: new Date('2020-01-01'),
+                    lastUpdateByEmployee: stringToDate('01/01/2020') as Date,
                     local: undefined,
                 },
                 {
-                    lastUpdateByEmployee: new Date('2024-01-01'),
+                    lastUpdateByEmployee: stringToDate('01/01/2024') as Date,
                     local: undefined,
                 },
             ],

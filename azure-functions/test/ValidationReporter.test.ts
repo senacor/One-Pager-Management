@@ -31,7 +31,7 @@ const someEmployeeData: Employee = {
     id: '111' as EmployeeID,
     name: 'Mustermann, Max',
     email: 'max.mustermann@senacor.com', //TODO: nach merge mit feature/mail in E-Mail-Adresse umwandeln
-    entry_date: '2022-01-01T00:00:00',
+    entry_date: '2022-01-01T00:00:00.000Z',
     office: 'Hamburg',
     date_of_employment_change: null,
     position_current: 'Consultant',
@@ -151,6 +151,76 @@ const testFactory = (name: string, reporterFactory: ReporterFactory) => {
 
             expect(result[LocalEnum.DE].errors).toEqual([]);
             expect(result[LocalEnum.EN].errors).toEqual([]);
+        });
+
+        it('should return the correct folderURLs', async () => {
+            const reporter = await reporterFactory();
+
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [ValidationErrorEnum.OLDER_THAN_SIX_MONTHS],
+                folderURL: undefined
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: [ValidationErrorEnum.MISSING_DE_VERSION],
+                folderURL: new URL('https://example.com/folder/de')
+            };
+
+            await reporter.reportErrors(
+                '000',
+                someValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+
+            await reporter.reportErrors(
+                '000',
+                anotherValidatedOnePager,
+                LocalEnum.DE,
+                someEmployeeData
+            );
+            const result = await reporter.getResultFor('000');
+
+            expect(result[LocalEnum.DE].folderURL?.toString()).toEqual('https://example.com/folder/de');
+            expect(result[LocalEnum.EN].folderURL).toEqual(undefined);
+        });
+
+        it('should return the correct onePagerInfos', async () => {
+            const reporter = await reporterFactory();
+
+            const someValidatedOnePager: ValidatedOnePager = {
+                onePager: someOnePager,
+                errors: [],
+                folderURL: undefined
+            };
+
+            const anotherValidatedOnePager: ValidatedOnePager = {
+                onePager: undefined,
+                errors: [],
+                folderURL: undefined
+            };
+
+            await reporter.reportErrors(
+                '000',
+                someValidatedOnePager,
+                LocalEnum.DE,
+                someEmployeeData
+            );
+
+            await reporter.reportErrors(
+                '000',
+                anotherValidatedOnePager,
+                LocalEnum.EN,
+                someEmployeeData
+            );
+            const result = await reporter.getResultFor('000');
+
+            expect(result[LocalEnum.DE].onePager?.fileName).toEqual('Mustermann, Max_DE_240209.pptx');
+            expect(result[LocalEnum.DE].onePager?.lastUpdateByEmployee?.toISOString().split('T')[0]).toEqual(someOnePager.lastUpdateByEmployee.toISOString().split('T')[0]);
+            expect(result[LocalEnum.DE].onePager?.webLocation.toString()).toEqual(someOnePager.webLocation.toString());
+            expect(result[LocalEnum.EN].onePager).toEqual(undefined);
         });
 
         it('should not clean up errors when valid is reported for other employee', async () => {

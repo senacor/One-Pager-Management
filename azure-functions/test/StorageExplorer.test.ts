@@ -82,6 +82,7 @@ const testFactory = (name: string, factory: Factory) => {
                 await explorer.createFile('foo', 'test.txt', Buffer.from('Hello World'));
 
                 const [file] = await explorer.listFiles('foo');
+                console.log(file);
                 expect(file).toEqual({
                     name: 'test.txt',
                     lastModified: expect.any(Date),

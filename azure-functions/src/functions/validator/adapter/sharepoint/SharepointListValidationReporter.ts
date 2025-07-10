@@ -2,12 +2,14 @@ import { Client } from '@microsoft/microsoft-graph-client';
 import { List, ListItem, Site } from '@microsoft/microsoft-graph-types';
 import { FORCE_REFRESH } from '../../../configuration/CachingHandler';
 import {
+    dateToString,
     Employee,
     EmployeeID,
     Local,
     LocalEnum,
     LocalToValidatedOnePager,
     Logger,
+    stringToDate,
     ValidatedOnePager,
     ValidationError,
     ValidationReporter,
@@ -25,7 +27,7 @@ const enum ListItemColumnNames {
     URL = 'Links', // text field, 1-line, URL
     ONE_PAGER_LANGUAGE = 'Language_of_Version',
     FILENAME = 'Filename', // text field, 1-line, file name of the one-pager
-    Folder_URL = 'Folder_URL', // text field, 1-line, URL to the folder containing the one-pager
+    FOLDER_URL = 'Folder_URL', // text field, 1-line, URL to the folder containing the one-pager
 }
 
 type ListItemWithFields = {
@@ -39,7 +41,7 @@ type ListItemWithFields = {
     [ListItemColumnNames.LAST_MODIFIED_DATE]: string; // 'NO_DATE' if no value since '' and ' ' do not work well with sharepoint
     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: string; // 'DE' or 'EN'
     [ListItemColumnNames.FILENAME]?: string; // optional, file name of the one-pager
-    [ListItemColumnNames.Folder_URL]?: string; // optional, URL to the folder containing the one-pager
+    [ListItemColumnNames.FOLDER_URL]?: string; // optional, URL to the folder containing the one-pager
 };
 function isListItemWithFields(item: unknown): item is ListItemWithFields {
     if (item === null || typeof item !== 'object') {
@@ -64,7 +66,11 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
         ListItemColumnNames.LAST_MODIFIED_DATE in record &&
         ['string'].includes(typeof record[ListItemColumnNames.LAST_MODIFIED_DATE]) &&
         ListItemColumnNames.ONE_PAGER_LANGUAGE in record &&
-        ['string'].includes(typeof record[ListItemColumnNames.ONE_PAGER_LANGUAGE])
+        ['string'].includes(typeof record[ListItemColumnNames.ONE_PAGER_LANGUAGE]) &&
+        (!(ListItemColumnNames.FILENAME in record) ||
+        typeof record[ListItemColumnNames.FILENAME] === 'string') &&
+        (!(ListItemColumnNames.FOLDER_URL in record) ||
+        typeof record[ListItemColumnNames.FOLDER_URL] === 'string')
     );
 }
 
@@ -91,14 +97,6 @@ export class SharepointListValidationReporter implements ValidationReporter {
         this.listId = listId;
         this.siteId = siteId;
         this.logger = logger;
-    }
-
-    private dateToEnglishFormat(date: Date | undefined): string | undefined {
-        if (date === undefined) {
-            return undefined;
-        }
-
-        return `${(date.getUTCMonth()+1).toString().padStart(2, '0')}/${date.getUTCDate().toString().padStart(2, '0')}/${date.getUTCFullYear()}`;
     }
 
     /**
@@ -191,12 +189,12 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [ListItemColumnNames.MA_NAME]: employee.name,
                     [ListItemColumnNames.MA_EMAIL]: employee.email,
                     [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || 'NO_POSITION',
-                    [ListItemColumnNames.VALIDATION_DATE]: this.dateToEnglishFormat(new Date()),
+                    [ListItemColumnNames.VALIDATION_DATE]: dateToString(new Date()),
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
-                        this.dateToEnglishFormat(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
+                        dateToString(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
                     [ListItemColumnNames.FILENAME]: validatedOnePager.onePager?.fileName || 'NO_FILENAME',
-                    [ListItemColumnNames.Folder_URL]: validatedOnePager.folderURL ? validatedOnePager.folderURL.toString() : 'NO_FOLDER_URL',
+                    [ListItemColumnNames.FOLDER_URL]: validatedOnePager.folderURL ? validatedOnePager.folderURL.toString() : 'NO_FOLDER_URL',
                 },
             });
         } else {
@@ -209,12 +207,12 @@ export class SharepointListValidationReporter implements ValidationReporter {
                     [ListItemColumnNames.MA_NAME]: employee.name,
                     [ListItemColumnNames.MA_EMAIL]: employee.email,
                     [ListItemColumnNames.MA_CURR_POSITION]: employee.position_current || 'NO_POSITION',
-                    [ListItemColumnNames.VALIDATION_DATE]: this.dateToEnglishFormat(new Date()),
+                    [ListItemColumnNames.VALIDATION_DATE]: dateToString(new Date()) || 'NO_DATE',
                     [ListItemColumnNames.LAST_MODIFIED_DATE]:
-                        this.dateToEnglishFormat(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
+                        dateToString(validatedOnePager.onePager?.lastUpdateByEmployee) || 'NO_DATE',
                     [ListItemColumnNames.ONE_PAGER_LANGUAGE]: local,
                     [ListItemColumnNames.FILENAME]: validatedOnePager.onePager?.fileName || 'NO_FILENAME',
-                    [ListItemColumnNames.Folder_URL]: validatedOnePager.folderURL ? validatedOnePager.folderURL.toString() : 'NO_FOLDER_URL',
+                    [ListItemColumnNames.FOLDER_URL]: validatedOnePager.folderURL ? validatedOnePager.folderURL.toString() : 'NO_FOLDER_URL',
                 });
         }
     }
@@ -256,7 +254,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
                 .get()) as ListItem;
 
             this.logger.log(
-                `Retrieved DE item fields for employee with ID "${id}" in language "${local}": ${JSON.stringify(item.fields)}`
+                `Retrieved item fields for employee with ID "${id}" in language "${local}": ${JSON.stringify(item.fields)}`
             );
 
             if (!item.fields || !isListItemWithFields(item.fields)) {
@@ -268,30 +266,25 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
             const itemFields: ListItemWithFields = item.fields;
 
-            this.logger.log(
-                `Parsed item fields for employee with ID "${id}" in language "${local}": ${JSON.stringify(itemFields[ListItemColumnNames.VALIDATION_ERRORS])}`
-            );
-
             let folderURL: URL | undefined = undefined;
             try {
-                if (itemFields[ListItemColumnNames.URL] && itemFields[ListItemColumnNames.URL] !== 'NO_URL') {
-                    folderURL = new URL(itemFields[ListItemColumnNames.URL]);
+                if (itemFields[ListItemColumnNames.FOLDER_URL] && itemFields[ListItemColumnNames.FOLDER_URL] !== '') {
+                    folderURL = new URL(itemFields[ListItemColumnNames.FOLDER_URL]);
                 }
             } catch {
                 this.logger.log(
-                    `Invalid URL "${itemFields[ListItemColumnNames.URL]}" for employee with ID "${id}"!`
+                    `Invalid URL "${itemFields[ListItemColumnNames.FOLDER_URL]}" for employee with ID "${id}"!`
                 );
             }
 
             result[local] = {
                 onePager:
-                    itemFields[ListItemColumnNames.URL]
-                    && itemFields[ListItemColumnNames.URL] !== 'NO_URL'
+                    itemFields[ListItemColumnNames.URL] !== 'NO_URL'
                     && itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]
                     ? {
                         webLocation: new URL(itemFields[ListItemColumnNames.URL]),
                         fileName: itemFields[ListItemColumnNames.FILENAME] || 'NO_FILENAME',
-                        lastUpdateByEmployee: moment(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE], "MM/DD/YYYY", true).isValid() ? new Date(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]) : new Date(),
+                        lastUpdateByEmployee: moment(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE], "MM/DD/YYYY", true).isValid() ? stringToDate(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]) as Date : new Date(),
                         local: local,
                         data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
                     } : undefined,
@@ -323,7 +316,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
             return undefined;
         }
 
-        this.logger.log(`Retrieved entries for employee with ID "${id}": ${JSON.stringify(entries)}`);
+        this.logger.log(`Retrieved entries for employee with ID "${id}" and local "${local}": ${entries.map(e => e.id).join(', ')}`);
 
 
         return entries.length > 0
