@@ -153,11 +153,8 @@ export class EMailNotification {
             checkedOnePagers: onePagerErrors,
             deadline: `${deadline.getDate()}.${deadline.getMonth() + 1}.${deadline.getFullYear()}`,
             firstname: employee.name.split(',')[1]?.trim(),
-            generalErrors: generalErrors
-            ,
-            onePagerErrors: onePagerErrors
-
-            ,
+            generalErrors: generalErrors,
+            onePagerErrors: onePagerErrors,
             folderURL: localToValidatedOnePager[LocalEnum.EN]?.folderURL?.toString() || '',
             linkToAllowUseOfOnePagers: linkToAllowUseOfOnePagers,
             didEmployeeAllowUseOfOnePager: didEmployeeAllowUseOfOnePager,
@@ -184,8 +181,6 @@ export class EMailNotification {
                 lang
             );
         }));
-
-
     }
 
     async loadEMailTemplate(local: Local): Promise<MailTemplate> {

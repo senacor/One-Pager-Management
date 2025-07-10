@@ -208,11 +208,11 @@ function getSharepointConfig(
                 logger
             ),
         mailAdapter: () =>
-            // new InMemoryMailAdapter()
-            new MSMailAdapter(
-                client,
-                logger
-            ) // optional mail adapter for SharePoint storage
+            new InMemoryMailAdapter()
+            // new MSMailAdapter(
+            //     client,
+            //     logger
+            // ) // optional mail adapter for SharePoint storage
         ,
         employeeRepo: () => new PowerBIRepository(powerbiAuthProvider, datasetID, logger),
         mailReporter: () =>

@@ -30,7 +30,7 @@ const enum ListItemColumnNames {
 
 type ListItemWithFields = {
     [ListItemColumnNames.MA_ID]: string | number;
-    [ListItemColumnNames.VALIDATION_ERRORS]: string;
+    [ListItemColumnNames.VALIDATION_ERRORS]?: string;
     [ListItemColumnNames.URL]: string;
     [ListItemColumnNames.MA_NAME]: string;
     [ListItemColumnNames.MA_EMAIL]: string;
@@ -49,8 +49,8 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
     return (
         ListItemColumnNames.MA_ID in record &&
         ['string', 'number'].includes(typeof record[ListItemColumnNames.MA_ID]) &&
-        ListItemColumnNames.VALIDATION_ERRORS in record &&
-        typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string' &&
+        (!(ListItemColumnNames.VALIDATION_ERRORS in record) ||
+        typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string') &&
         ListItemColumnNames.URL in record &&
         typeof record[ListItemColumnNames.URL] === 'string' &&
         ListItemColumnNames.MA_NAME in record &&
@@ -295,7 +295,9 @@ export class SharepointListValidationReporter implements ValidationReporter {
                         local: local,
                         data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
                     } : undefined,
-                errors: itemFields[ListItemColumnNames.VALIDATION_ERRORS].split(', ') as ValidationError[],
+                errors: itemFields[ListItemColumnNames.VALIDATION_ERRORS]
+                    ? itemFields[ListItemColumnNames.VALIDATION_ERRORS].split(', ') as ValidationError[]
+                    : [],
                 folderURL,
             };
         }
