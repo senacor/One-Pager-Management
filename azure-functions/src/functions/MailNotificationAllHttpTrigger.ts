@@ -34,7 +34,7 @@ export async function MailNotificationAllHttpTrigger(
 
         const items: QueueItem[] = employees.map(id => ({ employeeId: id }));
 
-        context.extraOutputs.set(queueOutput, items[0]);
+        context.extraOutputs.set(queueOutput, items);
 
         context.log(`Received change notification for all employees!`);
         return { body: `Received change notification for all employees!` };

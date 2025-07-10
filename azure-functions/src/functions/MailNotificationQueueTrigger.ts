@@ -62,9 +62,6 @@ export async function MailNotificationQueueTrigger(
         if (!useOfOnePagersRepo) {
             throw new Error('Use of one-pagers repository is not configured.');
         }
-        const host = config.host;
-
-        context.log(host);
 
         const mailNotificationHandler = new EMailNotification(
             mailAdapter,
@@ -72,7 +69,7 @@ export async function MailNotificationQueueTrigger(
             await config.reporter(),
             mailReporter,
             useOfOnePagersRepo,
-            host,
+            config.host,
             context
         );
 
