@@ -116,7 +116,6 @@ export class EMailNotification {
         const curDate: Date = new Date();
         const deadline: Date = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+7);
 
-        // const checkedOnePagers = Object.entries(localToValidatedOnePager).filter(([, op]) => op.onePager !== undefined);
 
 
         const generalErrors: ValidationError[] = Object.values(localToValidatedOnePager)
@@ -124,7 +123,6 @@ export class EMailNotification {
             .map((validationOP) => {
                 return validationOP.errors.filter((error) => {
                     return mailTemplate.activeErrors.includes(error)
-                    // .map((error) => (mailTemplate.errors[error])
                 });
             })
             .flat();
@@ -137,7 +135,6 @@ export class EMailNotification {
                     url: validationOP.onePager?.webLocation ? validationOP.onePager.webLocation.toString() : '',
                     lang: lang,
                     errors: validationOP.errors.filter((error) =>mailTemplate.activeErrors.includes(error))
-                        // .map((error) => mailTemplate.errors[error])
                 } as OnePagerError;
             }).filter((op) => op.errors.length > 0);
 
@@ -146,36 +143,21 @@ export class EMailNotification {
             return;
         }
 
-        // const errorData = {
-        //     faqURL: mailTemplate.faqURL,
-        //     guideBookURL: mailTemplate.guideBookURL,
-        // };
 
-
-        const linkToAllowUseOfOnePagers = await this.useOfOnePagerRepo.didEmployeeAllowUseOfOnePager(employeeId)
-                ? `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`
-                : `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`
+        const didEmployeeAllowUseOfOnePager = await this.useOfOnePagerRepo.didEmployeeAllowUseOfOnePager(employeeId);
+        const linkToAllowUseOfOnePagers = `${this.hostname}/api/allowUseOfOnePagers/${await this.useOfOnePagerRepo.getTokenOfEmployee(employeeId)}/${employeeId}`;
 
         this.logger.log(`Link to allow use of one-pagers: ${linkToAllowUseOfOnePagers}`);
 
         const templateData = {
-            // ...errorData,
             checkedOnePagers: onePagerErrors,
             deadline: `${deadline.getDate()}.${deadline.getMonth() + 1}.${deadline.getFullYear()}`,
             firstname: employee.name.split(',')[1]?.trim(),
-            generalErrors: generalErrors
-                // .map((error) => ({ title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) }))
-            ,
-            onePagerErrors: onePagerErrors
-            // .map((validationOP) => {
-            //     validationOP.errors = validationOP.errors.map((error) => {
-            //         return { title: pug.render(`| ${error.title}}`, errorData), description: pug.render(`| ${error.description}`, errorData) }
-            //     });
-            //     return validationOP;
-            // })
-            ,
+            generalErrors: generalErrors,
+            onePagerErrors: onePagerErrors,
             folderURL: localToValidatedOnePager[LocalEnum.EN]?.folderURL?.toString() || '',
-            linkToAllowUseOfOnePagers: linkToAllowUseOfOnePagers
+            linkToAllowUseOfOnePagers: linkToAllowUseOfOnePagers,
+            didEmployeeAllowUseOfOnePager: didEmployeeAllowUseOfOnePager,
         };
 
 
@@ -199,8 +181,6 @@ export class EMailNotification {
                 lang
             );
         }));
-
-
     }
 
     async loadEMailTemplate(local: Local): Promise<MailTemplate> {
@@ -240,9 +220,6 @@ export class EMailNotification {
             subject: template.subject,
             content: templateContent,
             activeErrors: template.activeErrors || [],
-            // errors: template.errors,
-            // faqURL: template.faqURL || '',
-            // guideBookURL: template.guideBookURL || ''
         };
 
 
