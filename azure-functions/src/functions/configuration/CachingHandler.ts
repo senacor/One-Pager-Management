@@ -45,7 +45,7 @@ export class CachingHandler implements Middleware {
         if (cacheControl) {
             if (cacheControl === 'clear-all') {
                 // used in tests
-                this.logger.log('clearing full http cache');
+                this.logger.log('MSClient Caching: Clearing full HTTP cache!');
                 this.cache.flushAll();
             }
             maxAge = cacheControl.split(',').reduce(
@@ -63,12 +63,12 @@ export class CachingHandler implements Middleware {
 
         if (canCache) {
             if (maxAge) {
-                this.logger.log(`resetting ttls of cache entry "${url}" to ${maxAge}`);
+                this.logger.log(`MS Client Caching: Resetting TTLS of cache entry "${url}" to ${maxAge}!`);
                 this.cache.ttl(url, maxAge); // a ttl of 0 has the meaning of infinity for node-cache
             }
             const entry = this.cache.get<CacheEntry>(url);
             if (entry) {
-                this.logger.log(`using cache entry for "${url}"`);
+                this.logger.log(`MSClient Caching: Using cached version of "${url}"!`);
                 context.response = new Response(entry?.body, {
                     status: 200,
                     headers: entry?.headers,
@@ -79,7 +79,7 @@ export class CachingHandler implements Middleware {
 
         if (!this.nextMiddleware) {
             throw new Error(
-                'CachingHandler expects a child middleware, it can not provide a response on it own!'
+                'MSClient Caching: CachingHandler expects a child middleware, it can not provide a response on it own!'
             );
         }
 

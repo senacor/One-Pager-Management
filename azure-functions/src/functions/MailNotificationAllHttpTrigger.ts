@@ -36,8 +36,8 @@ export async function MailNotificationAllHttpTrigger(
 
         context.extraOutputs.set(queueOutput, items);
 
-        context.log(`Received change notification for all employees!`);
-        return { body: `Received change notification for all employees!` };
+        context.log(`Notify all employees!`);
+        return { body: `Notify all employees!`, status: 200 };
     } catch (error) {
         context.error(`Error processing request: "${printError(error)}"!`);
         return { status: 500, body: `Internal server error` };

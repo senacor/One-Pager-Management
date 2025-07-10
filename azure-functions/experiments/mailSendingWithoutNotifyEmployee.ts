@@ -59,7 +59,8 @@ type OnePagerError = {
             url: 'https://example.com/onepager1.pptx',
             lang: 'DE',
             errors: [
-                "OLDER_THAN_ONE_YEAR",
+                // "OLDER_THAN_ONE_YEAR",
+                "OLDER_THAN_SIX_MONTHS",
                 "USING_UNKNOWN_TEMPLATE",
                 "USING_MODIFIED_TEMPLATE",
                 "MISSING_LANGUAGE_INDICATOR_IN_NAME",

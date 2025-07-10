@@ -99,7 +99,7 @@ export class PowerBIRepository implements EmployeeRepository {
                 ),
                 'current employee'[email]<>BLANK()
             )
-            `.replace(/\n/g, ' ').replace(/\t/g, ' ').trim();
+            `.replace(/\n/g, ' ').replace(/\r/g, '').replace(/\t/g, ' ').replace(/ {4}/g, ' ').trim();
         return await this.fetchDataByQuery(query);
     }
 
@@ -111,11 +111,11 @@ export class PowerBIRepository implements EmployeeRepository {
     private async fetchDataByQuery(query: string): Promise<Employee[]> {
         const result = cache.get<Employee[]>(query);
         if (result) {
-            this.logger.log(`Cache hit for query: ${query}`);
+            this.logger.log(`Cache hit for query: "${query}".`);
             return result;
         }
 
-        this.logger.log(`Cache miss for query: ${query}.`);
+        this.logger.log(`Cache miss for query: "${query}".`);
 
         const token = await this.authProvider.getAccessToken();
         const resHandle = await client.fetch(

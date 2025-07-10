@@ -144,9 +144,9 @@ export class SharepointStorageExplorer implements StorageExplorer {
     }
 
     async listFoldersWithURLs(): Promise<StorageFolder[]> {
-        if (this.useCaching && cache.has(`/drives/${this.driveId}/root/children`)) {
-            return cache.get<StorageFolder[]>(`/drives/${this.driveId}/root/children`) as StorageFolder[];
-        }
+        // if (this.useCaching && cache.has(`/drives/${this.driveId}/root/children`)) {
+        //     return cache.get<StorageFolder[]>(`/drives/${this.driveId}/root/children`) as StorageFolder[];
+        // }
 
         const { value: folders } = (await this.client
             .api(`/drives/${this.driveId}/root/children`)
@@ -161,7 +161,7 @@ export class SharepointStorageExplorer implements StorageExplorer {
             );
         }
         const storageFolders: StorageFolder[] = folders.flatMap(f => f.name ? [{name: f.name, webLocation: f.webUrl ? new URL(f.webUrl) : undefined} as StorageFolder] : []);
-        cache.set<StorageFolder[]>(`/drives/${this.driveId}/root/children`, storageFolders);
+        // cache.set<StorageFolder[]>(`/drives/${this.driveId}/root/children`, storageFolders);
 
         return storageFolders;
     }

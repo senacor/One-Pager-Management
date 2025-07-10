@@ -2,7 +2,7 @@
     "subject": "EN: Aktualisierung deiner One Pager erforderlich – bitte um Überprüfung bis zum #{deadline}",
     "contentPath": "./resources/mail_templates/template_EN.pug",
     "activeErrors": [
-        "OLDER_THAN_ONE_YEAR",
+        "OLDER_THAN_SIX_MONTHS",
         "USING_UNKNOWN_TEMPLATE",
         "USING_MODIFIED_TEMPLATE",
         "MISSING_LANGUAGE_INDICATOR_IN_NAME",

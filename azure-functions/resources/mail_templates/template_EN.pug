@@ -44,9 +44,9 @@ mixin errors(error)
         //-     li(style="margin-top: 5px;").
         //-         Kein Bild vorhanden: Dein One Pager enthält aktuell kein Foto.
         //-         Bitte füge ein aktuelles Bild von dir hinzu, damit dein Profil vollständig ist.
-        when "OLDER_THAN_ONE_YEAR"
+        when "OLDER_THAN_SIX_MONTHS"
             li(style="margin-top: 5px;").
-                One Pager ist älter als 1 Jahr: Dein One Pager ist älter als 1 Jahr und entspricht daher unter Umständen nicht mehr dem Aktualitätsanspruch.
+                One Pager ist älter als 12 Monate: Dein One Pager ist älter als 12 Monate und entspricht daher unter Umständen nicht mehr dem Aktualitätsanspruch.
                 Bitte überprüfe die Inhalte und erstelle ggf. eine aktualisierte Version.
         default
             // do nothing
