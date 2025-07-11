@@ -57,7 +57,7 @@ export enum ValidationErrorEnum {
     MIXED_LANGUAGE_VERSION = 'MIXED_LANGUAGE_VERSION', // one-pager has slides in different languages
     WRONG_LANGUAGE_CONTENT = 'WRONG_LANGUAGE_CONTENT', // one-pager indicates a different language as is used
     NO_IMAGES = 'NO_IMAGES', // one-pager has no images at all
-    WRONG_FILE_NAME = 'WRONG_FILE_NAME', // one-pager has a wrong file name, it should be in the format <language>_<employee-id>.json
+    WRONG_FILENAME = 'WRONG_FILENAME', // one-pager has a wrong file name, it should be in the format <language>_<employee-id>.json
 };
 export const listOfGeneralErrors = [
     ValidationErrorEnum.MISSING_DE_VERSION,

@@ -106,7 +106,7 @@ Feature: Localized OnePagers
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
                 | DE      | MISSING_DE_VERSION                  |
-                | EN      | WRONG_FILE_NAME                     |
+                | EN      | WRONG_FILENAME                     |
                 # | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
 
         Scenario: Newer OnePager with missing language indicator supersedes deprecated OnePager
@@ -120,7 +120,7 @@ Feature: Localized OnePagers
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
                 | DE      |                                     |
-                | EN      | WRONG_FILE_NAME                     |
+                | EN      | WRONG_FILENAME                     |
                 # | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
 
         Scenario: Deprecated OnePager with missing language indicator does not supersede newest OnePager
@@ -143,8 +143,8 @@ Feature: Localized OnePagers
             # If one of the OnePagers with language indicator is picked we would expect the validation error "OLDER_THAN_SIX_MONTHS"
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
-                | DE      | WRONG_FILE_NAME  |
-                | EN      | WRONG_FILE_NAME  |
+                | DE      | WRONG_FILENAME  |
+                | EN      | WRONG_FILENAME  |
                 # | DE      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
                 # | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
 
@@ -158,8 +158,8 @@ Feature: Localized OnePagers
             When we validate the OnePagers of "Max"
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                   |
-                | DE      | WRONG_FILE_NAME  |
-                | EN      | WRONG_FILE_NAME  |
+                | DE      | WRONG_FILENAME  |
+                | EN      | WRONG_FILENAME  |
                 # | DE      | MIXED_LANGUAGE_VERSION  |
                 # | EN      | MIXED_LANGUAGE_VERSION  |
 
@@ -173,8 +173,8 @@ Feature: Localized OnePagers
             # If one of the OnePagers with language indicator is picked we would excpect the validation error "OLDER_THAN_SIX_MONTHS"
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
-                | DE      | WRONG_FILE_NAME  |
-                | EN      | WRONG_FILE_NAME  |
+                | DE      | WRONG_FILENAME  |
+                | EN      | WRONG_FILENAME  |
                 # | DE      | MIXED_LANGUAGE_VERSION  |
                 # | EN      | MIXED_LANGUAGE_VERSION  |
 
@@ -189,7 +189,7 @@ Feature: Localized OnePagers
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                   |
                 | DE      | USING_UNKNOWN_TEMPLATE  |
-                | EN      | WRONG_FILE_NAME         |
+                | EN      | WRONG_FILENAME         |
                 # | EN      | MIXED_LANGUAGE_VERSION  |
 
         Scenario: OnePager with content in multiple languages does not supersedes newer OnePagers

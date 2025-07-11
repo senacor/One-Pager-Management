@@ -24,7 +24,7 @@ mixin errors(error)
                 Falls in deiner PPTX-Datei Folien von alten und neuen Templates kombiniert wurden,
                 erstelle bitte einen neuen One Pager auf Basis des aktuellen Templates und übertrage die Inhalte, ohne alte Folien direkt zu kopieren.
                 Die entsprechenden Vorlagen findest du <a href="#{faqURL}">hier</a>.
-        when "WRONG_FILE_NAME"
+        when "WRONG_FILENAME"
             li(style="margin-top: 5px;").
                 Fehlerhafter Dateiname: Der Dateiname deines One Pagers entspricht nicht dem vorgesehenen Format.
                 Ein Dateiname eines jeden One Pagers muss auf folgende Art und Weise beginnen:
@@ -128,20 +128,20 @@ body
 
     br
 
-    a(href=linkToAllowUseOfOnePagers, style="color: gray; text-decoration: none;")
-        button(style="background: #0078d4; border: 1px solid gray; font-size: 15px; padding: 10px 60px; border-radius: 5px; cursor: pointer; width: 200px; height: 50px").
-            Erlaube die Verwendung deines One Pagers
+    //- a(href=linkToAllowUseOfOnePagers, style="color: gray; text-decoration: none;")
+    //-     button(style="background: #0078d4; border: 1px solid gray; font-size: 15px; padding: 10px 60px; border-radius: 5px; cursor: pointer; width: 200px; height: 50px").
+    //-         Erlaube die Verwendung deines One Pagers
 
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-        <tr>
-            <td style="border-radius: 5px; background: #373737; text-align: center;">
-                <a href="#{linkToAllowUseOfOnePagers}" style="background: #373737; padding: 15px; border: 1px solid #7091C8; font-family: 'AvantGarde-demibold', 'Century Gothic', 'Arial Bold', Arial, font-size: 14px; line-height: 1.1; text-align: center; text-decoration: none; display: block; font-weight: bold;">
-                    <span style="color: #7091C8;">Erlaube die Verwendung deines One Pagers</span>
-                </a>
-            </td>
-        </tr>
-    </table>
-    br
+    //- <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+    //-     <tr>
+    //-         <td style="border-radius: 5px; background: #373737; text-align: center;">
+    //-             <a href="#{linkToAllowUseOfOnePagers}" style="background: #373737; padding: 15px; border: 1px solid #7091C8; font-family: 'AvantGarde-demibold', 'Century Gothic', 'Arial Bold', Arial, font-size: 14px; line-height: 1.1; text-align: center; text-decoration: none; display: block; font-weight: bold;">
+    //-                 <span style="color: #7091C8;">Erlaube die Verwendung deines One Pagers</span>
+    //-             </a>
+    //-         </td>
+    //-     </tr>
+    //- </table>
+    //- br
     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
         <tr>
             <td style="border-radius: 5px; background: #7091C8; text-align: center;">
@@ -162,16 +162,16 @@ body
         </tr>
     </table>
 
-    br
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-        <tr>
-            <td style="border-radius: 5px; background: #FFFFFF; text-align: center;">
-                <a href="#{linkToAllowUseOfOnePagers}" style="background: #FFFFFF; padding: 15px; border: 1px solid #7091C8; font-family: 'AvantGarde-demibold', 'Century Gothic', 'Arial Bold', Arial, font-size: 14px; line-height: 1.1; text-align: center; text-decoration: none; display: block; font-weight: bold;">
-                    <span style="color: #7091C8;">Erlaube die Verwendung deines One Pagers</span>
-                </a>
-            </td>
-        </tr>
-    </table>
+    //- br
+    //- <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+    //-     <tr>
+    //-         <td style="border-radius: 5px; background: #FFFFFF; text-align: center;">
+    //-             <a href="#{linkToAllowUseOfOnePagers}" style="background: #FFFFFF; padding: 15px; border: 1px solid #7091C8; font-family: 'AvantGarde-demibold', 'Century Gothic', 'Arial Bold', Arial, font-size: 14px; line-height: 1.1; text-align: center; text-decoration: none; display: block; font-weight: bold;">
+    //-                 <span style="color: #7091C8;">Erlaube die Verwendung deines One Pagers</span>
+    //-             </a>
+    //-         </td>
+    //-     </tr>
+    //- </table>
 
 
     //- </td></tr></table>

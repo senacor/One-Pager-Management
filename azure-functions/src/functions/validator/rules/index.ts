@@ -37,11 +37,11 @@ export const contentLanguageIsIndicatedInName: ValidationRule = async onePager =
 export const wrongFileName: ValidationRule = async onePager => {
     const { fileName } = onePager.onePager;
     if (!fileName) {
-        return [ValidationErrorEnum.WRONG_FILE_NAME];
+        return [ValidationErrorEnum.WRONG_FILENAME];
     }
 
     const fileNameRegex = new RegExp(`^.+, .+_(${Object.keys(LocalEnum).join('|')})_\\d{6}\\.pptx$`, 'i');
-    return fileNameRegex.test(fileName) ? [] : [ValidationErrorEnum.WRONG_FILE_NAME];
+    return fileNameRegex.test(fileName) ? [] : [ValidationErrorEnum.WRONG_FILENAME];
 };
 
 /**

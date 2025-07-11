@@ -160,8 +160,6 @@ export class EMailNotification {
             didEmployeeAllowUseOfOnePager: didEmployeeAllowUseOfOnePager,
         };
 
-        this.logger.log(`folderURL: ${JSON.stringify(localToValidatedOnePager)}`);
-
 
         const mailSubject = pug.render(`| ${mailTemplate.subject}`, templateData); // '| ' is needed for pug to interpret the string as plain text
         const mailContent = pug.render(mailTemplate.content, templateData);
@@ -172,10 +170,15 @@ export class EMailNotification {
 
         await this.mailAdapter.sendMail(emailAddress, mailSubject, mailContent);
 
+
+
         await Promise.all((Object.keys(LocalEnum) as Local[]).map(async (lang: Local) => {
+            localToValidatedOnePager[lang].errors = localToValidatedOnePager[lang].errors.filter((error) => mailTemplate.activeErrors.includes(error));
             if (localToValidatedOnePager[lang].errors.length === 0) {
+                this.logger.log(`No errors found for employee ${employeeId} in language ${lang}. No email will be reported.`);
                 return;
             }
+
 
             return await this.mailReporter.reportMail(
                 employeeId,
@@ -184,6 +187,9 @@ export class EMailNotification {
             );
         }));
     }
+
+
+
 
     async loadEMailTemplate(local: Local): Promise<MailTemplate> {
         if (cache.has(local)) {

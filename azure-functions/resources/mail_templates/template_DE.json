@@ -5,7 +5,7 @@
         "OLDER_THAN_SIX_MONTHS",
         "USING_UNKNOWN_TEMPLATE",
         "USING_MODIFIED_TEMPLATE",
-        "WRONG_FILE_NAME",
+        "WRONG_FILENAME",
         "MISSING_DE_VERSION",
         "MISSING_EN_VERSION"
     ]
