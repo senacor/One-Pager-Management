@@ -16,6 +16,8 @@ import {
 } from '../../DomainTypes';
 import moment from 'moment';
 
+
+
 const enum ListItemColumnNames {
     MA_ID = 'Employee_ID', // number
     MA_NAME = 'Name', // text field, 1-line
@@ -52,7 +54,7 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
         ListItemColumnNames.MA_ID in record &&
         ['string', 'number'].includes(typeof record[ListItemColumnNames.MA_ID]) &&
         (!(ListItemColumnNames.VALIDATION_ERRORS in record) ||
-        typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string') &&
+            typeof record[ListItemColumnNames.VALIDATION_ERRORS] === 'string') &&
         ListItemColumnNames.URL in record &&
         typeof record[ListItemColumnNames.URL] === 'string' &&
         ListItemColumnNames.MA_NAME in record &&
@@ -68,11 +70,18 @@ function isListItemWithFields(item: unknown): item is ListItemWithFields {
         ListItemColumnNames.ONE_PAGER_LANGUAGE in record &&
         ['string'].includes(typeof record[ListItemColumnNames.ONE_PAGER_LANGUAGE]) &&
         (!(ListItemColumnNames.FILENAME in record) ||
-        typeof record[ListItemColumnNames.FILENAME] === 'string') &&
+            typeof record[ListItemColumnNames.FILENAME] === 'string') &&
         (!(ListItemColumnNames.FOLDER_URL in record) ||
-        typeof record[ListItemColumnNames.FOLDER_URL] === 'string')
+            typeof record[ListItemColumnNames.FOLDER_URL] === 'string')
     );
 }
+
+// a function to split an array into chunks of a given size
+function chunk<T>(arr: T[], size: number): T[][] {
+    return Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+        arr.slice(i * size, i * size + size)
+    )
+};
 
 /**
  * A class that implements the ValidationReporter interface for reporting validation results to a SharePoint list.
@@ -225,7 +234,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async getResultFor(id: EmployeeID): Promise<LocalToValidatedOnePager> {
         this.logger.log(`Getting results for employee with id "${id}"!`);
 
-        const itemIds: {[local in Local]: string | undefined} = Object.assign({}, ...(await Promise.all(Object.values(LocalEnum).map(async (local) => {
+        const itemIds: { [local in Local]: string | undefined } = Object.assign({}, ...(await Promise.all(Object.values(LocalEnum).map(async (local) => {
             return { [local]: await this.getItemIdOfEmployee(id, local) };
         }))));
 
@@ -280,14 +289,14 @@ export class SharepointListValidationReporter implements ValidationReporter {
             result[local] = {
                 onePager:
                     itemFields[ListItemColumnNames.URL] !== 'NO_URL'
-                    && itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]
-                    ? {
-                        webLocation: new URL(itemFields[ListItemColumnNames.URL]),
-                        fileName: itemFields[ListItemColumnNames.FILENAME] || 'NO_FILENAME',
-                        lastUpdateByEmployee: moment(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE], "MM/DD/YYYY", true).isValid() ? stringToDate(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]) as Date : new Date(),
-                        local: local,
-                        data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
-                    } : undefined,
+                        && itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]
+                        ? {
+                            webLocation: new URL(itemFields[ListItemColumnNames.URL]),
+                            fileName: itemFields[ListItemColumnNames.FILENAME] || 'NO_FILENAME',
+                            lastUpdateByEmployee: moment(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE], "MM/DD/YYYY", true).isValid() ? stringToDate(itemFields[ListItemColumnNames.LAST_MODIFIED_DATE]) as Date : new Date(),
+                            local: local,
+                            data: async () => Buffer.from(''), // Placeholder, as we don't have the actual data here
+                        } : undefined,
                 errors: itemFields[ListItemColumnNames.VALIDATION_ERRORS]
                     ? itemFields[ListItemColumnNames.VALIDATION_ERRORS].split(', ') as ValidationError[]
                     : [],
@@ -326,6 +335,7 @@ export class SharepointListValidationReporter implements ValidationReporter {
 
     /**
      * This function clears the SharePoint list by deleting all items in it.
+     * Works only for a small number of items.
      */
     async clearList(): Promise<void> {
         this.logger.log(
@@ -351,42 +361,70 @@ export class SharepointListValidationReporter implements ValidationReporter {
     async cleanUpValidationList(validEmployees: EmployeeID[]): Promise<void> {
         this.logger.log(`Cleaning up validation list!`);
 
-        // get all items
-        const { value: items } = (await this.client
+        const validEmployeeChunks = chunk(validEmployees, 100);
+
+
+
+        const { value: entries } = (await this.client
             .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
             .headers(FORCE_REFRESH)
             .get()) as { value?: ListItem[] };
 
-        if (!items) {
-            this.logger.log('No items found in the validation list to clean up.');
+        if (!entries) {
+            this.logger.error('Could not fetch entries to clean up!');
             return;
         }
 
+        // get set of all items and subtract all valid ones
+        let itemsToDeleteSet: Set<string> = new Set(entries.map(item => item.id).filter(id => id !== undefined && id !== '') as string[]);
 
-        const itemsToDelete = (await Promise.all(items.map(async item => {
-            const itemWithFields = (await this.client
-                .api(`/sites/${this.siteId}/lists/${this.listId}/items/${item.id}`)
+        for (const chunk of validEmployeeChunks) {
+            const filterString = chunk.map(id => `fields/${ListItemColumnNames.MA_ID} eq '${id}'`).join(' or ');
+
+            // get all items
+            // eslint-disable-next-line no-await-in-loop
+            const { value: items } = (await this.client
+                .api(`/sites/${this.siteId}/lists/${this.listId}/items`)
                 .headers(FORCE_REFRESH)
-                .select('fields')
-                .get()) as ListItem;
+                .filter(filterString)
+                .get()) as { value?: ListItem[] };
 
-            const fields = itemWithFields.fields as ListItemWithFields;
-            return [fields === undefined || !validEmployees.includes(`${fields[ListItemColumnNames.MA_ID]}` as EmployeeID), item.id];
-        }))).filter((item => item[0]));
+            if (!items) {
+                this.logger.log('No items found in the validation list to clean up.');
+                return;
+            }
 
-        if (itemsToDelete.length === 0) {
+            itemsToDeleteSet = itemsToDeleteSet.difference(new Set(items.map(item => item.id).filter(id => id !== undefined && id !== '') as string[]));
+        }
+
+        this.logger.log(`Items to delete: ${Array.from(itemsToDeleteSet).join(', ')}`);
+
+
+
+        if (itemsToDeleteSet.size === 0) {
             this.logger.log('No items to delete in the validation list.');
             return;
         }
 
-        await Promise.all(
-            itemsToDelete.map(async ([, itemID]) =>
-                await this.client
-                    .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemID}`)
-                    .delete()
-            )
-        );
+        const itemsToDelete = Array.from(itemsToDeleteSet);
 
-        this.logger.log(`Deleted ${itemsToDelete.length} items from the validation list.`);
+        const itemsToDeleteChunks = chunk(itemsToDelete, 10);
+
+        for (const chunk of itemsToDeleteChunks) { // we do not use Promise.all since there can be many items to delete which would result in too many concurrent requests
+            // eslint-disable-next-line no-await-in-loop
+            await Promise.all(chunk.map(async (itemID) => {
+                try {
+                const resp = await this.client
+                    .api(`/sites/${this.siteId}/lists/${this.listId}/items/${itemID}`)
+                    .delete();
+                    return resp;
+                } catch (error) {
+                    this.logger.error(`Error deleting item with ID "${itemID}": ${error}!`);
+                    return;
+                }
+
+            }));
+            this.logger.log(`Deleted items [${chunk.join(", ")}] from the validation list.`);
+        }
     }
 }

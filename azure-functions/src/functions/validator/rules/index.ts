@@ -1,7 +1,7 @@
-import { Logger, ValidationErrorEnum, ValidationRule } from '../DomainTypes';
+import { LocalEnum, Logger, ValidationErrorEnum, ValidationRule } from '../DomainTypes';
 import { usesCurrentTemplate } from './template';
 import config from '../../../../app_config/config.json';
-import { checkImages } from './photo';
+import { checkImages, checkIfImagesExistAtAll } from './photo';
 
 export const CURRENT_TEMPLATE_PATH = config.onePagerDETemplatePath;
 
@@ -19,17 +19,29 @@ export const lastModifiedRule1Year: ValidationRule = async onePager => {
 
 export const contentLanguageIsIndicatedInName: ValidationRule = async onePager => {
     if (onePager.contentLanguages.length > 1) {
-        return [ValidationErrorEnum.MIXED_LANGUAGE_VERSION];
+        // return [ValidationErrorEnum.MIXED_LANGUAGE_VERSION];
+        return [];
     }
 
     switch (onePager.onePager.local) {
         case undefined:
-            return [ValidationErrorEnum.MISSING_LANGUAGE_INDICATOR_IN_NAME];
+            // return [ValidationErrorEnum.MISSING_LANGUAGE_INDICATOR_IN_NAME];
+            return [];
         case onePager.contentLanguages[0]:
             return [];
         default:
             return [ValidationErrorEnum.WRONG_LANGUAGE_CONTENT];
     }
+};
+
+export const wrongFileName: ValidationRule = async onePager => {
+    const { fileName } = onePager.onePager;
+    if (!fileName) {
+        return [ValidationErrorEnum.WRONG_FILE_NAME];
+    }
+
+    const fileNameRegex = new RegExp(`^.+, .+_(${Object.keys(LocalEnum).join('|')})_\\d{6}\\.pptx$`, 'i');
+    return fileNameRegex.test(fileName) ? [] : [ValidationErrorEnum.WRONG_FILE_NAME];
 };
 
 /**
@@ -38,10 +50,12 @@ export const contentLanguageIsIndicatedInName: ValidationRule = async onePager =
 export function allRules(log: Logger = console): ValidationRule {
     return combineRules(
         lastModifiedRule,
-        lastModifiedRule1Year,
+        // lastModifiedRule1Year,
         contentLanguageIsIndicatedInName,
         usesCurrentTemplate(log),
-        checkImages
+        checkIfImagesExistAtAll,
+        checkImages,
+        wrongFileName
     );
 }
 

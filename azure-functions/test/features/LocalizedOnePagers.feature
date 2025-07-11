@@ -18,7 +18,7 @@ Feature: Localized OnePagers
             | Version | Error |
             | EN      | USING_UNKNOWN_TEMPLATE |
             | DE      | OLDER_THAN_SIX_MONTHS  |
-            | DE      | OLDER_THAN_ONE_YEAR  |
+            # | DE      | OLDER_THAN_ONE_YEAR  |
 
     Rule: Employees require localized OnePagers
         Employees must have localized OnePagers in German and English.
@@ -93,7 +93,7 @@ Feature: Localized OnePagers
                 | Version | Error |
                 | DE      | WRONG_LANGUAGE_CONTENT |
                 | EN      | OLDER_THAN_SIX_MONTHS  |
-                | EN      | OLDER_THAN_ONE_YEAR    |
+                # | EN      | OLDER_THAN_ONE_YEAR    |
 
     Rule: OnePagers without language indicator may supersede other OnePagers
         OnePagers without a language indicator supersedes OnePagers with the same language content if it is newer.
@@ -106,7 +106,8 @@ Feature: Localized OnePagers
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
                 | DE      | MISSING_DE_VERSION                  |
-                | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
+                | EN      | WRONG_FILE_NAME                     |
+                # | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
 
         Scenario: Newer OnePager with missing language indicator supersedes deprecated OnePager
             Given "Max" has the following OnePagers:
@@ -119,7 +120,8 @@ Feature: Localized OnePagers
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
                 | DE      |                                     |
-                | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
+                | EN      | WRONG_FILE_NAME                     |
+                # | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
 
         Scenario: Deprecated OnePager with missing language indicator does not supersede newest OnePager
             Given "Max" has the following OnePagers:
@@ -141,8 +143,10 @@ Feature: Localized OnePagers
             # If one of the OnePagers with language indicator is picked we would expect the validation error "OLDER_THAN_SIX_MONTHS"
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
-                | DE      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
-                | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
+                | DE      | WRONG_FILE_NAME  |
+                | EN      | WRONG_FILE_NAME  |
+                # | DE      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
+                # | EN      | MISSING_LANGUAGE_INDICATOR_IN_NAME  |
 
     Rule: OnePagers with content in multiple languages may supersede other OnePagers
         OnePagers with content in multiple languages supersedes other OnePagers if it is newer.
@@ -154,8 +158,10 @@ Feature: Localized OnePagers
             When we validate the OnePagers of "Max"
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                   |
-                | DE      | MIXED_LANGUAGE_VERSION  |
-                | EN      | MIXED_LANGUAGE_VERSION  |
+                | DE      | WRONG_FILE_NAME  |
+                | EN      | WRONG_FILE_NAME  |
+                # | DE      | MIXED_LANGUAGE_VERSION  |
+                # | EN      | MIXED_LANGUAGE_VERSION  |
 
         Scenario: OnePager with content in multiple languages supersedes deprecated OnePagers
             Given "Max" has the following OnePagers:
@@ -167,8 +173,10 @@ Feature: Localized OnePagers
             # If one of the OnePagers with language indicator is picked we would excpect the validation error "OLDER_THAN_SIX_MONTHS"
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                               |
-                | DE      | MIXED_LANGUAGE_VERSION  |
-                | EN      | MIXED_LANGUAGE_VERSION  |
+                | DE      | WRONG_FILE_NAME  |
+                | EN      | WRONG_FILE_NAME  |
+                # | DE      | MIXED_LANGUAGE_VERSION  |
+                # | EN      | MIXED_LANGUAGE_VERSION  |
 
         Scenario: OnePager with content in multiple languages supersedes only deprecated OnePager
             Given "Max" has the following OnePagers:
@@ -181,7 +189,8 @@ Feature: Localized OnePagers
             Then "Max" OnePagers have the validation errors:
                 | Version | Error                   |
                 | DE      | USING_UNKNOWN_TEMPLATE  |
-                | EN      | MIXED_LANGUAGE_VERSION  |
+                | EN      | WRONG_FILE_NAME         |
+                # | EN      | MIXED_LANGUAGE_VERSION  |
 
         Scenario: OnePager with content in multiple languages does not supersedes newer OnePagers
             Given "Max" has the following OnePagers:

@@ -50,12 +50,14 @@ export enum ValidationErrorEnum {
     MISSING_LANGUAGE_INDICATOR_IN_NAME = 'MISSING_LANGUAGE_INDICATOR_IN_NAME', // one-pager is missing a language indicator in the file name
     MISSING_DE_VERSION = 'MISSING_DE_VERSION', // employee has no one-pager in German
     MISSING_EN_VERSION = 'MISSING_EN_VERSION', // employee has no one-pager in English
-    MISSING_PHOTO = 'MISSING_PHOTO', // one-pager  has no photo of the employee
+    MISSING_PHOTO = 'MISSING_PHOTO', // one-pager has no photo of the employee
 
     OTHER_IMAGES = 'OTHER_IMAGES', // one-pager containes other images that do not belong
     LOW_QUALITY_PHOTO = 'LOW_QUALITY_PHOTO', // one-pager has a photo of the employee, but it is of low quality
     MIXED_LANGUAGE_VERSION = 'MIXED_LANGUAGE_VERSION', // one-pager has slides in different languages
     WRONG_LANGUAGE_CONTENT = 'WRONG_LANGUAGE_CONTENT', // one-pager indicates a different language as is used
+    NO_IMAGES = 'NO_IMAGES', // one-pager has no images at all
+    WRONG_FILE_NAME = 'WRONG_FILE_NAME', // one-pager has a wrong file name, it should be in the format <language>_<employee-id>.json
 };
 export const listOfGeneralErrors = [
     ValidationErrorEnum.MISSING_DE_VERSION,

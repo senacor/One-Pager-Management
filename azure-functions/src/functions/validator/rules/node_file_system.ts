@@ -316,6 +316,6 @@ export function toArrayBuffer(buf: Buffer | Buffer[]): ArrayBuffer {
         return ab;
     } else {
         // A single Buffer. Return a copy of the underlying ArrayBuffer slice.
-        return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+        return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
     }
 }

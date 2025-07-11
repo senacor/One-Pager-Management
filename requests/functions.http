@@ -2,6 +2,10 @@
 POST {{host}}/api/sendValidationMails
 x-functions-key: {{functions_key}}
 
+### validationCleanUp
+GET {{host}}/api/validation-list-cleanup
+x-functions-key: {{functions_key}}
+
 ###
 POST {{host}}/api/validate/7526
 x-functions-key: {{functions_key}}
