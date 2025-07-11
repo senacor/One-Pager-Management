@@ -165,7 +165,7 @@ export async function GetEmployeeOnePagerData(
 
 
         const pptx = await single.data().then(data => Pptx.load(data, context));
-        const withFaces = await extractPhotosWithFaces(await pptx.getUsedImages());
+        const withFaces = await extractPhotosWithFaces(await pptx.getValidUsedImages());
         if (withFaces.length === 0) {
             return {
                 status: 404,
@@ -245,7 +245,7 @@ export async function GetEmployeeOnePagerPhoto(
         }
 
         const pptx = await single.data().then(data => Pptx.load(data, context));
-        const images = await await pptx.getUsedImages();
+        const images = await await pptx.getValidUsedImages();
         const selected = images.find(img => img.path.endsWith(request.params.imageName));
 
         if (!selected) {

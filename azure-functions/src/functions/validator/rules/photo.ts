@@ -5,7 +5,7 @@ import { PptxImage } from './Pptx';
 export const QUALITY_THRESHOLD = 0.2;
 
 export const checkImages: ValidationRule = async onePager => {
-    const usedImages = await onePager.pptx.getUsedImages();
+    const usedImages = await onePager.pptx.getValidUsedImages();
 
     const withFaces = await extractPhotosWithFaces(usedImages);
 
@@ -24,6 +24,18 @@ export const checkImages: ValidationRule = async onePager => {
             errors.push(ValidationErrorEnum.LOW_QUALITY_PHOTO);
         }
     }
+    return errors;
+};
+
+export const checkIfImagesExistAtAll: ValidationRule = async onePager => {
+    const usedImageNames = await onePager.pptx.getAllUsedImageNames();
+
+    const errors: ValidationError[] = [];
+
+    if (usedImageNames.length === 0) {
+        errors.push(ValidationErrorEnum.NO_IMAGES);
+    }
+
     return errors;
 };
 

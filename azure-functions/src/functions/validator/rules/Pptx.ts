@@ -82,9 +82,15 @@ export class Pptx {
         return langs.filter(uniq).filter(lang => lang !== undefined);
     }
 
-    async getUsedImages(): Promise<PptxImage[]> {
+    async getValidUsedImages(): Promise<PptxImage[]> {
         const onePagerSlides = await this.getOnePagerSlides();
-        return (await Promise.all(onePagerSlides.map(slide => slide.images))).flat().filter(uniq);
+        return (await Promise.all(onePagerSlides.map(slide => slide.validImages))).flat().filter(uniq);
+    }
+
+
+    async getAllUsedImageNames(): Promise<string[]> {
+        const onePagerSlides = await this.getOnePagerSlides();
+        return (await Promise.all(onePagerSlides.map(slide => slide.allImages))).flat().filter(uniq);
     }
 
     async getOnePagerThemes(): Promise<PptxTheme[]> {
@@ -100,7 +106,8 @@ export class Pptx {
 export interface PptxSlide {
     isOnePager: boolean;
     texts: string[];
-    images: PptxImage[];
+    validImages: PptxImage[];
+    allImages: string[];
     usedLanguage?: Local;
     theme: PptxTheme;
 }
@@ -115,7 +122,8 @@ class ZipPptxSlide implements PptxSlide {
     readonly path: string;
     readonly isOnePager: boolean;
     readonly texts: string[];
-    readonly images: PptxImage[];
+    readonly validImages: PptxImage[];
+    readonly allImages: string[];
     readonly usedLanguage: Local | undefined;
     readonly theme: PptxTheme;
 
@@ -123,14 +131,16 @@ class ZipPptxSlide implements PptxSlide {
         path: string,
         isOnePager: boolean,
         texts: string[],
-        images: PptxImage[],
+        validImages: PptxImage[],
+        allImages: string[],
         usedLanguage: Local | undefined,
         theme: PptxTheme
     ) {
         this.path = path;
         this.isOnePager = isOnePager;
         this.texts = texts;
-        this.images = images;
+        this.validImages = validImages;
+        this.allImages = allImages;
         this.usedLanguage = usedLanguage;
         this.theme = theme;
     }
@@ -142,7 +152,8 @@ class ZipPptxSlide implements PptxSlide {
         );
         const slide = pptx.parseXml<XmlSlide>(path);
 
-        const images = this.imagesFrom(await slideRels);
+        const validImages = this.validImagesFrom(await slideRels);
+        const allImageNames = this.allImagesFrom(await slideRels);
         const texts = this.texts(await slide);
 
         const usedLanguage = detectLanguage(texts.join('\n'));
@@ -154,7 +165,8 @@ class ZipPptxSlide implements PptxSlide {
             path,
             await isOnePager,
             texts,
-            images.map(i => new ZipPptxImage(pptx, i)),
+            validImages.map(i => new ZipPptxImage(pptx, i)),
+            allImageNames,
             await usedLanguage,
             await theme
         );
@@ -178,10 +190,16 @@ class ZipPptxSlide implements PptxSlide {
             });
     }
 
-    private static imagesFrom(rels: XmlRels): string[] {
+    private static allImagesFrom(rels: XmlRels): string[] {
         return rels.Relationships.Relationship.map(rel => rel.$.Target)
             .filter(target => target.match(/\.\.\/media\/[^/]+$/))
-            .map(target => `ppt/${target.substring('../'.length)}`)
+            .map(target => `ppt/${target.substring('../'.length)}`);
+            // .filter(path => !UNPARSEABLE_IMAGE_EXTENSIONS.some(ext => path.endsWith(ext)))
+            // .filter(uniq);
+    }
+
+    private static validImagesFrom(rels: XmlRels): string[] {
+        return this.allImagesFrom(rels)
             .filter(path => !UNPARSEABLE_IMAGE_EXTENSIONS.some(ext => path.endsWith(ext)))
             .filter(uniq);
     }
